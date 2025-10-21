@@ -6,7 +6,8 @@
 Blueprint này giúp bạn chụp ảnh từ camera được kích hoạt khi cảm biến chuyển động, cửa, hiện hiện phát hiện chuyển động. Sau đó sẽ phân tích ảnh và đưa ra nội dung trong ảnh có người hay không rồi sẽ thông báo qua các nền tảng nếu bạn đã bật.
 
 ## 2. Yêu cầu
-- Đã cài đặt Home Assistant phiên bản >= 2023.8.0.
+- Đã cài đặt Home Assistant phiên bản >= 2025.9.0 để có AI Task 
+- Đã thiết lập AI Task. Tham khảo https://www.home-assistant.io/integrations/ai_task/
 - Đã cài đặt tích hợp Zalo Bot, Telegram, Discorrd và cấu hình xong nếu muốn sử dụng.
 - Đã cấu hình Conversation Agent (AI) Google Generative AI.
 - Tham khảo cách thêm cấu hình thư mục `media` để có thể lưu và lấy ảnh: https://www.home-assistant.io/integrations/media_source/
@@ -98,7 +99,7 @@ Thử:
 
 ## 9. Changelog
 
-**Version 20251021**
+**Version 20251020**
 - Initial release
 - Phân tích hình ảnh chụp được từ camera trích xuất ra nội dung
 - Tích hợp conversation agent (AI)
