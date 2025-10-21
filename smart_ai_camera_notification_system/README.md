@@ -1,5 +1,7 @@
 # Hướng dẫn sử dụng Blueprint - Smart AI Camera Notification System
 
+<img width="591" height="505" alt="image" src="https://github.com/user-attachments/assets/104c0f07-652b-4f7c-a4e4-7be038376288" />
+
 ## 1. Giới thiệu
 Blueprint này giúp bạn chụp ảnh từ camera được kích hoạt khi cảm biến chuyển động, cửa, hiện hiện phát hiện chuyển động. Sau đó sẽ phân tích ảnh và đưa ra nội dung trong ảnh có người hay không rồi sẽ thông báo qua các nền tảng nếu bạn đã bật.
 
