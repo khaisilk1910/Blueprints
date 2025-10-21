@@ -80,11 +80,8 @@ Thử:
 
 ## 7. Lưu ý
 
-- **Múi giờ:** Thời gian sẽ theo múi giờ được cấu hình trong Home Assistant.
 - **AI Model:** Chất lượng tin nhắn phụ thuộc vào conversation agent bạn chọn.
-- **Zalo Bot:** Cần cấu hình đúng Zalo Bot integration trước khi sử dụng.
-- **Weather Data:** Dữ liệu thời tiết phụ thuộc vào weather integration (AccuWeather, OpenWeatherMap, etc.).
-- **Calendar Range:** Thời gian xem trước mặc định là 18 giờ, có thể điều chỉnh.
+- **Zalo Bot, Telegram, Discord:** Cần cấu hình đúng integration trước khi sử dụng.
 - **Privacy:** Blueprint này không chia sẻ dữ liệu ra bên ngoài, chỉ sử dụng conversation agent đã cấu hình.
 
 ---
