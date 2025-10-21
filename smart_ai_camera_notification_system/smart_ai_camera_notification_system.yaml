@@ -54,7 +54,7 @@ blueprint:
       description: >
         Sử dụng AI để phân tích ảnh và đưa nội dung phân tích ảnh vào thông báo.
         Nếu sử dụng AI phân tích sẽ bị trễ thông báo vài giây so với ảnh chụp. Vì phải chờ thời gian AI phân tích ảnh xem có người mới gửi thông báo.
-        Nhược điểm nếu không sử dụng AI sẽ hay bị gửi thông báo ảo không có người trong ảnh do sensor phát hiện nhầm có chuyển động.
+        Nếu không sử dụng AI sẽ hay bị gửi thông báo ảo khi không có người trong ảnh do sensor phát hiện nhầm có chuyển động do môi trường, động vật.
       default: enable_actions_ai_powered_notify
       selector:
         select:
@@ -729,7 +729,7 @@ action:
                               type: !input zalo_types
                               image_path: "{{ snapshot_access_file_path_tele }}"
                               message: >
-                                🔍🤖 Kết quả phân tích AI :
+                                🤖 Kết quả phân tích:
                                 {{'\n'}}👉 {{ ai_messages }}
                               thread_id: !input zalo_group_id
                               account_selection: !input zalo_phone
@@ -747,7 +747,7 @@ action:
                               message_thread_id: "{{ telegram_topic | int(0) }}"
                               file: "{{ snapshot_access_file_path_tele }}"
                               caption: >
-                                🔍🤖 Kết quả phân tích AI:
+                                🤖 Kết quả phân tích:
                                 {{'\n'}}👉 {{ ai_messages }}
 
                   - choose:
@@ -764,7 +764,7 @@ action:
                                   - "{{snapshot_access_file_path_discord}}"
                               title: "{{camera_name}}"
                               message: >
-                                🔍🤖 Kết quả phân tích AI:
+                                🤖 Kết quả phân tích:
                                 {{'\n'}}👉 {{ ai_messages }}
 
                   - choose:
