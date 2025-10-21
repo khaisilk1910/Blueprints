@@ -1,0 +1,997 @@
+blueprint:
+  name: Smart AI Camera Notification System
+  description: >
+    ## 📢 Chụp ảnh, Phân tích ảnh bằng AI và gửi Thông báo lên điện thoại, zalo, telegram, Discord và ra loa nếu Cảm biến kích hoạt và thực tế có người xuất hiện trong ảnh.
+
+    **Phiên bản: v.2025.10.20**
+      - Chuyển sang dùng AI-Task
+      - Bỏ lưu ảnh vào thư mục `www` chỉ lưu vào `Media`
+    ***Tham khảo link dưới để thêm code vào trong configuration.yaml***
+      - https://www.home-assistant.io/integrations/media_source/
+      
+
+    **Tác giả: Khaisilk1910 - Nguyễn Tiến Khải**
+             
+
+      1- **Các cảm biến dùng trong Blueprints: `Motion`(Chuyển động), `Presences`(Hiện diện), `Door`(Cửa)**
+
+      2- **Thông báo phân tích hình ảnh bằng AI lên ứng dụng Home Assistant, Zalo, Telegram, Discord và TTS ra Loa được tích hợp vào Home Assistant 💬🔉**
+      
+      3- **Actions Settings: Nếu gửi thông báo lên Hass sẽ có thêm tùy chọn Actions trên thông báo để thực hiện Actions ngay trên thông báo Hass.**
+      
+      4- **Chỉ thông báo khi phát hiện `Có Người` trong ảnh**: do sử dụng AI phân tích và kết hợp điều kiện để loại bỏ thông báo ảo từ sensor khi thực tế không có người trong khung hình.
+
+      5- **Có thể tùy chọn gửi thông báo lên nhiều Điện thoại, Telegram và lên nhiều Loa được tính hợp trong Home Assistant.**
+      
+      6- **Có thể thêm nhiều Hành động tùy chọn nếu muốn thực hiện.**
+      
+      7- **Có thể thêm nhiều Điều kiện để chạy Automation**
+      
+
+  domain: automation
+  input:
+
+    motion_sensor:
+      name: Trigger sensor
+      description: Chọn cảm biến để kích hoạt chụp ảnh.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class:
+            - motion
+            - occupancy
+            - door
+
+    camera_device:
+      name: Camera
+      description: Camera mà bạn muốn chụp ảnh
+      selector:
+        entity:
+          domain: camera
+
+    ai_powered:
+      name: AI-powered (Optional)
+      description: >
+        Sử dụng AI để phân tích ảnh và đưa nội dung phân tích ảnh vào thông báo.
+        Nếu sử dụng AI phân tích sẽ bị trễ thông báo vài giây so với ảnh chụp. Vì phải chờ thời gian AI phân tích ảnh xem có người mới gửi thông báo.
+        Nhược điểm nếu không sử dụng AI sẽ hay bị gửi thông báo ảo không có người trong ảnh do sensor phát hiện nhầm có chuyển động.
+      default: enable_actions_ai_powered_notify
+      selector:
+        select:
+          options:
+            - label: Enable AI-powered Options
+              value: "enable_actions_ai_powered_notify"
+            - label: Disable AI-powered Options
+              value: "disable_actions_ai_powered_notify"
+
+    ai_provider:
+      name: Provider of AI
+      description: >
+        Chọn AI sủ dụng cho việc phân tích ảnh.
+        Nếu không Bật sử dụng AI bên trên không cần chọn
+      selector:
+        config_entry:
+          integration: google_generative_ai_conversation
+
+    device_notify_settings:
+      name: "Mobile App Notify"
+      icon: mdi:devices
+      collapsed: true
+      input:
+        include_notify:
+          name: Use The Mobile App Notify Option (Optional)
+          description: >
+            Enable nếu muốn gửi thông báo lên điện thoại đã chọn bên dưới. Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic
+          default: disable_mobile_app_notify
+          selector:
+            select:
+              options:
+                - label: Enable Mobile App Notify Options
+                  value: "enable_mobile_app_notify"
+                - label: Disable Mobile App Notify Options
+                  value: "disable_mobile_app_notify"
+
+        is_ios_android:
+          name: Is it an Android or iOS device?
+          description: >
+            Chọn điện thoại đẩy thông báo là Android hay iOS?
+          default: android_device
+          selector:
+            select:
+              options:
+                - label: Android
+                  value: "android_device"
+                - label: iOS
+                  value: "ios_device"
+        notify_device:
+          name: Devices Notified
+          description: >
+            Chọn Điện thoại muốn thông bảo đẩy lên.
+          default: []
+          selector:
+            device:
+              filter:
+                - integration: mobile_app
+              multiple: true
+        notify_title:
+          name: Title
+          description: >
+            Nhập Title của Thông báo.
+            Có thẻ dùng CSS HTML để thiết lập màu sắc, In đậm,... cho nội dung
+          default: >
+            📢 <b><span style="color: red">{{camera_name}}</span></b><i> có chuyển động</i>
+          selector:
+            text:
+        tap_navigate:
+          name: Tap Navigate
+          description: >
+            Mở Home Assistant và đi đến vị trí bên dưới khi Thông báo được mở.(Ví dụ: /lovelace/cameras).
+          default: /lovelace/camera
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        status_bar_icon:
+          name: "🌠 Status Bar Icon"
+          description: >
+            `Dành cho` `Android`
+            Thiết lập icon cho thông báo trên Status Bar điện thoại
+            Tìm icon tại https://pictogrammers.com/library/mdi/
+          default: mdi:motion-sensor
+          selector:
+            icon:
+              placeholder: mdi:motion-sensor
+        notification_color:
+          name: "🎨 Notification Color"
+          description: >
+            `Dành cho` `Android`
+            Thiết lập màu cho icon thông báo trên Status Bar điện thoại
+          default: [255, 0, 0]
+          selector:
+            color_rgb:
+
+    actions_settings:
+      name: "Actions Settings"
+      icon: mdi:gesture-double-tap
+      collapsed: true
+      input:
+        include_actions:
+          name: Use Actions For Mobile App Notify Option (Optional)
+          description: >
+            Enable nếu muốn có Actions trong thông báo lên điện thoại đã chọn. Xem thêm tại https://companion.home-assistant.io/docs/notifications/actionable-notifications
+          default: disable_actions_mobile_app_notify
+          selector:
+            select:
+              options:
+                - label: Enable Actions Options
+                  value: "enable_actions_mobile_app_notify"
+                - label: Disable Actions Options
+                  value: "disable_actions_mobile_app_notify"
+        confirm_text:
+          name: "Confirmation Text"
+          description: "Text to show on the confirmation button"
+          default: "✅ Confirm"
+          selector:
+            text:
+        confirm_action:
+          name: "Confirmation Action"
+          description: "Action to run when notification is confirmed"
+          default: []
+          selector:
+            action:
+        dismiss_text:
+          name: "Dismiss Text"
+          description: "Text to show on the dismiss button"
+          default: "❌ Dismiss"
+          selector:
+            text:
+        enable_custom_dismiss_action:
+          name: "Enable Custom Dismiss Action"
+          description: "Display notification on Android Auto interface."
+          default: false
+          selector:
+            boolean: {}
+        custom_dismiss_action:
+          name: "Custom Dismiss Action"
+          description: "Action to run when notification is dismissed"
+          default: []
+          selector:
+            action:
+        tag:
+          name: "\U0001F516 Tag"
+          description: "Used to uniquely identify the notification.  \n\nUse tag if you
+            are using this script with other notification services.  \nLeave empty otherwise.
+            \ \n\nExample: `my_awesome_notification_for_device_X`  \n\n\U0001F44D\U0001F3FB Recommended
+            to leave empty\n\n`Optional`"
+          default: "dimiss_notifications_now"
+          selector:
+            text: {}
+        timeout:
+          name: ⌛️ Timeout Duration
+          description: "Amount of time to wait for an action response before firing timeout action.  \n\n\U0001F44D\U0001F3FB Recommended: ≥1 minute, to allow notifications to be sent.  \nDefault: 10 minutes. \n"
+          default:
+            hours: 0
+            minutes: 10
+            seconds: 0
+          selector:
+            duration:
+              enable_day: false
+
+
+    zalo_settings:
+      name: "Zalo Notifications Settings"
+      icon: mdi:message-image-outline
+      collapsed: true
+      input:
+        include_zalo_notify:
+          name: Use Zalo Notifications Option (Optional)
+          description: >
+            Enable nếu muốn gửi thông báo lên Zalo. Xem thêm tại https://github.com/smarthomeblack/zalo_bot
+          default: disable_zalo_notification
+          selector:
+            select:
+              options:
+                - label: Enable Zalo Notifications
+                  value: "enable_zalo_notification"
+                - label: Disable Zalo Notifications
+                  value: "disable_zalo_notification"
+
+        zalo_group_id:
+          name: Zalo Group ID
+          description: ID của user hoặc nhóm Zalo (để trống nếu không dùng).
+          selector:
+            text:
+          default: ""
+
+        zalo_phone:
+          name: Zalo Acc
+          description: Số điện thoại của Zalo Bot (để trống nếu không dùng).
+          selector:
+            text:
+          default: "+84000000000"
+
+        zalo_types:
+          name: Use Zalo Type Option (Optional)
+          description: >
+            Chọn thông báo lên Zalo cá nhân hoặc group. Xem thêm tại https://github.com/smarthomeblack/zalo_bot
+          default: "0"
+          selector:
+            select:
+              options:
+                - label: User
+                  value: "0"
+                - label: Group
+                  value: "1"
+        zalo_ttl:
+          name: TTL
+          description: Thời gian chờ sau thời gian này tin nhắn sẽ tự xóa.
+          selector:
+            number:
+              min: 0
+              max: 86400000
+              step: 1000
+              unit_of_measurement: seconds
+          default: 0
+
+    telegram_settings:
+      name: "Telegram Notifications Settings"
+      icon: mdi:message-badge
+      collapsed: true
+      input:
+        include_telegram_notify:
+          name: Use Telegram Notifications Option (Optional)
+          description: >
+            Enable nếu muốn gửi thông báo lên Telegram. Xem thêm tại https://www.home-assistant.io/integrations/?search=telegram
+          default: disable_telegram_notification
+          selector:
+            select:
+              options:
+                - label: Enable Telegram Notifications
+                  value: "enable_telegram_notification"
+                - label: Disable Telegram Notifications
+                  value: "disable_telegram_notification"
+     
+        provider:
+          name: Config entry ID
+          description: Choose Telegram Bot to use for send Notifications.
+          selector:
+            config_entry:
+              integration: telegram_bot
+          default: []
+
+        telegram_group_id:
+          name: Telegram Group ID
+          description: ID của nhóm Telegram (để trống nếu không dùng).
+          selector:
+            text:
+          default: ""
+
+        telegram_topic:
+          name: Telegram Topic ID
+          description: ID của chủ đề trong nhóm Telegram (để trống nếu không dùng).
+          selector:
+            text:
+          default: ""
+
+    discord_settings:
+      name: "Discord Notifications Settings"
+      icon: mdi:message-bulleted
+      collapsed: true
+      input:
+        include_discord_notify:
+          name: Use Discord Notifications Option (Optional)
+          description: >
+            Enable nếu muốn gửi thông báo lên Discord. Xem thêm tại https://www.home-assistant.io/integrations/discord/
+          default: disable_discord_notification
+          selector:
+            select:
+              options:
+                - label: Enable Discord Notifications
+                  value: "enable_discord_notification"
+                - label: Disable Discord Notifications
+                  value: "disable_discord_notification"
+        discord_channel:
+          name: Discord Channel ID
+          description: ID của Channel trong nhóm Discord (để trống nếu không dùng).
+          selector:
+            text:
+          default: ""
+
+    tts_notify_settings:
+      name: "Speakers Settings"
+      icon: mdi:speaker-message
+      collapsed: true
+      input:
+        include_tts_announcement:
+          name: Use The Text-to-Speech Announcement Option (Optional)
+          description: >
+            Enable khi muốn gửi TTS ra loa sẽ chọn bên dưới. Xem thêm tại https://www.home-assistant.io/integrations/?search=tts
+          default: disable_tts_announcement
+          selector:
+            select:
+              options:
+                - label: Enable Text-to-Speech Announcements
+                  value: "enable_tts_announcement"
+                - label: Disable Text-to-Speech Announcements
+                  value: "disable_tts_announcement"
+        num_volume_speaker:
+          name: Volume Set
+          description: Thiết lập Âm lượng cho Loa. ( từ 0.1 đến 1)
+          selector:
+            number:
+              min: 0.1
+              max: 1
+              step: 0.1
+              #unit_of_measurement: snapshots
+          default: 1
+        text_to_speech_engine:
+          name: Text-to-Speech Service Provider
+          description: >
+            Chọn dịch vụ TTS hỗ trợ.
+          default: []
+          selector:
+            entity:
+              filter:
+                domain: tts
+        media_player:
+          name: Media Player
+          description: >
+            Chọn loa để phát thông báo
+          default: []
+          selector:
+            entity:
+              filter:
+                domain: media_player
+              multiple: true
+
+    prompt_number_delay_settings:
+      name: "Prompt | Number | Delay of Snapshots"
+      icon: mdi:clock-start
+      collapsed: true
+      input:
+        num_snapshots:
+          name: Number of Snapshots
+          description: Số ảnh sẽ chụp để so sánh (từ 1 đến 5)
+          selector:
+            number:
+              min: 1
+              max: 5
+              step: 1
+              unit_of_measurement: snapshots
+          default: 1
+        num_delay:
+          name: Delay after Snapshots
+          description: Thời gian trễ sau mỗi lần Snapshots (tính theo giây)
+          selector:
+            number:
+              min: 1
+              max: 60
+              step: 1
+              unit_of_measurement: seconds
+          default: 1
+        num_delay_actions:
+          name: Delays
+          description: Thời gian chờ sau khi hoàn thành tất cả các hành động (tính theo giây). Automation này chỉ hoạt động lại sau khi hết thời gian Delay này.
+          selector:
+            number:
+              min: 5
+              max: 120
+              step: 5
+              unit_of_measurement: seconds
+          default: 5
+
+        ai_prompt:
+          name: AI Prompt
+          description: Câu lệnh cho AI phân tích.
+          selector:
+            text:
+              multiline: true
+          default: >
+            Dùng ngôn ngữ Việt Nam. Hãy so sánh và mô tả rất ngắn gọn những gì bạn thấy trong chuỗi hình ảnh
+            sau từ máy ảnh {{ camera_name }} của tôi. Nếu có người, động vật, xe máy
+            hoặc ô tô, hãy mô tả chi tiết về chúng. Không mô tả các vật thể hoặc tòa
+            nhà cố định. Nếu trong chuỗi ảnh không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong chuỗi ảnh khi so sánh". Tin nhắn của bạn cần đủ ngắn để có thể đưa vào thông báo trên điện thoại.
+
+    custom_actions_settings:
+      name: "Custom Actions"
+      icon: mdi:gesture-tap-button
+      collapsed: true
+      input:
+        include_custom_actions:
+          name: Use The Custom Action Options (Optional)
+          description: >
+            Chọn Enable Custom Actions và thêm Actions bên dưới nếu bạn muốn thêm các Hành động khác để thực hiện trong Automation này.
+          default: disable_custom_actions
+          selector:
+            select:
+              options:
+                - label: Enable Custom Actions
+                  value: "enable_custom_actions"
+                - label: Disable Custom Actions
+                  value: "disable_custom_actions"
+        custom_actions:
+          name: Custom Actions
+          description: >
+            Thêm bất kỳ hành động nào bạn muốn chạy trong Automation này.
+            Biến lấy nội dung phân tích AI cho các nội dung khác: `humans_detected_report.data.humans_detected_description`
+          default: []
+          selector:
+            action:
+
+    global_conditions_settings:
+      name: "Global Conditions"
+      icon: mdi:earth
+      collapsed: true
+      input:
+        global_conditions:
+          name: Add Condition(s) to run this Automation
+          description: >
+            Thêm Condition để chạy Automation. Automation chỉ chạy khi Conditions này là True.
+          default: []
+          selector:
+            condition:
+
+trigger:
+  platform: state
+  entity_id: !input motion_sensor
+  to: "on"
+
+variables:
+  ai_powered: !input ai_powered
+  #Device Notify
+  include_notify: !input include_notify
+  notify_device: !input notify_device
+  notify_title: !input notify_title
+  tap_navigate: !input tap_navigate
+  filtered_devices: >
+    {{ notify_device }}
+  is_ios_android: !input "is_ios_android"
+  #Actions Settings
+  include_actions: !input include_actions
+  confirm_text: !input confirm_text
+  dismiss_text: !input dismiss_text
+  timeout: !input timeout
+  enable_custom_dismiss_action: !input enable_custom_dismiss_action
+  tag: !input tag
+  #Zalo Message
+  include_zalo_notify: !input include_zalo_notify
+  #Camera
+  camera_device: !input camera_device
+  camera_name: "{{ state_attr(camera_device, 'friendly_name') }}"
+  camera_path: "{{ state_attr(camera_device, 'friendly_name') | slugify }}"
+  #camera_path: "{{ state_attr(camera_device, 'friendly_name') | lower | replace(' ', '_') }}"
+  #Motion Sensor
+  motion_sensor: !input motion_sensor
+  motion_name: "{{ state_attr(motion_sensor, 'friendly_name') }}"
+  #Snapshot
+  num_delay_actions: !input num_delay_actions
+  num_snapshots: !input num_snapshots
+  num_delay: !input num_delay
+  #AI
+  ai_prompt: !input ai_prompt
+  #Telegram Message
+  include_telegram_notify: !input include_telegram_notify
+  provider: !input provider
+  telegram_group_id: !input telegram_group_id
+  telegram_topic: !input telegram_topic
+  #Discord
+  include_discord_notify: !input include_discord_notify
+  discord_channel: !input discord_channel
+  #TTS Message
+  include_tts_announcement: !input include_tts_announcement
+  num_volume_speaker: !input num_volume_speaker
+  text_to_speech_engine: !input text_to_speech_engine
+  media_player: !input media_player
+  #Custom Actions
+  include_custom_actions: !input include_custom_actions
+  custom_actions: !input custom_actions
+  #Global Conditions
+  global_conditions: !input global_conditions
+
+# All Conditions
+condition:
+  # Global Conditions
+  - condition: and
+    conditions: !input global_conditions
+
+action:
+  - variables:
+      action_confirm: "{{ 'CONFIRM_' ~ context.id }}"
+      action_dismiss: "{{ 'DISMISS_' ~ context.id }}"
+      snapshot_access_file_path: "/media/local/snapshots/{{camera_path}}_snapshot1.jpg"
+      snapshot_access_file_path_tele: "/media/snapshots/{{camera_path}}_snapshot1.jpg"
+      snapshot_access_file_path_discord: "/media/snapshots/{{camera_path}}_snapshot1.jpg"
+      notification_color: !input "notification_color"
+      notification_color_hex: "#{{ '%02x%02x%02x' | format(notification_color[0], notification_color[1], notification_color[2]) }}"
+
+  - repeat:
+      count: "{{ num_snapshots }}"
+      sequence:
+        - action: camera.snapshot
+          data:
+            filename: "/media/snapshots/{{ camera_path }}_snapshot{{ repeat.index }}.jpg"
+          target:
+            entity_id: "{{ camera_device }}"
+        - delay:
+            seconds: "{{ num_delay }}"
+  - variables:
+      snapshots_url: >
+        {% set snap_count = num_snapshots | int %}
+        {% set camera = camera_path %}
+        {% set ns = namespace(images=[]) %}
+        {%- for i in range(1, snap_count + 1) -%}
+          {% set ns.images = ns.images + [{'media_content_id': 'media-source://media_source/local/snapshots/' ~ camera ~ '_snapshot' ~ i ~ '.jpg', 'media_content_type': 'image/jpeg'}] %}
+        {%- endfor -%}
+        {{ ns.images }}
+
+  - choose:
+      - alias: "Check if notification is enabled"
+        conditions:
+          - "{{ ai_powered == 'enable_actions_ai_powered_notify' }}"
+        sequence:
+          - action: ai_task.generate_data
+            data:
+              task_name: Phan tich anh khi co chuyen dong
+              instructions: >
+                Đây là chuỗi hình ảnh từ máy ảnh của tôi. Có bao nhiêu người trong chuỗi ảnh của tôi?
+              entity_id: ai_task.google_ai_task
+              attachments: "{{ snapshots_url }}"
+              structure:
+                humans_detected:
+                  required: true
+                  selector:
+                    number: null
+                humans_detected_description:
+                  description: "{{ ai_prompt }}"
+                  required: true
+                  selector:
+                    text: null
+            response_variable: humans_detected_report
+
+          - variables:
+              ai_messages: >
+                {{ humans_detected_report.data.humans_detected_description }} {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+
+          - if:
+              - condition: template
+                value_template: >
+                  {{ not ( (humans_detected_report.data.humans_detected_description | default(''))| lower | regex_search('tuy nhiên không có người trong chuỗi ảnh|không có người|không có chuỗi hình ảnh nào được cung cấp') and (humans_detected_report.data.humans_detected|int(0) == 0) ) }}
+            then:
+              - alias: "Chạy độc lập từng Choose riêng"
+                parallel:
+                  - choose:
+                      - alias: "Check if notification is enabled"
+                        conditions:
+                          - "{{ include_notify == 'enable_mobile_app_notify' }}"
+                          - "{{ filtered_devices | length > 0 }}"
+                        sequence:
+                          - if:
+                              - condition: template
+                                value_template: "{{ include_actions == 'enable_actions_mobile_app_notify' }}"
+                            then:
+                              - choose:
+                                  - alias: "Check if Android"
+                                    conditions:
+                                      - "{{ is_ios_android == 'android_device' }}"
+                                    sequence:
+                                      - alias: Send a notification to each device
+                                        repeat:
+                                          for_each: "{{ filtered_devices }}"
+                                          sequence:
+                                            - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                              data:
+                                                title: !input notify_title
+                                                message: "{{ ai_messages }}"
+                                                data:
+                                                  priority: high
+                                                  notification_icon: !input status_bar_icon
+                                                  color: "{{ notification_color_hex }}"
+                                                  image: "{{snapshot_access_file_path}}"
+                                                  url: "{{tap_navigate}}"
+                                                  clickAction: "{{tap_navigate}}"
+                                                  tag: "{{ tag }}"
+                                                  actions:
+                                                    - action: "{{ action_confirm }}"
+                                                      title: "{{ confirm_text }}"
+                                                    - action: "{{ action_dismiss }}"
+                                                      title: "{{ dismiss_text }}"
+                                  - alias: "Check if iOS"
+                                    conditions:
+                                      - "{{ is_ios_android == 'ios_device' }}"
+                                    sequence:
+                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                        data:
+                                          title: !input notify_title
+                                          message: >
+                                            {{ ai_messages }}
+                                          data:
+                                            attachment:
+                                              url: "{{snapshot_access_file_path}}"
+                                              content_type: "JPEG"
+                                            tag: "{{ tag }}"
+                                            actions:
+                                              - action: "{{ action_confirm }}"
+                                                title: "{{ confirm_text }}"
+                                              - action: "{{ action_dismiss }}"
+                                                title: "{{ dismiss_text }}"
+                              - alias: "Awaiting response"
+                                wait_for_trigger:
+                                  - platform: event
+                                    event_type: mobile_app_notification_action
+                                    event_data:
+                                      action: "{{ action_confirm }}"
+                                  - platform: event
+                                    event_type: mobile_app_notification_action
+                                    event_data:
+                                      action: "{{ action_dismiss }}"
+                                timeout: '{{ timeout }}'
+                                continue_on_timeout: true
+                              - choose:
+                                  - conditions: "{{ wait.trigger.event.data.action == action_confirm }}"
+                                    sequence: !input confirm_action
+                                  - conditions: "{{ wait.trigger.event.data.action == action_dismiss }}"
+                                    sequence:
+                                      - alias: Nếu Enable Custom Dismiss Action được Bật thì sẽ hành động theo Custom Dismiss Action. Còn không thì sẽ xóa Thông báo.
+                                        if:
+                                          - condition: template
+                                            value_template: "{{ not enable_custom_dismiss_action}}"
+                                        then:
+                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                            data:
+                                              message: "clear_notification"
+                                              data:
+                                                tag: "{{ tag }}"
+                                        else: !input custom_dismiss_action
+                            else:
+                              - choose:
+                                  - alias: "Check if Android"
+                                    conditions:
+                                      - "{{ is_ios_android == 'android_device' }}"
+                                    sequence:
+                                      - alias: Send a notification to each device
+                                        repeat:
+                                          for_each: "{{ filtered_devices }}"
+                                          sequence:
+                                            - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                              data:
+                                                title: !input notify_title
+                                                message: "{{ ai_messages }}"
+                                                data:
+                                                  priority: high
+                                                  notification_icon: !input status_bar_icon
+                                                  color: "{{ notification_color_hex }}"
+                                                  image: "{{snapshot_access_file_path}}"
+                                                  url: "{{tap_navigate}}"
+                                                  clickAction: "{{tap_navigate}}"
+                                  - alias: "Check if iOS"
+                                    conditions:
+                                      - "{{ is_ios_android == 'ios_device' }}"
+                                    sequence:
+                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                        data:
+                                          title: !input notify_title
+                                          message: >
+                                            {{ ai_messages }}
+                                          data:
+                                            attachment:
+                                              url: "{{snapshot_access_file_path}}"
+                                              content_type: "JPEG"
+
+
+                  - choose:
+                      - alias: "Check if Zalo Notifications Option is enabled"
+                        conditions:
+                          - "{{ include_zalo_notify == 'enable_zalo_notification' }}"
+                        sequence:
+                          - action: zalo_bot.send_image
+                            metadata: {}
+                            data:
+                              type: !input zalo_types
+                              image_path: "{{ snapshot_access_file_path_tele }}"
+                              message: >
+                                🔍🤖 Kết quả phân tích AI :
+                                {{'\n'}}👉 {{ ai_messages }}
+                              thread_id: !input zalo_group_id
+                              account_selection: !input zalo_phone
+                              ttl: !input zalo_ttl
+                  - choose:
+                      - alias: "Check if Telegram Notifications Option is enabled"
+                        conditions:
+                          - "{{ include_telegram_notify == 'enable_telegram_notification' }}"
+                        sequence:
+                          - action: telegram_bot.send_photo
+                            data:
+                              config_entry_id: "{{ provider }}"
+                              authentication: digest
+                              target: "{{ telegram_group_id }}"
+                              message_thread_id: "{{ telegram_topic | int(0) }}"
+                              file: "{{ snapshot_access_file_path_tele }}"
+                              caption: >
+                                🔍🤖 Kết quả phân tích AI:
+                                {{'\n'}}👉 {{ ai_messages }}
+
+                  - choose:
+                      - alias: "Check if Discord Notifications Option is enabled"
+                        conditions:
+                          - "{{ include_discord_notify == 'enable_discord_notification' }}"
+                        sequence:
+                          - action: notify.hass_discord
+                            metadata: {}
+                            data:
+                              target: "{{discord_channel | int(0)}}"
+                              data:
+                                images:
+                                  - "{{snapshot_access_file_path_discord}}"
+                              title: "{{camera_name}}"
+                              message: >
+                                🔍🤖 Kết quả phân tích AI:
+                                {{'\n'}}👉 {{ ai_messages }}
+
+                  - choose:
+                      - alias: "Check if tts announcement is enabled"
+                        conditions:
+                          - "{{ include_tts_announcement == 'enable_tts_announcement' }}"
+                        sequence:
+                          - action: media_player.volume_set
+                            metadata: {}
+                            data:
+                              volume_level: "{{num_volume_speaker}}"
+                            target:
+                              entity_id: !input media_player
+                          - action: tts.speak
+                            target:
+                              entity_id: !input text_to_speech_engine
+                            data:
+                              media_player_entity_id: !input media_player
+                              message: "{{humans_detected_report.data.humans_detected_description}}"
+      - alias: "Check if notification is disable"
+        conditions:
+          - "{{ ai_powered == 'disable_actions_ai_powered_notify' }}"
+        sequence:
+          - alias: "Chạy độc lập từng Choose riêng"
+            parallel:
+              - choose:
+                  - alias: "Check if notification is enabled"
+                    conditions:
+                      - "{{ include_notify == 'enable_mobile_app_notify' }}"
+                      - "{{ filtered_devices | length > 0 }}"
+                    sequence:
+                      - if:
+                          - condition: template
+                            value_template: "{{ include_actions == 'enable_actions_mobile_app_notify' }}"
+                        then:
+                          - choose:
+                              - alias: "Check if Android"
+                                conditions:
+                                  - "{{ is_ios_android == 'android_device' }}"
+                                sequence:
+                                  - alias: Send a notification to each device
+                                    repeat:
+                                      for_each: "{{ filtered_devices }}"
+                                      sequence:
+                                        - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                          data:
+                                            title: !input notify_title
+                                            message: >
+                                              🔍 Kiểm tra ngay
+                                              {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                            data:
+                                              priority: high
+                                              notification_icon: !input status_bar_icon
+                                              color: "{{ notification_color_hex }}"
+                                              image: "{{snapshot_access_file_path}}"
+                                              url: "{{tap_navigate}}"
+                                              clickAction: "{{tap_navigate}}"
+                                              tag: "{{ tag }}"
+                                              actions:
+                                                - action: "{{ action_confirm }}"
+                                                  title: "{{ confirm_text }}"
+                                                - action: "{{ action_dismiss }}"
+                                                  title: "{{ dismiss_text }}"
+                              - alias: "Check if iOS"
+                                conditions:
+                                  - "{{ is_ios_android == 'ios_device' }}"
+                                sequence:
+                                  - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                    data:
+                                      title: !input notify_title
+                                      message: >
+                                        🔍 Kiểm tra ngay
+                                        {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                      data:
+                                        attachment:
+                                          url: "{{snapshot_access_file_path}}"
+                                          content_type: "JPEG"
+                                        tag: "{{ tag }}"
+                                        actions:
+                                          - action: "{{ action_confirm }}"
+                                            title: "{{ confirm_text }}"
+                                          - action: "{{ action_dismiss }}"
+                                            title: "{{ dismiss_text }}"
+                          - alias: "Awaiting response"
+                            wait_for_trigger:
+                              - platform: event
+                                event_type: mobile_app_notification_action
+                                event_data:
+                                  action: "{{ action_confirm }}"
+                              - platform: event
+                                event_type: mobile_app_notification_action
+                                event_data:
+                                  action: "{{ action_dismiss }}"
+                            timeout: '{{ timeout }}'
+                            continue_on_timeout: true
+                          - choose:
+                              - conditions: "{{ wait.trigger.event.data.action == action_confirm }}"
+                                sequence: !input confirm_action
+                              - conditions: "{{ wait.trigger.event.data.action == action_dismiss }}"
+                                sequence:
+                                  - alias: Nếu Enable Custom Dismiss Action được Bật thì sẽ hành động theo Custom Dismiss Action. Còn không thì sẽ xóa Thông báo.
+                                    if:
+                                      - condition: template
+                                        value_template: "{{ not enable_custom_dismiss_action}}"
+                                    then:
+                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                        data:
+                                          message: "clear_notification"
+                                          data:
+                                            tag: "{{ tag }}"
+                                    else: !input custom_dismiss_action
+                        else:
+                          - choose:
+                              - alias: "Check if Android"
+                                conditions:
+                                  - "{{ is_ios_android == 'android_device' }}"
+                                sequence:
+                                  - alias: Send a notification to each device
+                                    repeat:
+                                      for_each: "{{ filtered_devices }}"
+                                      sequence:
+                                        - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                          data:
+                                            title: !input notify_title
+                                            message: >
+                                              🔍 Kiểm tra ngay
+                                              {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                            data:
+                                              priority: high
+                                              notification_icon: !input status_bar_icon
+                                              color: "{{ notification_color_hex }}"
+                                              image: "{{snapshot_access_file_path}}"
+                                              url: "{{tap_navigate}}"
+                                              clickAction: "{{tap_navigate}}"
+                              - alias: "Check if iOS"
+                                conditions:
+                                  - "{{ is_ios_android == 'ios_device' }}"
+                                sequence:
+                                  - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                    data:
+                                      title: !input notify_title
+                                      message: >
+                                        🔍 Kiểm tra ngay
+                                        {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                      data:
+                                        attachment:
+                                          url: "{{snapshot_access_file_path}}"
+                                          content_type: "JPEG"
+
+
+              - choose:
+                  - alias: "Check if Zalo Notifications Option is enabled"
+                    conditions:
+                      - "{{ include_zalo_notify == 'enable_zalo_notification' }}"
+                    sequence:
+                      - action: zalo_bot.send_image
+                        metadata: {}
+                        data:
+                          type: !input zalo_types
+                          image_path: "{{ snapshot_access_file_path_tele }}"
+                          message: >
+                            🔍 Phát hiện chuyển động tại {{camera_name}}
+                            {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                          thread_id: !input zalo_group_id
+                          account_selection: !input zalo_phone
+                          ttl: !input zalo_ttl
+              - choose:
+                  - alias: "Check if Telegram Notifications Option is enabled"
+                    conditions:
+                      - "{{ include_telegram_notify == 'enable_telegram_notification' }}"
+                    sequence:
+                      - action: telegram_bot.send_photo
+                        data:
+                          config_entry_id: "{{ provider }}"
+                          authentication: digest
+                          target: "{{ telegram_group_id }}"
+                          message_thread_id: "{{ telegram_topic | int(0) }}"
+                          file: "{{ snapshot_access_file_path_tele }}"
+                          caption: >
+                            🔍 Phát hiện chuyển động tại {{camera_name}}
+                            {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+
+              - choose:
+                  - alias: "Check if Discord Notifications Option is enabled"
+                    conditions:
+                      - "{{ include_discord_notify == 'enable_discord_notification' }}"
+                    sequence:
+                      - action: notify.hass_discord
+                        metadata: {}
+                        data:
+                          target: "{{discord_channel | int(0)}}"
+                          data:
+                            images:
+                              - "{{snapshot_access_file_path_discord}}"
+                          title: "{{camera_name}}"
+                          message: >
+                            🔍 Phát hiện chuyển động
+                            {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+
+              - choose:
+                  - alias: "Check if tts announcement is enabled"
+                    conditions:
+                      - "{{ include_tts_announcement == 'enable_tts_announcement' }}"
+                    sequence:
+                      - action: media_player.volume_set
+                        metadata: {}
+                        data:
+                          volume_level: "{{num_volume_speaker}}"
+                        target:
+                          entity_id: !input media_player
+                      - action: tts.speak
+                        target:
+                          entity_id: !input text_to_speech_engine
+                        data:
+                          media_player_entity_id: !input media_player
+                          message: "{{camera_name}} Vừa phát hiện chuyển động. Kiểm tra ngay "
+
+
+  - choose:
+      - alias: "Perform the custom action"
+        conditions:
+          - condition: template
+            value_template: "{{ 'enable_custom_actions' in include_custom_actions }}"
+        sequence: !input custom_actions
+
+  - delay:
+      seconds: "{{ num_delay_actions }}"
+
+mode: restart
+max_exceeded: silent
