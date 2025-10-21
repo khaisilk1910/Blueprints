@@ -1,4 +1,4 @@
-# Hướng dẫn sử dụng Blueprint Gửi Tổng Hợp Buổi Sáng qua Zalo
+# Hướng dẫn sử dụng Blueprint - Smart AI Camera Notification System
 
 ## 1. Giới thiệu
 Blueprint này giúp bạn chụp ảnh từ camera được kích hoạt khi cảm biến chuyển động, cửa, hiện hiện phát hiện chuyển động. Sau đó sẽ phân tích ảnh và đưa ra nội dung trong ảnh có người hay không rồi sẽ thông báo qua các nền tảng nếu bạn đã bật.
