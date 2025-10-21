@@ -80,6 +80,10 @@ Thử:
 
 ## 7. Lưu ý
 
+- **Độ trễ thông báo** Cấu hình số ảnh chụp, Delay càng nhiều thì độ trẽ từ lúc chụp ảnh đến lúc nhận thông báo càng lâu.
+- **Nếu không sử dụng AI** thì độ trẽ thấp và sẽ bị gửi thông báo ảo khi không có người do sensor bị kích hoạt ảo do môi trường, động vật,..
+- **Nếu sử dụng AI** thì độ trễ cao hơn và không bị gửi thông báo ảo khi không có người do sensor bị kích hoạt.
+- **Chỉ nên cấu hình chụp 1 ảnh và delays để mặc định**
 - **AI Model:** Chất lượng tin nhắn phụ thuộc vào conversation agent bạn chọn.
 - **Zalo Bot, Telegram, Discord:** Cần cấu hình đúng integration trước khi sử dụng.
 - **Privacy:** Blueprint này không chia sẻ dữ liệu ra bên ngoài, chỉ sử dụng conversation agent đã cấu hình.
