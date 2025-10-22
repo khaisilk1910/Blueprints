@@ -1054,12 +1054,12 @@ action:
                                     data:
                                       message: >
                                         {{ ai_messages_record }}
-                                      ttl: 0
-                                      type: "0"
+                                      ttl: !input zalo_ttl
+                                      type: !input zalo_types
                                       video_path_or_url: /media/snapshots/{{camera_path}}_recording.mp4
                                       thumbnail_url: snapshot_access_file_path
-                                      account_selection: "+84376861184"
-                                      thread_id: "2036121378794772276"
+                                      account_selection: !input zalo_phone
+                                      thread_id: !input zalo_group_id
                                       width: 1280
                                       height: 720
                               - if:
@@ -1106,12 +1106,12 @@ action:
                                   message: >
                                     🔍 Phát hiện chuyển động tại {{camera_name}}
                                     {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
-                                  ttl: 0
-                                  type: "0"
+                                  ttl: !input zalo_ttl
+                                  type: !input zalo_types
                                   video_path_or_url: /media/snapshots/{{camera_path}}_recording.mp4
                                   thumbnail_url: snapshot_access_file_path
-                                  account_selection: "+84376861184"
-                                  thread_id: "2036121378794772276"
+                                  account_selection: !input zalo_phone
+                                  thread_id: !input zalo_group_id
                                   width: 1280
                                   height: 720
                           - if:
