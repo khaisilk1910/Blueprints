@@ -27,7 +27,7 @@ Bộ sưu tập các Blueprint thông minh cho Home Assistant với tích hợp 
 
 ## 🚀 Yêu Cầu Hệ Thống
 
-- **Home Assistant:** >= 2024.10.0
+- **Home Assistant:** >= 2025.08.0
 - **AI Integration:** OpenAI, Google Generative AI, hoặc tương thích
 - **Voice Assistant:** Home Assistant Assist (tùy chọn)
 - **Zalo Bot:** Yêu cầu cho các blueprint Send Image và Traffic Fine
