@@ -76,8 +76,8 @@ blueprint:
         Chọn AI sủ dụng cho việc phân tích ảnh.
         Nếu không Bật sử dụng AI bên trên không cần chọn
       selector:
-        config_entry:
-          integration: google_generative_ai_conversation
+        entity:
+          domain: ai_task
       default: []
 
     record_video:
@@ -294,6 +294,13 @@ blueprint:
               step: 1000
               unit_of_measurement: seconds
           default: 0
+        
+        zalo_video:
+          name: Send Video (Optional)
+          description: Tùy chọn có gửi video lên Zalo không?
+          default: true
+          selector:
+            boolean: {}
 
     telegram_settings:
       name: "Telegram Notifications Settings"
@@ -334,7 +341,14 @@ blueprint:
           selector:
             text:
           default: ""
-
+       
+        tele_video:
+          name: Send Video (Optional)
+          description: Tùy chọn có gửi video lên Telegram không?
+          default: true
+          selector:
+            boolean: {}
+            
     discord_settings:
       name: "Discord Notifications Settings"
       icon: mdi:message-bulleted
@@ -358,6 +372,13 @@ blueprint:
           selector:
             text:
           default: ""
+       
+        discord_video:
+          name: Send Video (Optional)
+          description: Tùy chọn có gửi video lên Discord không?
+          default: true
+          selector:
+            boolean: {}
 
     tts_notify_settings:
       name: "Speakers Settings"
@@ -519,6 +540,7 @@ variables:
   enable_custom_dismiss_action: !input enable_custom_dismiss_action
   tag: !input tag
   #Zalo Message
+  zalo_video: !input zalo_video
   include_zalo_notify: !input include_zalo_notify
   #Camera
   camera_device: !input camera_device
@@ -539,9 +561,11 @@ variables:
   provider: !input provider
   telegram_group_id: !input telegram_group_id
   telegram_topic: !input telegram_topic
+  tele_video: !input tele_video
   #Discord
   include_discord_notify: !input include_discord_notify
   discord_channel: !input discord_channel
+  discord_video: !input discord_video
   #TTS Message
   include_tts_announcement: !input include_tts_announcement
   num_volume_speaker: !input num_volume_speaker
@@ -606,7 +630,7 @@ action:
                       task_name: Phan tich anh khi co chuyen dong
                       instructions: >
                         Đây là chuỗi hình ảnh từ máy ảnh {{camera_name}} của tôi. Có bao nhiêu người trong chuỗi ảnh của tôi?
-                      #entity_id: "{{ ai_provider }}"
+                      entity_id: "{{ ai_provider }}"
                       attachments: "{{ snapshots_url }}"
                       structure:
                         humans_detected:
@@ -1022,7 +1046,7 @@ action:
                           task_name: Phan tich anh khi co chuyen dong
                           instructions: >
                             Đây là hình ảnh từ {{camera_name}} của tôi. Có bao nhiêu người trong ảnh của tôi?
-                          #entity_id: "{{ ai_provider }}"
+                          entity_id: "{{ ai_provider }}"
                           attachments: "{{ snapshots_url_record }}"
                           structure:
                             humans_detected:
@@ -1047,7 +1071,7 @@ action:
                             parallel:
                               - if:
                                   - condition: template
-                                    value_template: "{{ include_zalo_notify == 'enable_zalo_notification' }}"
+                                    value_template: "{{ include_zalo_notify == 'enable_zalo_notification' and zalo_video }}"
                                 then:
                                   - action: zalo_bot.send_video
                                     metadata: {}
@@ -1064,7 +1088,7 @@ action:
                                       height: 720
                               - if:
                                   - condition: template
-                                    value_template: "{{ include_telegram_notify == 'enable_telegram_notification' }}"
+                                    value_template: "{{ include_telegram_notify == 'enable_telegram_notification' and tele_video }}"
                                 then:
                                   - action: telegram_bot.send_video
                                     metadata: {}
@@ -1078,7 +1102,7 @@ action:
                                       message_thread_id: "{{ telegram_topic | int(0) }}"
                               - if:
                                   - condition: template
-                                    value_template: "{{ include_discord_notify == 'enable_discord_notification' }}"
+                                    value_template: "{{ include_discord_notify == 'enable_discord_notification' and discord_video }}"
                                 then:
                                   - action: notify.hass_discord
                                     metadata: {}
@@ -1098,7 +1122,7 @@ action:
                         parallel:
                           - if:
                               - condition: template
-                                value_template: "{{ include_zalo_notify == 'enable_zalo_notification' }}"
+                                value_template: "{{ include_zalo_notify == 'enable_zalo_notification' and zalo_video }}"
                             then:
                               - action: zalo_bot.send_video
                                 metadata: {}
@@ -1116,7 +1140,7 @@ action:
                                   height: 720
                           - if:
                               - condition: template
-                                value_template: "{{ include_telegram_notify == 'enable_telegram_notification' }}"
+                                value_template: "{{ include_telegram_notify == 'enable_telegram_notification' and tele_video }}"
                             then:
                               - action: telegram_bot.send_video
                                 metadata: {}
@@ -1131,7 +1155,7 @@ action:
                                   message_thread_id: "{{ telegram_topic | int(0) }}"
                           - if:
                               - condition: template
-                                value_template: "{{ include_discord_notify == 'enable_discord_notification' }}"
+                                value_template: "{{ include_discord_notify == 'enable_discord_notification' and discord_video }}"
                             then:
                               - action: notify.hass_discord
                                 metadata: {}
