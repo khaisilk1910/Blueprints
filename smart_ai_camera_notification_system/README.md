@@ -3,7 +3,7 @@
 <img width="949" height="734" alt="image" src="https://github.com/user-attachments/assets/ae8ed3ff-b410-4794-b3c2-f690124ebdff" />
 
 ## 1. Giới thiệu
-Blueprint này giúp bạn chụp ảnh từ camera được kích hoạt khi cảm biến chuyển động, cửa, hiện hiện phát hiện chuyển động. Sau đó sẽ phân tích ảnh và đưa ra nội dung trong ảnh có người hay không rồi sẽ thông báo qua các nền tảng nếu bạn đã bật.
+Blueprint này giúp bạn chụp ảnh từ camera được kích hoạt khi cảm biến chuyển động, cửa, hiện hiện phát hiện chuyển động. Sau đó sẽ phân tích ảnh và đưa ra nội dung trong ảnh có người hay không rồi sẽ thông báo qua các nền tảng nếu bạn đã bật. Thêm tùy chọn lưu video để gửi đồng thời khi phát hiện chuyển động.
 
 ## 2. Yêu cầu
 - Đã cài đặt Home Assistant phiên bản >= 2025.9.0 để có AI Task 
