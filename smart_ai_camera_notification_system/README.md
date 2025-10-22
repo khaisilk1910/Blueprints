@@ -99,6 +99,13 @@ Thử:
 
 ## 9. Changelog
 
+**Version 20251022**
+- Sửa lỗi nhỏ
+- Thêm tùy chọn Entity AI Task nếu bạn có nhiều AI Task
+- Thêm tùy chọn Bật/Tắt gửi video vào từng mục Zalo, Telegram, Discord
+
+---
+
 **Version 20251020**
 - Initial release
 - Phân tích hình ảnh chụp được từ camera trích xuất ra nội dung
