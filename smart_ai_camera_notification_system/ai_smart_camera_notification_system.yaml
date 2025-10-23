@@ -59,8 +59,8 @@ blueprint:
       name: AI-powered (Optional)
       description: >
         Sử dụng AI để phân tích ảnh và đưa nội dung phân tích ảnh vào thông báo.
-        Nếu sử dụng AI phân tích sẽ bị trễ thông báo vài giây so với ảnh chụp. Vì phải chờ thời gian AI phân tích ảnh xem có người mới gửi thông báo.
-        Nếu không sử dụng AI sẽ hay bị gửi thông báo ảo khi không có người trong ảnh do sensor phát hiện nhầm có chuyển động do môi trường, động vật.
+        <br/>Nếu sử dụng AI phân tích sẽ bị trễ thông báo vài giây so với ảnh chụp. Vì phải chờ thời gian AI phân tích ảnh xem có người mới gửi thông báo.
+        <br/>Nếu không sử dụng AI sẽ hay bị gửi thông báo ảo khi không có người trong ảnh do sensor phát hiện nhầm có chuyển động do môi trường, động vật.
       default: enable_actions_ai_powered_notify
       selector:
         select:
@@ -84,8 +84,8 @@ blueprint:
       name: Recording (Optional)
       description: >
         Tùy chọn ghi video để gửi khi có phát hiện chuyển động.
-        Mặc định ghi video 10s. Vì vậy thông báo video sẽ trễ hơn.
-        Gửi video lên các nền tảng nhắn tin Zalo, Telegram, Discord.
+        <br/>Mặc định ghi video 10s. Vì vậy thông báo video sẽ trễ hơn.
+        <br/>Gửi video lên các nền tảng nhắn tin Zalo, Telegram, Discord.
       default: disable_recording_options
       selector:
         select:
@@ -139,7 +139,7 @@ blueprint:
           name: Title
           description: >
             Nhập Title của Thông báo.
-            Có thẻ dùng CSS HTML để thiết lập màu sắc, In đậm,... cho nội dung
+            <br/>Có thẻ dùng CSS HTML để thiết lập màu sắc, In đậm,... cho nội dung
           default: >
             📢 <b><span style="color: red">{{camera_name}}</span></b><i> có chuyển động</i>
           selector:
@@ -180,7 +180,7 @@ blueprint:
         include_actions:
           name: Use Actions For Mobile App Notify Option (Optional)
           description: >
-            Enable nếu muốn có Actions trong thông báo lên điện thoại đã chọn. Xem thêm tại https://companion.home-assistant.io/docs/notifications/actionable-notifications
+            Enable nếu muốn có Actions trong thông báo lên điện thoại đã chọn.<br/>Xem thêm tại https://companion.home-assistant.io/docs/notifications/actionable-notifications
           default: disable_actions_mobile_app_notify
           selector:
             select:
@@ -248,7 +248,7 @@ blueprint:
         include_zalo_notify:
           name: Use Zalo Notifications Option (Optional)
           description: >
-            Enable nếu muốn gửi thông báo lên Zalo. Xem thêm tại https://github.com/smarthomeblack/zalo_bot
+            Enable nếu muốn gửi thông báo lên Zalo.<br/>Xem thêm tại https://github.com/smarthomeblack/zalo_bot
           default: disable_zalo_notification
           selector:
             select:
@@ -275,7 +275,7 @@ blueprint:
         zalo_types:
           name: Use Zalo Type Option (Optional)
           description: >
-            Chọn thông báo lên Zalo cá nhân hoặc group. Xem thêm tại https://github.com/smarthomeblack/zalo_bot
+            Chọn thông báo lên Zalo cá nhân hoặc group.<br/>Xem thêm tại https://github.com/smarthomeblack/zalo_bot
           default: "0"
           selector:
             select:
@@ -310,7 +310,7 @@ blueprint:
         include_telegram_notify:
           name: Use Telegram Notifications Option (Optional)
           description: >
-            Enable nếu muốn gửi thông báo lên Telegram. Xem thêm tại https://www.home-assistant.io/integrations/?search=telegram
+            Enable nếu muốn gửi thông báo lên Telegram.<br/>Xem thêm tại https://www.home-assistant.io/integrations/?search=telegram
           default: disable_telegram_notification
           selector:
             select:
@@ -357,7 +357,7 @@ blueprint:
         include_discord_notify:
           name: Use Discord Notifications Option (Optional)
           description: >
-            Enable nếu muốn gửi thông báo lên Discord. Xem thêm tại https://www.home-assistant.io/integrations/discord/
+            Enable nếu muốn gửi thông báo lên Discord.<br/>Xem thêm tại https://www.home-assistant.io/integrations/discord/
           default: disable_discord_notification
           selector:
             select:
@@ -388,7 +388,7 @@ blueprint:
         include_tts_announcement:
           name: Use The Text-to-Speech Announcement Option (Optional)
           description: >
-            Enable khi muốn gửi TTS ra loa sẽ chọn bên dưới. Xem thêm tại https://www.home-assistant.io/integrations/?search=tts
+            Enable khi muốn gửi TTS ra loa sẽ chọn bên dưới.<br/>Xem thêm tại https://www.home-assistant.io/integrations/?search=tts
           default: disable_tts_announcement
           selector:
             select:
@@ -454,7 +454,7 @@ blueprint:
           default: 1
         num_delay_actions:
           name: Delays
-          description: Thời gian chờ sau khi hoàn thành tất cả các hành động (tính theo giây). Automation này chỉ hoạt động lại sau khi hết thời gian Delay này.
+          description: Thời gian chờ sau khi hoàn thành tất cả các hành động (tính theo giây).<br/>Automation này chỉ hoạt động lại sau khi hết thời gian Delay này.
           selector:
             number:
               min: 5
@@ -470,10 +470,7 @@ blueprint:
             text:
               multiline: true
           default: >
-            Dùng ngôn ngữ Việt Nam. Hãy so sánh và mô tả rất ngắn gọn những gì bạn thấy trong chuỗi hình ảnh
-            sau từ máy ảnh {{ camera_name }} của tôi. Nếu có người, động vật, xe máy
-            hoặc ô tô, hãy mô tả chi tiết về chúng. Không mô tả các vật thể hoặc tòa
-            nhà cố định. Nếu trong chuỗi ảnh không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong chuỗi ảnh khi so sánh". Tin nhắn của bạn cần đủ ngắn để có thể đưa vào thông báo trên điện thoại.
+            Dùng ngôn ngữ Việt Nam. Hãy so sánh và mô tả rất ngắn gọn những gì bạn thấy trong chuỗi hình ảnh sau từ máy ảnh {{ camera_name }} của tôi. Nếu có người, động vật, xe máy hoặc ô tô, hãy mô tả chi tiết về chúng. Chỉ rõ giới tính, người lớn hay trẻ em. Không mô tả các vật thể hoặc tòa nhà cố định. Nếu trong chuỗi ảnh không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong chuỗi ảnh khi so sánh". Tin nhắn của bạn cần đủ ngắn để có thể đưa vào thông báo trên điện thoại.
 
     custom_actions_settings:
       name: "Custom Actions"
@@ -496,7 +493,7 @@ blueprint:
           name: Custom Actions
           description: >
             Thêm bất kỳ hành động nào bạn muốn chạy trong Automation này.
-            Biến lấy nội dung phân tích AI cho các nội dung khác: `humans_detected_report.data.humans_detected_description`
+            <br/>Biến lấy nội dung phân tích AI cho các nội dung khác: `humans_detected_report.data.humans_detected_description`
           default: []
           selector:
             action:
@@ -509,7 +506,7 @@ blueprint:
         global_conditions:
           name: Add Condition(s) to run this Automation
           description: >
-            Thêm Condition để chạy Automation. Automation chỉ chạy khi Conditions này là True.
+            Thêm Condition để chạy Automation.<br/>Automation chỉ chạy khi Conditions này là True.
           default: []
           selector:
             condition:
@@ -646,7 +643,7 @@ action:
 
                   - variables:
                       ai_messages: >
-                        {{ humans_detected_report.data.humans_detected_description }} {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                        🤖{{camera_name}}{{'\n'}}👉 {{ humans_detected_report.data.humans_detected_description }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
 
                   - if:
                       - condition: template
@@ -783,7 +780,7 @@ action:
                                   type: !input zalo_types
                                   image_path: "{{ snapshot_access_file_path_tele }}"
                                   message: >
-                                    🤖👉 {{ ai_messages }}
+                                    {{ ai_messages }}
                                   thread_id: !input zalo_group_id
                                   account_selection: !input zalo_phone
                                   ttl: !input zalo_ttl
@@ -800,7 +797,7 @@ action:
                                   message_thread_id: "{{ telegram_topic | int(0) }}"
                                   file: "{{ snapshot_access_file_path_tele }}"
                                   caption: >
-                                    🤖👉 {{ ai_messages }}
+                                    {{ ai_messages }}
 
                           - if:
                               - condition: template
@@ -815,7 +812,7 @@ action:
                                       - "{{snapshot_access_file_path_discord}}"
                                   title: "{{camera_name}}"
                                   message: >
-                                    🤖👉 {{ ai_messages }}
+                                    {{ ai_messages }}
 
                           - if:
                               - condition: template
@@ -838,6 +835,11 @@ action:
                 conditions:
                   - "{{ ai_powered == 'disable_actions_ai_powered_notify' }}"
                 sequence:
+                  - variables:
+                      ai_disable_messages_hass: >
+                        🔍 Kiểm tra ngay{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                      ai_disable_messages_app: >
+                        🔍 Phát hiện chuyển động tại {{camera_name}}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                   - alias: "Chạy cùng lúc tất cả các Choose"
                     parallel:
                       - choose:
@@ -862,9 +864,7 @@ action:
                                                 - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
                                                   data:
                                                     title: !input notify_title
-                                                    message: >
-                                                      🔍 Kiểm tra ngay
-                                                      {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                                    message: "{{ ai_disable_messages_hass }}"
                                                     data:
                                                       priority: high
                                                       notification_icon: !input status_bar_icon
@@ -885,9 +885,7 @@ action:
                                           - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
                                             data:
                                               title: !input notify_title
-                                              message: >
-                                                🔍 Kiểm tra ngay
-                                                {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                              message:  "{{ ai_disable_messages_hass }}"
                                               data:
                                                 attachment:
                                                   url: "{{snapshot_access_file_path}}"
@@ -939,9 +937,7 @@ action:
                                                 - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
                                                   data:
                                                     title: !input notify_title
-                                                    message: >
-                                                      🔍 Kiểm tra ngay
-                                                      {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                                    message:  "{{ ai_disable_messages_hass }}"
                                                     data:
                                                       priority: high
                                                       notification_icon: !input status_bar_icon
@@ -956,9 +952,7 @@ action:
                                           - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
                                             data:
                                               title: !input notify_title
-                                              message: >
-                                                🔍 Kiểm tra ngay
-                                                {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                              message:  "{{ ai_disable_messages_hass }}"
                                               data:
                                                 attachment:
                                                   url: "{{snapshot_access_file_path}}"
@@ -973,9 +967,7 @@ action:
                             data:
                               type: !input zalo_types
                               image_path: "{{ snapshot_access_file_path_tele }}"
-                              message: >
-                                🔍 Phát hiện chuyển động tại {{camera_name}}
-                                {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                              message: "{{ ai_disable_messages_app }}"
                               thread_id: !input zalo_group_id
                               account_selection: !input zalo_phone
                               ttl: !input zalo_ttl
@@ -991,9 +983,7 @@ action:
                               target: "{{ telegram_group_id }}"
                               message_thread_id: "{{ telegram_topic | int(0) }}"
                               file: "{{ snapshot_access_file_path_tele }}"
-                              caption: >
-                                🔍 Phát hiện chuyển động tại {{camera_name}}
-                                {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                              caption: "{{ ai_disable_messages_app }}"
 
                       - if:
                           - condition: template
@@ -1007,9 +997,7 @@ action:
                                 images:
                                   - "{{snapshot_access_file_path_discord}}"
                               title: "{{camera_name}}"
-                              message: >
-                                🔍 Phát hiện chuyển động
-                                {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                              message: "{{ ai_disable_messages_app }}"
 
 
       - if:
@@ -1061,7 +1049,7 @@ action:
                         response_variable: humans_detected_report_record
                       - variables:
                           ai_messages_record: >
-                            🤖👉 {{ humans_detected_report_record.data.humans_detected_description }} {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                            🤖 {{camera_name}}{{'\n'}}👉 {{ humans_detected_report_record.data.humans_detected_description }} {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                       - if:
                           - condition: template
                             value_template: >
@@ -1118,6 +1106,9 @@ action:
                     conditions:
                       - "{{ ai_powered == 'disable_actions_ai_powered_notify' }}"
                     sequence:
+                      - variables:
+                          ai_disable_messages_record: >
+                            🔍 Phát hiện chuyển động tại {{camera_name}}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                       - alias: "Chạy cùng lúc tất cả các action"
                         parallel:
                           - if:
@@ -1127,9 +1118,7 @@ action:
                               - action: zalo_bot.send_video
                                 metadata: {}
                                 data:
-                                  message: >
-                                    🔍 Phát hiện chuyển động tại {{camera_name}}
-                                    {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                  message: "{{ ai_disable_messages_record }}"
                                   ttl: !input zalo_ttl
                                   type: !input zalo_types
                                   video_path_or_url: /media/snapshots/{{camera_path}}_recording.mp4
@@ -1149,9 +1138,7 @@ action:
                                   authentication: digest
                                   file: /media/snapshots/{{camera_path}}_recording.mp4
                                   target: "{{ telegram_group_id }}"
-                                  caption: >
-                                    🔍 Phát hiện chuyển động tại {{camera_name}}
-                                    {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                  caption: "{{ ai_disable_messages_record }}"
                                   message_thread_id: "{{ telegram_topic | int(0) }}"
                           - if:
                               - condition: template
@@ -1164,9 +1151,7 @@ action:
                                   data:
                                     images:
                                       - /media/snapshots/{{camera_path}}_recording.mp4
-                                  message: >
-                                    🔍 Phát hiện chuyển động tại {{camera_name}}
-                                    {{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                  message: "{{ ai_disable_messages_record }}"
 
   - choose:
       - alias: "Perform the custom action"
