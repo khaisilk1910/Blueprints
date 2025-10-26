@@ -24,6 +24,18 @@ Bộ sưu tập các Blueprint thông minh cho Home Assistant với tích hợp 
 
 ---
 
+### 🤖 [AI Smart Notification System](./ai_smart_notification_system/)
+**Tạo ngẫu nhiên nội dung thông báo bằng AI và gửi thông báo**
+
+**Tính năng:**
+- ✨ Tạo ngẫu nhiên nội dung thông báo bằng AI
+- 💬 Gửi thông báo lên Home assistant, zalo, Telegram, Discord
+- 🗣️ TTS ra loa đã tích hợp lên home assistant 
+- 🎯 Tùy chỉnh cho prompt cho AI, các thông số khác,...
+
+[📖 Xem chi tiết →](./ai_smart_notification_system/)
+
+---
 
 ## 🚀 Yêu Cầu Hệ Thống
 
