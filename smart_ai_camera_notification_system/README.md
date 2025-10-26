@@ -15,7 +15,7 @@ Blueprint này giúp bạn chụp ảnh từ camera được kích hoạt khi c�
 ## 3. Cài đặt
 Nhấn vào nút dưới đây để import blueprint trực tiếp vào Home Assistant của bạn:
 
-[![Import Blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/khaisilk1910/Blueprints/blob/main/smart_ai_camera_notification_system/smart_ai_camera_notification_system.yaml)
+[![Import Blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/khaisilk1910/Blueprints/blob/main/smart_ai_camera_notification_system/ai_smart_camera_notification_system.yaml)
 
 Hoặc copy file `ai_smart_camera_notification_system.yaml` vào thư mục `blueprints/automation/` trong Home Assistant.
 
