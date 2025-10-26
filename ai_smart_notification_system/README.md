@@ -1,9 +1,13 @@
-# Hướng dẫn sử dụng Blueprint - Smart AI Camera Notification System
+# Hướng dẫn sử dụng Blueprint - AI Smart Notification System
 
-<img width="949" height="734" alt="image" src="https://github.com/user-attachments/assets/ae8ed3ff-b410-4794-b3c2-f690124ebdff" />
+<img width="1166" height="273" alt="image" src="https://github.com/user-attachments/assets/a6149f4b-8b9d-4d97-9cb9-da8f2d5820bc" />
+
 
 ## 1. Giới thiệu
-Blueprint này giúp bạn chụp ảnh từ camera được kích hoạt khi cảm biến chuyển động, cửa, hiện hiện phát hiện chuyển động. Sau đó sẽ phân tích ảnh và đưa ra nội dung trong ảnh có người hay không rồi sẽ thông báo qua các nền tảng nếu bạn đã bật. Thêm tùy chọn lưu video để gửi đồng thời khi phát hiện chuyển động.
+- Blueprint này giúp bạn tạo ngẫu nhiên thông báo bằng AI và đưa ra nội dung thông báo qua các nền tảng Socials nếu bạn đã bật.
+- Hành động sẽ được kích hoạt khi Trigger kích hoạt. Bạn có thể thêm Trigger tùy ý
+- Tùy chọn lặp lại thông báo
+
 
 ## 2. Yêu cầu
 - Đã cài đặt Home Assistant phiên bản >= 2025.9.0 để có AI Task 
@@ -15,9 +19,9 @@ Blueprint này giúp bạn chụp ảnh từ camera được kích hoạt khi c�
 ## 3. Cài đặt
 Nhấn vào nút dưới đây để import blueprint trực tiếp vào Home Assistant của bạn:
 
-[![Import Blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/khaisilk1910/Blueprints/blob/main/smart_ai_camera_notification_system/ai_smart_camera_notification_system.yaml)
+[![Import Blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/khaisilk1910/Blueprints/blob/main/ai_smart_notification_system/ai_smart_notification_system.yaml)
 
-Hoặc copy file `ai_smart_camera_notification_system.yaml` vào thư mục `blueprints/automation/` trong Home Assistant.
+Hoặc copy file `ai_smart_notification_system.yaml` vào thư mục `blueprints/automation/` trong Home Assistant.
 
 ## 4. Hướng dẫn sử dụng
 
@@ -28,15 +32,11 @@ Sau khi import blueprint, tạo automation từ blueprint với các thông số
 #### **Thông số bắt buộc:**
 
 - **Trigger sensor** - Chọn sensor để kích hoạt automation
-  - Có thể là: motion, door, occupancy
-
-- **Camera** - Chọn camera sẽ chụp ảnh
-  - Camera sẽ chụp ảnh để phân tích
 
 - **AI-powered (Optional)** - Sử dụng AI hay không
   - Sử dụng AI để phân tích ảnh hay chỉ sử dụng Trigger sensor để gửi thông báo
 
-- **Conversation Agent** - AI model để phân tích ảnh và trả nội dung
+- **Conversation Agent** - AI model để tạo ngẫu nhiên nội dung và trả nội dung
 
 
 #### **Thông số tùy chọn:**
@@ -50,11 +50,10 @@ Sau khi import blueprint, tạo automation từ blueprint với các thông số
 
 Blueprint thực hiện các bước sau:
 
-1. **Kích hoạt** khi có chuyển động từ các sensor đã chọn
-2. **Chụp ảnh** từ camera đã chọn và lưu vào `media\snapshots`
-3. **Phân tích ảnh** từ các ảnh đã chụp và cho ra nội dung đã phân tích
-4. **Gửi thông báo** lên các nền tảng đã trọn.
-5. **Tùy chỉnh thêm Actions** nếu muốn
+1. **Kích hoạt** khi có trigger từ các sensor đã chọn
+2. **AI tạo nội dung** từ nội dung đã có và cho ra nội dung đã tự tạo
+3. **Gửi thông báo** lên các nền tảng đã trọn.
+4. **Tùy chỉnh thêm Actions** nếu muốn
 
 ---
 
@@ -83,10 +82,6 @@ Thử:
 
 ## 7. Lưu ý
 
-- **Độ trễ thông báo** Cấu hình số ảnh chụp, Delay càng nhiều thì độ trẽ từ lúc chụp ảnh đến lúc nhận thông báo càng lâu.
-- **Nếu không sử dụng AI** thì độ trẽ thấp và sẽ bị gửi thông báo ảo khi không có người do sensor bị kích hoạt ảo do môi trường, động vật,..
-- **Nếu sử dụng AI** thì độ trễ cao hơn và không bị gửi thông báo ảo khi không có người do sensor bị kích hoạt.
-- **Chỉ nên cấu hình chụp 1 ảnh và delays để mặc định**
 - **AI Model:** Chất lượng tin nhắn phụ thuộc vào conversation agent bạn chọn.
 - **Zalo Bot, Telegram, Discord:** Cần cấu hình đúng integration trước khi sử dụng.
 - **Privacy:** Blueprint này không chia sẻ dữ liệu ra bên ngoài, chỉ sử dụng conversation agent đã cấu hình.
@@ -99,21 +94,15 @@ Thử:
 
 ## 9. Changelog
 
-**Version 20251022**
-- Sửa lỗi nhỏ
-- Thêm tùy chọn Entity AI Task nếu bạn có nhiều AI Task
-- Thêm tùy chọn Bật/Tắt gửi video vào từng mục Zalo, Telegram, Discord
 
----
-
-**Version 20251020**
+**Version 20251025**
 - Initial release
-- Phân tích hình ảnh chụp được từ camera trích xuất ra nội dung
+- Nhập nội dung thông báo và AI tự động tạo ngẫu nhiên nội dung để thông báo
 - Tích hợp conversation agent (AI)
 - Tùy chỉnh prompt cho AI
 - Gửi qua Home Assistant, Zalo Bot, Telegram, Discord
 - Gửi qua Home Assistant: tùy chỉnh icon, màu sắc, nội dung Title, thêm Hành động trên thông báo tùy chọn
-- TTS ra loa nội dung đã trích xuất từ ảnh bằng AI
+- TTS ra loa nội dung đã tự tạo bằng AI
 
 ---
 
