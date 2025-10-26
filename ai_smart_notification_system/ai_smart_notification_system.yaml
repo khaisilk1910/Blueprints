@@ -467,7 +467,7 @@ blueprint:
           name: Custom Actions
           description: >
             Thêm bất kỳ hành động nào bạn muốn chạy trong Automation này.
-            <br/>Biến lấy nội dung phân tích AI cho các nội dung khác: `humans_detected_report.data.humans_detected_description`
+            <br/>Biến lấy nội dung phân tích AI cho các nội dung khác: `response_thong_bao.data.thong_bao`
           default: []
           selector:
             action:
