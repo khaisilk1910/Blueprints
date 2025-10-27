@@ -1148,7 +1148,6 @@ action:
 
   - delay:
       seconds: "{{ num_delay_actions }}"
-      
-  - stop: Kết thúc Automation
+
 mode: single
 max_exceeded: silent
