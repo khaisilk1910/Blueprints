@@ -1,6 +1,6 @@
 # Hướng dẫn sử dụng Blueprint - Smart AI Camera Notification System
 
-<img width="949" height="734" alt="image" src="https://github.com/user-attachments/assets/ae8ed3ff-b410-4794-b3c2-f690124ebdff" />
+<img width="670" height="496" alt="image" src="https://github.com/user-attachments/assets/63a4f808-487d-4e81-9d58-59189f2e61d8" />
 
 ## 1. Giới thiệu
 Blueprint này giúp bạn chụp ảnh từ camera được kích hoạt khi cảm biến chuyển động, cửa, hiện hiện phát hiện chuyển động. Sau đó sẽ phân tích ảnh và đưa ra nội dung trong ảnh có người hay không rồi sẽ thông báo qua các nền tảng nếu bạn đã bật. Thêm tùy chọn lưu video để gửi đồng thời khi phát hiện chuyển động.
@@ -60,9 +60,13 @@ Blueprint thực hiện các bước sau:
 
 ### 4.4. Tùy chỉnh nâng cao
 
-#### **Tùy chỉnh Prompt cho AI:**
+#### **Tùy chỉnh Prompt cho AI**
 
-Bạn có thể thay đổi prompt mặc định để AI tạo tin nhắn theo phong cách riêng
+- Bạn có thể thay đổi prompt mặc định để AI tạo tin nhắn theo phong cách riêng
+
+#### **Tùy chỉnh cách thức lưu ảnh:**
+- Lưu đè ảnh cũ: không xem lại ảnh trước đó được, lợi thế không tốn dung lượng server.
+- Lưu liên tiếp ảnh với tên ảnh chứa context.id của Automation: có thể xem lại ảnh, tốn dung lượng server
 
 ## 5. Xử lý lỗi
 
@@ -98,6 +102,13 @@ Thử:
 ---
 
 ## 9. Changelog
+
+**Version 20251024**
+- Sửa lỗi nhỏ
+- Thêm emoji cho giao diện
+- Thêm tùy chọn cách thức lưu ảnh, lưu video: lưu đè hoặc liên tục nhiều ảnh
+
+---
 
 **Version 20251022**
 - Sửa lỗi nhỏ
