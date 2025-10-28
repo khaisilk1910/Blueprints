@@ -6,7 +6,9 @@ blueprint:
     <details>
     <summary><b>Chi tiết:</b> - Nhấn để mở rộng</summary>
 
-      **Phiên bản: v.2025.10.22**
+      **Phiên bản: v.2025.10.24**
+
+        - Thêm tùy chọn lưu ảnh ghi đè hoặc liên tục với context.id trong tên ảnh
 
         - Chuyển sang dùng AI-Task
 
