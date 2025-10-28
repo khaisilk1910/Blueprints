@@ -1,14 +1,12 @@
 blueprint:
   name: AI Smart Camera Notification System
   description: >
-    ### 📢 Chụp ảnh, Phân tích ảnh bằng AI và gửi Thông báo lên điện thoại, zalo, telegram, Discord và ra loa nếu Cảm biến kích hoạt và thực tế có người xuất hiện trong ảnh.
+    #### 📢 Chụp ảnh, quay video ngắn Phân tích ảnh video bằng AI và gửi Thông báo lên điện thoại, zalo, telegram, Discord và ra loa nếu Cảm biến kích hoạt và thực tế có người xuất hiện trong ảnh, video.
 
     <details>
     <summary><b>Chi tiết:</b> - Nhấn để mở rộng</summary>
 
-      **Phiên bản: v.2025.10.24**
-
-        - Thêm tùy chọn lưu ảnh ghi đè hoặc liên tục với context.id trong tên ảnh
+      **Phiên bản: v.2025.10.22**
 
         - Chuyển sang dùng AI-Task
 
@@ -23,7 +21,7 @@ blueprint:
 
         1- **Các cảm biến dùng trong Blueprints: `Motion`(Chuyển động), `Presences`(Hiện diện), `Door`(Cửa)**
 
-        2- **Thông báo phân tích hình ảnh bằng AI lên ứng dụng Home Assistant, Zalo, Telegram, Discord và TTS ra Loa được tích hợp vào Home Assistant 💬🔉**
+        2- **Thông báo phân tích hình ảnh, video bằng AI lên ứng dụng Home Assistant, Zalo, Telegram, Discord và TTS ra Loa được tích hợp vào Home Assistant 💬🔉**
         
         3- **Actions Settings: Nếu gửi thông báo lên Hass sẽ có thêm tùy chọn Actions trên thông báo để thực hiện Actions ngay trên thông báo Hass.**
         
@@ -38,7 +36,6 @@ blueprint:
 
   domain: automation
   input:
-
     motion_sensor:
       name: 🚶 Trigger sensor
       description: Chọn cảm biến để kích hoạt chụp ảnh.
@@ -49,39 +46,25 @@ blueprint:
             - motion
             - occupancy
             - door
-
     camera_device:
       name: 📸 Camera
       description: Camera mà bạn muốn chụp ảnh
       selector:
         entity:
           domain: camera
-
-    overwrite_image:
-      name: 🏞️ Overwrite Image (Optional)
-      description: |
-        Tùy chọn lưu ảnh Ghi đè ảnh cũ (ảnh cũ sẽ bị ghi đè bởi ảnh mới)
-        Nếu tắt tính năng này sẽ lưu nhiều ảnh, ảnh được đặt tên chứa `context.id` của mỗi lần chạy Automation và sẽ chiếm dung lượng server do lưu nhiều ảnh.
-      default: true
-      selector:
-        boolean: {}
-
-    record_video:
-      name: 🎞️ Recording (Optional)
-      description: |
-        Tùy chọn ghi video để gửi khi có phát hiện chuyển động.
-        Mặc định ghi video 10s. Vì vậy thông báo video sẽ trễ hơn.
-        Thời điểm ghi video vẫn là thời điểm kích hoạt bới cảm biến chuyển động.
-        Gửi video lên các nền tảng nhắn tin Zalo, Telegram, Discord.
-      default: true
-      selector:
-        boolean: {}
-
-    ai_task_settings:
-      name: "AI Task Settings"
-      icon: mdi:robot-confused-outline
+    snapshot_settings:
+      name: "Snapshot Settings"
+      icon: mdi:camera-image
       collapsed: true
       input:
+        overwrite_image:
+          name: 🏞️ Overwrite Image (Optional)
+          description: |
+            Tùy chọn lưu ảnh Ghi đè ảnh cũ (ảnh cũ sẽ bị ghi đè bởi ảnh mới)
+            Nếu tắt tính năng này sẽ lưu nhiều ảnh, ảnh được đặt tên chứa `context.id` của mỗi lần chạy Automation và sẽ chiếm dung lượng server do lưu nhiều ảnh.
+          default: true
+          selector:
+            boolean: {}
         ai_powered:
           name: ✅ AI-powered (Optional)
           description: |
@@ -92,7 +75,6 @@ blueprint:
           default: true
           selector:
             boolean: {}
-
         ai_provider:
           name: 🤖 Provider of AI
           description: |
@@ -102,7 +84,6 @@ blueprint:
             entity:
               domain: ai_task
           default: []
-
         ai_task_instructions:
           name: ✍️ AI Task Instructions
           description: |
@@ -121,7 +102,6 @@ blueprint:
             - Bỏ qua các dòng trống
             - Chỉ thể hiện văn bản thuần
             - Tin nhắn của bạn cần đủ ngắn để có thể đưa vào thông báo trên điện thoại.
-
         ai_structure_description:
           name: 📝 AI Task Structure Description
           description: |
@@ -139,8 +119,74 @@ blueprint:
             - Chỉ rõ giới tính, người lớn hay trẻ em.
             - Không mô tả các vật thể hoặc tòa nhà cố định.
             - Nếu trong chuỗi ảnh không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong chuỗi ảnh khi so sánh".
+    record_video_settings:
+      name: "Record Video Settings"
+      icon: mdi:video-account
+      collapsed: true
+      input:
+        record_video:
+          name: 🎞️ Recording (Optional)
+          description: |
+            Tùy chọn ghi video để gửi khi có phát hiện chuyển động.
+            Mặc định ghi video 10s. Vì vậy thông báo video sẽ trễ hơn.
+            Thời điểm ghi video vẫn là thời điểm kích hoạt bới cảm biến chuyển động.
+            Gửi video lên các nền tảng nhắn tin Zalo, Telegram, Discord.
+            Tham khảo: https://www.home-assistant.io/integrations/camera/#action-record
+          default: true
+          selector:
+            boolean: {}
+        ai_powered_record_video:
+          name: ✅ AI-powered (Optional)
+          description: |
+            Sử dụng AI để phân tích ảnh và đưa nội dung phân tích ảnh vào thông báo.
+            Nếu sử dụng AI phân tích sẽ bị trễ thông báo vài giây so với ảnh chụp vì phải chờ thời gian AI phân tích ảnh xem có người mới gửi thông báo.
+            Nếu không sử dụng AI sẽ hay bị gửi thông báo ảo khi không có người trong ảnh do sensor phát hiện nhầm có chuyển động do môi trường, động vật.
+            Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
+          default: true
+          selector:
+            boolean: {}
+        ai_provider_record_video:
+          name: 🤖 Provider of AI
+          description: |
+            Chọn AI sủ dụng cho việc phân tích video.
+          selector:
+            entity:
+              domain: ai_task
+          default: []
+        ai_task_instructions_record_video:
+          name: ✍️ AI Task Instructions
+          description: |
+            Chuỗi chứa các hướng dẫn cụ thể để AI tuân theo khi tạo văn bản.
+            Bạn có thể thay đổi nội dung này nếu kết quả phân tích video không được như bạn mong muốn.
+            Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
+          selector:
+            text:
+              multiline: true
+          default: |
+            Hãy phân tích video của tôi.
+            Qui tắc trả lại kết quả phân tích video:
+            - Phải sử dụng Tiếng Việt có đầy đủ dấu.
+            - Bỏ qua các ký tự đặc biệt như *, /, emoji,...
+            - Bỏ qua các dòng trống và thay thế dòng trống bằng một khoảng trắng.
+            - Chỉ thể hiện văn bản thuần và chỉ thể hiện văn bản trên một dòng.
+            - Sử dụng ngôn từ trẻ chung, hài hước và chân thực.
+        ai_structure_description_record_video:
+          name: 📝 AI Task Structure Description
+          description: |
+            Từ điển xác định cấu trúc của dữ liệu đầu ra của nội dung phân tích video.
+            Bạn có thể thay đổi nội dung mẫu nếu muốn.
+            Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/#action-ai_taskgenerate_data
 
-
+            ⚠️ Lưu ý giữ nguyên dòng: `- Nếu trong video không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong các khung hình".`
+          selector:
+            text:
+              multiline: true
+          default: |
+            Hãy mô tả ngắn gọn những gì bạn thấy trong video của tôi.
+            - Nếu có người hãy mô tả các hành động của người đó trong toàn bộ video.
+            - Chỉ rõ giới tính, người lớn hay trẻ em.
+            - Không mô tả các vật thể hoặc tòa nhà cố định.
+            - Nếu trong video không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong các khung hình".
     mobile_app_notify_settings:
       name: "Mobile App Notify"
       icon: mdi:devices
@@ -154,7 +200,6 @@ blueprint:
           default: false
           selector:
             boolean: {}
-
         is_ios_android:
           name: 🔔 Is it an Android or iOS device?
           description: |
@@ -214,7 +259,6 @@ blueprint:
           default: [255, 0, 0]
           selector:
             color_rgb:
-
         include_actions:
           name: ✅ Use Actions For Mobile App Notify Option (Optional)
           description: |
@@ -274,8 +318,6 @@ blueprint:
           selector:
             duration:
               enable_day: false
-
-
     zalo_settings:
       name: "Zalo Notifications Settings"
       icon: mdi:message-image-outline
@@ -289,21 +331,18 @@ blueprint:
           default: false
           selector:
             boolean: {}
-
         zalo_group_id:
           name: 🧑‍💻 Zalo Group ID
           description: ID của user hoặc nhóm Zalo.
           selector:
             text:
           default: ""
-
         zalo_phone:
           name: 📞 Zalo Acc
           description: Số điện thoại của Zalo Bot.
           selector:
             text:
           default: "+84000000000"
-
         zalo_types:
           name: 👨‍👨‍👦 Zalo Type Option (Optional)
           description: |
@@ -327,14 +366,12 @@ blueprint:
               step: 1000
               unit_of_measurement: seconds
           default: 0
-        
         zalo_video:
           name: 🎞️ Send Video (Optional)
           description: Tùy chọn có gửi video lên Zalo không?
           default: false
           selector:
             boolean: {}
-
     telegram_settings:
       name: "Telegram Notifications Settings"
       icon: mdi:message-badge
@@ -348,7 +385,6 @@ blueprint:
           default: false
           selector:
             boolean: {}
-     
         provider:
           name: 🛠️ Config entry ID
           description: Choose Telegram Bot to use for send Notifications.
@@ -356,28 +392,24 @@ blueprint:
             config_entry:
               integration: telegram_bot
           default: []
-
         telegram_group_id:
           name: 👨‍👨‍👦 Telegram Group ID
           description: ID của nhóm Telegram.
           selector:
             text:
           default: ""
-
         telegram_topic:
           name: 🧑‍💻 Telegram Topic ID
           description: ID của chủ đề trong nhóm Telegram.
           selector:
             text:
           default: ""
-       
         tele_video:
           name: 🎞️ Send Video (Optional)
           description: Tùy chọn có gửi video lên Telegram không?
           default: true
           selector:
             boolean: {}
-            
     discord_settings:
       name: "Discord Notifications Settings"
       icon: mdi:message-bulleted
@@ -404,7 +436,6 @@ blueprint:
           default: true
           selector:
             boolean: {}
-
     tts_notify_settings:
       name: "TTS Settings"
       icon: mdi:speaker-message
@@ -447,7 +478,6 @@ blueprint:
               filter:
                 domain: media_player
               multiple: true
-
     delay_settings:
       name: "Delay Settings"
       icon: mdi:clock-start
@@ -485,8 +515,6 @@ blueprint:
               step: 5
               unit_of_measurement: seconds
           default: 10
-
-
     custom_actions_settings:
       name: "Custom Actions"
       icon: mdi:gesture-tap-button
@@ -507,7 +535,6 @@ blueprint:
           default: []
           selector:
             action:
-
     global_conditions_settings:
       name: "Global Conditions"
       icon: mdi:earth
@@ -521,18 +548,23 @@ blueprint:
           default: []
           selector:
             condition:
-
 trigger:
   platform: state
   entity_id: !input motion_sensor
   to: "on"
-
 variables:
   overwrite_image: !input overwrite_image
+  #Record Video Settings
   record_video: !input record_video
+  ai_powered_record_video: !input ai_powered_record_video
+  ai_provider_record_video: !input ai_provider_record_video
+  ai_task_instructions_record_video: !input ai_task_instructions_record_video
+  ai_structure_description_record_video: !input ai_structure_description_record_video
   #AI
   ai_powered: !input ai_powered
   ai_provider: !input ai_provider
+  ai_task_instructions: !input ai_task_instructions
+  ai_structure_description: !input ai_structure_description
   #Device Notify
   include_notify: !input include_notify
   notify_device: !input notify_device
@@ -563,9 +595,6 @@ variables:
   num_delay_actions: !input num_delay_actions
   num_snapshots: !input num_snapshots
   num_delay: !input num_delay
-  #AI
-  ai_task_instructions: !input ai_task_instructions
-  ai_structure_description: !input ai_structure_description
   #Telegram Message
   include_telegram_notify: !input include_telegram_notify
   provider: !input provider
@@ -586,13 +615,11 @@ variables:
   custom_actions: !input custom_actions
   #Global Conditions
   global_conditions: !input global_conditions
-
 # All Conditions
 condition:
   # Global Conditions
   - condition: and
     conditions: !input global_conditions
-
 action:
   - variables:
       file_path: >
@@ -608,10 +635,8 @@ action:
   - variables:
       snapshot_access_file_path: "/media/local/snapshots/{{file_path}}_snapshot1.jpg"
       snapshot_access_file_path_social: "/media/snapshots/{{file_path}}_snapshot1.jpg"
-
   - alias: "Chạy cùng lúc tất cả các action"
     parallel:
-
       - alias: "Chạy lần lượt các action"
         sequence:
           - repeat:
@@ -634,7 +659,6 @@ action:
                   {% set ns.images = ns.images + [{'media_content_id': 'media-source://media_source/local/snapshots/' ~ camera ~ '_snapshot' ~ i ~ '.jpg', 'media_content_type': 'image/jpeg'}] %}
                 {%- endfor -%}
                 {{ ns.images }}
-
           - choose:
               - alias: "Check if AI is enabled"
                 conditions:
@@ -659,193 +683,210 @@ action:
                             text: null
                     response_variable: humans_detected_report
 
-                  - variables:
-                      ai_messages: >
-                        📸 {{camera_name}} | 🚶: {{ humans_detected_report.data.humans_detected }}{{'\n'}}🏞️👉 {{ humans_detected_report.data.humans_detected_description }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
-
+                  - wait_template: "{{ humans_detected_report is defined and humans_detected_report.data is defined }}"
+                    timeout: "00:01:00"
+                    continue_on_timeout: true
                   - if:
                       - condition: template
-                        value_template: >
-                          {{ not ( (humans_detected_report.data.humans_detected_description | default(''))| lower | regex_search('tuy nhiên không có người trong chuỗi ảnh|không có người|không có chuỗi hình ảnh nào được cung cấp') and (humans_detected_report.data.humans_detected|int(0) == 0) ) }}
+                        value_template: "{{ wait.completed }}"
                     then:
-                      - alias: "Chạy cùng lúc tất cả các Action"
-                        parallel:
-                          - if:
-                              - condition: template
-                                value_template: "{{ include_notify and (filtered_devices | length > 0) }}"
-                            then:
+                      - variables:
+                          ai_messages: >
+                            📸 {{camera_name}} | 🚶: {{ humans_detected_report.data.humans_detected }}{{'\n'}}🏞️👉 {{ humans_detected_report.data.humans_detected_description }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                      - if:
+                          - condition: template
+                            value_template: >
+                              {{ not ( (humans_detected_report.data.humans_detected_description | default(''))| lower | regex_search('tuy nhiên không có người trong chuỗi ảnh|không có người|không có chuỗi hình ảnh nào được cung cấp') and (humans_detected_report.data.humans_detected|int(0) == 0) ) }}
+                        then:
+                          - alias: "Chạy cùng lúc tất cả các Action"
+                            parallel:
                               - if:
                                   - condition: template
-                                    value_template: "{{ include_actions }}"
+                                    value_template: "{{ include_notify and (filtered_devices | length > 0) }}"
                                 then:
-                                  - choose:
-                                      - alias: "Check if Android"
-                                        conditions:
-                                          - "{{ is_ios_android == 'android_device' }}"
-                                        sequence:
-                                          - alias: Send a notification to each device
-                                            repeat:
-                                              for_each: "{{ filtered_devices }}"
-                                              sequence:
-                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                  data:
-                                                    title: !input notify_title
-                                                    message: "{{ ai_messages }}"
-                                                    data:
-                                                      priority: high
-                                                      notification_icon: !input status_bar_icon
-                                                      color: "{{ notification_color_hex }}"
-                                                      image: "{{snapshot_access_file_path}}"
-                                                      url: "{{tap_navigate}}"
-                                                      clickAction: "{{tap_navigate}}"
-                                                      tag: "{{ tag }}"
-                                                      actions:
-                                                        - action: "{{ action_confirm }}"
-                                                          title: "{{ confirm_text }}"
-                                                        - action: "{{ action_dismiss }}"
-                                                          title: "{{ dismiss_text }}"
-                                      - alias: "Check if iOS"
-                                        conditions:
-                                          - "{{ is_ios_android == 'ios_device' }}"
-                                        sequence:
-                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                            data:
-                                              title: !input notify_title
-                                              message: >
-                                                {{ ai_messages }}
-                                              data:
-                                                attachment:
-                                                  url: "{{snapshot_access_file_path}}"
-                                                  content_type: "JPEG"
-                                                tag: "{{ tag }}"
-                                                actions:
-                                                  - action: "{{ action_confirm }}"
-                                                    title: "{{ confirm_text }}"
-                                                  - action: "{{ action_dismiss }}"
-                                                    title: "{{ dismiss_text }}"
-                                  - alias: "Awaiting response"
-                                    wait_for_trigger:
-                                      - platform: event
-                                        event_type: mobile_app_notification_action
-                                        event_data:
-                                          action: "{{ action_confirm }}"
-                                      - platform: event
-                                        event_type: mobile_app_notification_action
-                                        event_data:
-                                          action: "{{ action_dismiss }}"
-                                    timeout: '{{ timeout }}'
-                                    continue_on_timeout: true
-                                  - choose:
-                                      - conditions: "{{ wait.trigger.event.data.action == action_confirm }}"
-                                        sequence: !input confirm_action
-                                      - conditions: "{{ wait.trigger.event.data.action == action_dismiss }}"
-                                        sequence:
-                                          - alias: Nếu Enable Custom Dismiss Action được Bật thì sẽ hành động theo Custom Dismiss Action. Còn không thì sẽ xóa Thông báo.
-                                            if:
-                                              - condition: template
-                                                value_template: "{{ not enable_custom_dismiss_action}}"
-                                            then:
+                                  - if:
+                                      - condition: template
+                                        value_template: "{{ include_actions }}"
+                                    then:
+                                      - choose:
+                                          - alias: "Check if Android"
+                                            conditions:
+                                              - "{{ is_ios_android == 'android_device' }}"
+                                            sequence:
+                                              - alias: Send a notification to each device
+                                                repeat:
+                                                  for_each: "{{ filtered_devices }}"
+                                                  sequence:
+                                                    - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                      data:
+                                                        title: !input notify_title
+                                                        message: "{{ ai_messages }}"
+                                                        data:
+                                                          priority: high
+                                                          notification_icon: !input status_bar_icon
+                                                          color: "{{ notification_color_hex }}"
+                                                          image: "{{snapshot_access_file_path}}"
+                                                          url: "{{tap_navigate}}"
+                                                          clickAction: "{{tap_navigate}}"
+                                                          tag: "{{ tag }}"
+                                                          actions:
+                                                            - action: "{{ action_confirm }}"
+                                                              title: "{{ confirm_text }}"
+                                                            - action: "{{ action_dismiss }}"
+                                                              title: "{{ dismiss_text }}"
+                                          - alias: "Check if iOS"
+                                            conditions:
+                                              - "{{ is_ios_android == 'ios_device' }}"
+                                            sequence:
                                               - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
                                                 data:
-                                                  message: "clear_notification"
+                                                  title: !input notify_title
+                                                  message: >
+                                                    {{ ai_messages }}
                                                   data:
+                                                    attachment:
+                                                      url: "{{snapshot_access_file_path}}"
+                                                      content_type: "JPEG"
                                                     tag: "{{ tag }}"
-                                            else: !input custom_dismiss_action
-                                else:
-                                  - choose:
-                                      - alias: "Check if Android"
-                                        conditions:
-                                          - "{{ is_ios_android == 'android_device' }}"
-                                        sequence:
-                                          - alias: Send a notification to each device
-                                            repeat:
-                                              for_each: "{{ filtered_devices }}"
-                                              sequence:
-                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                  data:
-                                                    title: !input notify_title
-                                                    message: "{{ ai_messages }}"
+                                                    actions:
+                                                      - action: "{{ action_confirm }}"
+                                                        title: "{{ confirm_text }}"
+                                                      - action: "{{ action_dismiss }}"
+                                                        title: "{{ dismiss_text }}"
+                                      - alias: "Awaiting response"
+                                        wait_for_trigger:
+                                          - platform: event
+                                            event_type: mobile_app_notification_action
+                                            event_data:
+                                              action: "{{ action_confirm }}"
+                                          - platform: event
+                                            event_type: mobile_app_notification_action
+                                            event_data:
+                                              action: "{{ action_dismiss }}"
+                                        timeout: '{{ timeout }}'
+                                        continue_on_timeout: true
+                                      - choose:
+                                          - conditions: "{{ wait.trigger.event.data.action == action_confirm }}"
+                                            sequence: !input confirm_action
+                                          - conditions: "{{ wait.trigger.event.data.action == action_dismiss }}"
+                                            sequence:
+                                              - alias: Nếu Enable Custom Dismiss Action được Bật thì sẽ hành động theo Custom Dismiss Action. Còn không thì sẽ xóa Thông báo.
+                                                if:
+                                                  - condition: template
+                                                    value_template: "{{ not enable_custom_dismiss_action}}"
+                                                then:
+                                                  - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
                                                     data:
-                                                      priority: high
-                                                      notification_icon: !input status_bar_icon
-                                                      color: "{{ notification_color_hex }}"
-                                                      image: "{{snapshot_access_file_path}}"
-                                                      url: "{{tap_navigate}}"
-                                                      clickAction: "{{tap_navigate}}"
-                                      - alias: "Check if iOS"
-                                        conditions:
-                                          - "{{ is_ios_android == 'ios_device' }}"
-                                        sequence:
-                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                            data:
-                                              title: !input notify_title
-                                              message: >
-                                                {{ ai_messages }}
-                                              data:
-                                                attachment:
-                                                  url: "{{snapshot_access_file_path}}"
-                                                  content_type: "JPEG"
+                                                      message: "clear_notification"
+                                                      data:
+                                                        tag: "{{ tag }}"
+                                                else: !input custom_dismiss_action
+                                    else:
+                                      - choose:
+                                          - alias: "Check if Android"
+                                            conditions:
+                                              - "{{ is_ios_android == 'android_device' }}"
+                                            sequence:
+                                              - alias: Send a notification to each device
+                                                repeat:
+                                                  for_each: "{{ filtered_devices }}"
+                                                  sequence:
+                                                    - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                      data:
+                                                        title: !input notify_title
+                                                        message: "{{ ai_messages }}"
+                                                        data:
+                                                          priority: high
+                                                          notification_icon: !input status_bar_icon
+                                                          color: "{{ notification_color_hex }}"
+                                                          image: "{{snapshot_access_file_path}}"
+                                                          url: "{{tap_navigate}}"
+                                                          clickAction: "{{tap_navigate}}"
+                                          - alias: "Check if iOS"
+                                            conditions:
+                                              - "{{ is_ios_android == 'ios_device' }}"
+                                            sequence:
+                                              - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                data:
+                                                  title: !input notify_title
+                                                  message: >
+                                                    {{ ai_messages }}
+                                                  data:
+                                                    attachment:
+                                                      url: "{{snapshot_access_file_path}}"
+                                                      content_type: "JPEG"
 
-                          - if:
-                              - condition: template
-                                value_template: "{{ include_zalo_notify }}"
-                            then:
-                              - action: zalo_bot.send_image
-                                metadata: {}
-                                data:
-                                  type: !input zalo_types
-                                  image_path: "{{ snapshot_access_file_path_social }}"
-                                  message: >
-                                    {{ ai_messages }}
-                                  thread_id: !input zalo_group_id
-                                  account_selection: !input zalo_phone
-                                  ttl: !input zalo_ttl
+                              - if:
+                                  - condition: template
+                                    value_template: "{{ include_zalo_notify }}"
+                                then:
+                                  - action: zalo_bot.send_image
+                                    metadata: {}
+                                    data:
+                                      type: !input zalo_types
+                                      image_path: "{{ snapshot_access_file_path_social }}"
+                                      message: >
+                                        {{ ai_messages }}
+                                      thread_id: !input zalo_group_id
+                                      account_selection: !input zalo_phone
+                                      ttl: !input zalo_ttl
 
-                          - if:
-                              - condition: template
-                                value_template: "{{ include_telegram_notify }}"
-                            then:
-                              - action: telegram_bot.send_photo
-                                data:
-                                  config_entry_id: "{{ provider }}"
-                                  authentication: digest
-                                  target: "{{ telegram_group_id }}"
-                                  message_thread_id: "{{ telegram_topic | int(0) }}"
-                                  file: "{{ snapshot_access_file_path_social }}"
-                                  caption: >
-                                    {{ ai_messages }}
+                              - if:
+                                  - condition: template
+                                    value_template: "{{ include_telegram_notify }}"
+                                then:
+                                  - action: telegram_bot.send_photo
+                                    data:
+                                      config_entry_id: "{{ provider }}"
+                                      authentication: digest
+                                      target: "{{ telegram_group_id }}"
+                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                      file: "{{ snapshot_access_file_path_social }}"
+                                      caption: >
+                                        {{ ai_messages }}
 
-                          - if:
-                              - condition: template
-                                value_template: "{{ include_discord_notify }}"
-                            then:
-                              - action: notify.hass_discord
-                                metadata: {}
-                                data:
-                                  target: "{{discord_channel | int(0)}}"
-                                  data:
-                                    images:
-                                      - "{{ snapshot_access_file_path_social }}"
-                                  title: "{{camera_name}}"
-                                  message: >
-                                    {{ ai_messages }}
+                              - if:
+                                  - condition: template
+                                    value_template: "{{ include_discord_notify }}"
+                                then:
+                                  - action: notify.hass_discord
+                                    metadata: {}
+                                    data:
+                                      target: "{{discord_channel | int(0)}}"
+                                      data:
+                                        images:
+                                          - "{{ snapshot_access_file_path_social }}"
+                                      title: "{{camera_name}}"
+                                      message: >
+                                        {{ ai_messages }}
 
-                          - if:
-                              - condition: template
-                                value_template: "{{ include_tts_announcement }}"
-                            then:
-                              - action: media_player.volume_set
-                                metadata: {}
-                                data:
-                                  volume_level: "{{num_volume_speaker}}"
-                                target:
-                                  entity_id: !input media_player
-                              - action: tts.speak
-                                target:
-                                  entity_id: !input text_to_speech_engine
-                                data:
-                                  media_player_entity_id: !input media_player
-                                  message: "{{humans_detected_report.data.humans_detected_description}}"
+                              - if:
+                                  - condition: template
+                                    value_template: "{{ include_tts_announcement }}"
+                                then:
+                                  - action: media_player.volume_set
+                                    metadata: {}
+                                    data:
+                                      volume_level: "{{num_volume_speaker}}"
+                                    target:
+                                      entity_id: !input media_player
+                                  - action: tts.speak
+                                    target:
+                                      entity_id: !input text_to_speech_engine
+                                    data:
+                                      media_player_entity_id: !input media_player
+                                      message: "{{humans_detected_report.data.humans_detected_description}}"
+                    else:
+                      - action: zalo_bot.send_message
+                        metadata: {}
+                        data:
+                          type: !input zalo_types
+                          ttl: !input zalo_ttl
+                          message: |
+                            🚨 AI phân tích ảnh chụp không thành công.
+                            🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                          thread_id: !input zalo_group_id
+                          account_selection: !input zalo_phone
 
               - alias: "Check if AI is disable"
                 conditions:
@@ -1043,88 +1084,111 @@ action:
                   filename: /media/snapshots/{{ file_path }}_recording.mp4
                 target:
                   entity_id: "{{ camera_device }}"
+
               - variables:
-                  snapshots_url_record: >
-                    {% set camera = file_path %}
-                    {% set ns = [{'media_content_id': 'media-source://media_source/local/snapshots/' ~ camera ~ '_snapshot1.jpg', 'media_content_type': 'image/jpeg'}] %}
-                    {{ ns }}
+                  thumbnail_url_record: "/media/local/snapshots/{{ file_path }}_snapshot1.jpg"
+                  url_video: "/media/snapshots/{{ file_path }}_recording.mp4"
+
               - choose:
-                  - alias: "Check if AI is enabled"
+                  - alias: "Check if AI Record is enabled"
                     conditions:
-                      - "{{ ai_powered }}"
+                      - "{{ ai_powered_record_video }}"
                     sequence:
+
                       - action: ai_task.generate_data
                         data:
-                          task_name: Phan tich anh khi co chuyen dong
-                          instructions: "{{ ai_task_instructions }}"
-                          entity_id: "{{ ai_provider }}"
-                          attachments: "{{ snapshots_url_record }}"
+                          task_name: Phan tich video
+                          instructions: "{{ ai_task_instructions_record_video }}"
+                          entity_id: "{{ ai_provider_record_video }}"
+                          attachments:
+                            media_content_id: media-source://media_source/local/snapshots/{{ file_path }}_recording.mp4
+                            media_content_type: video/mp4
                           structure:
-                            humans_detected:
-                              description: Đếm số người trong chuỗi ảnh
+                            humans_detected_video:
+                              description: Đếm số người trong video
                               required: true
                               selector:
                                 number: null
-                            humans_detected_description:
-                              description: "{{ ai_structure_description }}"
+                            humans_detected_description_video:
+                              description: "{{ ai_structure_description_record_video }}"
                               required: true
                               selector:
                                 text: null
-                        response_variable: humans_detected_report_record
-                      - variables:
-                          ai_messages_record: >
-                            📸 {{camera_name}} | 🚶: {{ humans_detected_report_record.data.humans_detected }}{{'\n'}}🏞️👉 {{ humans_detected_report_record.data.humans_detected_description }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                        response_variable: humans_detected_report_video
+
+                      - wait_template: "{{ humans_detected_report_video is defined and humans_detected_report_video.data is defined }}"
+                        timeout: "00:01:10"
+                        continue_on_timeout: true
                       - if:
                           - condition: template
-                            value_template: >
-                              {{ not ( (humans_detected_report_record.data.humans_detected_description | default(''))| lower | regex_search('tuy nhiên không có người trong chuỗi ảnh|không có người|không có chuỗi hình ảnh nào được cung cấp') and (humans_detected_report_record.data.humans_detected|int(0) == 0) ) }}
+                            value_template: "{{ wait.completed }}"
                         then:
-                          - alias: "Chạy cùng lúc tất cả các action"
-                            parallel:
-                              - if:
-                                  - condition: template
-                                    value_template: "{{ include_zalo_notify and zalo_video }}"
-                                then:
-                                  - action: zalo_bot.send_video
-                                    metadata: {}
-                                    data:
-                                      message: >
-                                        {{ ai_messages_record }}
-                                      ttl: !input zalo_ttl
-                                      type: !input zalo_types
-                                      video_path_or_url: /media/snapshots/{{file_path}}_recording.mp4
-                                      thumbnail_url: snapshot_access_file_path
-                                      account_selection: !input zalo_phone
-                                      thread_id: !input zalo_group_id
-                                      width: 1280
-                                      height: 720
-                              - if:
-                                  - condition: template
-                                    value_template: "{{ include_telegram_notify and tele_video }}"
-                                then:
-                                  - action: telegram_bot.send_video
-                                    metadata: {}
-                                    data:
-                                      config_entry_id: "{{  provider }}"
-                                      authentication: digest
-                                      file: /media/snapshots/{{file_path}}_recording.mp4
-                                      target: "{{ telegram_group_id }}"
-                                      caption: >
-                                        {{ ai_messages_record }}
-                                      message_thread_id: "{{ telegram_topic | int(0) }}"
-                              - if:
-                                  - condition: template
-                                    value_template: "{{ include_discord_notify and discord_video }}"
-                                then:
-                                  - action: notify.hass_discord
-                                    metadata: {}
-                                    data:
-                                      target: "{{discord_channel | int(0)}}"
-                                      data:
-                                        images:
-                                          - /media/snapshots/{{file_path}}_recording.mp4
-                                      message: >
-                                        {{ ai_messages_record }}
+
+                          - variables:
+                              ai_messages_record: >
+                                📍 {{camera_name}} | 🚶: {{ humans_detected_report_video.data.humans_detected_video }}{{'\n'}}🎞️👉 {{ humans_detected_report_video.data.humans_detected_description_video }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                          - if:
+                              - condition: template
+                                value_template: >
+                                  {{ not ( (humans_detected_report_video.data.humans_detected_description_video | default(''))| lower | regex_search('tuy nhiên không có người trong các khung hình|không có người') and (humans_detected_report_video.data.humans_detected_video|int(0) == 0) ) }}
+                            then:
+                              - alias: "Chạy cùng lúc tất cả các action"
+                                parallel:
+                                  - if:
+                                      - condition: template
+                                        value_template: "{{ include_zalo_notify and zalo_video }}"
+                                    then:
+                                      - action: zalo_bot.send_video
+                                        metadata: {}
+                                        data:
+                                          message: >
+                                            {{ ai_messages_record }}
+                                          ttl: !input zalo_ttl
+                                          type: !input zalo_types
+                                          video_path_or_url: "{{ url_video }}"
+                                          thumbnail_url: "{{ thumbnail_url_record }}"
+                                          account_selection: !input zalo_phone
+                                          thread_id: !input zalo_group_id
+                                          width: 1280
+                                          height: 720
+                                  - if:
+                                      - condition: template
+                                        value_template: "{{ include_telegram_notify and tele_video }}"
+                                    then:
+                                      - action: telegram_bot.send_video
+                                        metadata: {}
+                                        data:
+                                          config_entry_id: "{{  provider }}"
+                                          authentication: digest
+                                          file:  "{{ url_video }}"
+                                          target: "{{ telegram_group_id }}"
+                                          caption: >
+                                            {{ ai_messages_record }}
+                                          message_thread_id: "{{ telegram_topic | int(0) }}"
+                                  - if:
+                                      - condition: template
+                                        value_template: "{{ include_discord_notify and discord_video }}"
+                                    then:
+                                      - action: notify.hass_discord
+                                        metadata: {}
+                                        data:
+                                          target: "{{discord_channel | int(0)}}"
+                                          data:
+                                            images:
+                                              - "{{ url_video }}"
+                                          message: >
+                                            {{ ai_messages_record }}
+                        else:
+                          - action: zalo_bot.send_message
+                            metadata: {}
+                            data:
+                              type: !input zalo_types
+                              ttl: !input zalo_ttl
+                              message: |
+                                🚨 AI phân tích video không thành công.
+                                🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                              thread_id: !input zalo_group_id
+                              account_selection: !input zalo_phone
 
                   - alias: "Check if AI is disable"
                     conditions:
@@ -1145,7 +1209,7 @@ action:
                                   message: "{{ ai_disable_messages_record }}"
                                   ttl: !input zalo_ttl
                                   type: !input zalo_types
-                                  video_path_or_url: /media/snapshots/{{file_path}}_recording.mp4
+                                  video_path_or_url: "{{ url_video }}"
                                   thumbnail_url: snapshot_access_file_path
                                   account_selection: !input zalo_phone
                                   thread_id: !input zalo_group_id
@@ -1160,7 +1224,7 @@ action:
                                 data:
                                   config_entry_id: "{{ provider }}"
                                   authentication: digest
-                                  file: /media/snapshots/{{file_path}}_recording.mp4
+                                  file: "{{ url_video }}"
                                   target: "{{ telegram_group_id }}"
                                   caption: "{{ ai_disable_messages_record }}"
                                   message_thread_id: "{{ telegram_topic | int(0) }}"
@@ -1174,8 +1238,9 @@ action:
                                   target: "{{discord_channel | int(0)}}"
                                   data:
                                     images:
-                                      - /media/snapshots/{{file_path}}_recording.mp4
+                                      - "{{ url_video }}"
                                   message: "{{ ai_disable_messages_record }}"
+
 
   - choose:
       - alias: "Perform the custom action"
