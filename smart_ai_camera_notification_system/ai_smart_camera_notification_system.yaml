@@ -46,12 +46,31 @@ blueprint:
             - motion
             - occupancy
             - door
+
+    global_conditions:
+      name: 🛠️ Add Condition(s) to run this Automation
+      description: |
+        Thêm Condition để chạy Automation.
+        Automation chỉ chạy khi Conditions này là True.
+      default: []
+      selector:
+        condition:
+
     camera_device:
       name: 📸 Camera
       description: Camera mà bạn muốn chụp ảnh
       selector:
         entity:
           domain: camera
+    zone_name:
+      name: 📍 Zone Name
+      description: |
+        Tên vị trí camera đang quan sát theo dõi
+        Sẽ hiển thị trong nội dung phân tích khi gửi thông báo
+      default: ""
+      selector:
+        text:
+          multiline: false
     snapshot_settings:
       name: "Snapshot Settings"
       icon: mdi:camera-image
@@ -280,7 +299,7 @@ blueprint:
           selector:
             action:
         dismiss_text:
-          name: ❌ Dismiss Text
+          name: 📝 Dismiss Text
           description: "Text to show on the dismiss button"
           default: "❌ Dismiss"
           selector:
@@ -478,6 +497,21 @@ blueprint:
               filter:
                 domain: media_player
               multiple: true
+        include_custom_media_player:
+          name: ✅ Use Custom Media Player Option (Optional)
+          description: |
+            Enable khi muốn thêm Media Player custom dạng sensor
+          default: false
+          selector:
+            boolean: {}
+        custom_media_player:
+          name: 🎶 Custom Media Player
+          description: >
+            Nhập Sensor đã có với state là các loa.
+          default: ""
+          selector:
+            text:
+              multiline: true
     delay_settings:
       name: "Delay Settings"
       icon: mdi:clock-start
@@ -535,24 +569,14 @@ blueprint:
           default: []
           selector:
             action:
-    global_conditions_settings:
-      name: "Global Conditions"
-      icon: mdi:earth
-      collapsed: true
-      input:
-        global_conditions:
-          name: 🛠️ Add Condition(s) to run this Automation
-          description: |
-            Thêm Condition để chạy Automation.
-            Automation chỉ chạy khi Conditions này là True.
-          default: []
-          selector:
-            condition:
+
 trigger:
   platform: state
   entity_id: !input motion_sensor
   to: "on"
+
 variables:
+  zone_name: !input zone_name
   overwrite_image: !input overwrite_image
   #Record Video Settings
   record_video: !input record_video
@@ -610,16 +634,20 @@ variables:
   num_volume_speaker: !input num_volume_speaker
   text_to_speech_engine: !input text_to_speech_engine
   media_player: !input media_player
+  include_custom_media_player: !input include_custom_media_player
+  custom_media_player: !input custom_media_player
   #Custom Actions
   include_custom_actions: !input include_custom_actions
   custom_actions: !input custom_actions
   #Global Conditions
   global_conditions: !input global_conditions
+
 # All Conditions
 condition:
   # Global Conditions
   - condition: and
     conditions: !input global_conditions
+
 action:
   - variables:
       file_path: >
@@ -632,9 +660,15 @@ action:
       action_dismiss: "{{ 'DISMISS_' ~ context.id }}"
       notification_color: !input "notification_color"
       notification_color_hex: "#{{ '%02x%02x%02x' | format(notification_color[0], notification_color[1], notification_color[2]) }}"
+      is_custom_media_player: >
+        {{ custom_media_player if include_custom_media_player else media_player }}
   - variables:
       snapshot_access_file_path: "/media/local/snapshots/{{file_path}}_snapshot1.jpg"
       snapshot_access_file_path_social: "/media/snapshots/{{file_path}}_snapshot1.jpg"
+      is_zone_name: |
+        {{ camera_name if zone_name == '' else zone_name }}
+      is_wait_completed_error: "Chờ phát thông báo không thành công. Hãy kiểm tra loa hoặc thử lại Automation này."
+        
   - alias: "Chạy cùng lúc tất cả các action"
     parallel:
       - alias: "Chạy lần lượt các action"
@@ -692,7 +726,7 @@ action:
                     then:
                       - variables:
                           ai_messages: >
-                            📸 {{camera_name}} | 🚶: {{ humans_detected_report.data.humans_detected }}{{'\n'}}🏞️👉 {{ humans_detected_report.data.humans_detected_description }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                            📍 {{is_zone_name}} | 🚶: {{ humans_detected_report.data.humans_detected }}{{'\n'}}🏞️👉 {{ humans_detected_report.data.humans_detected_description }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                       - if:
                           - condition: template
                             value_template: >
@@ -864,18 +898,55 @@ action:
                                   - condition: template
                                     value_template: "{{ include_tts_announcement }}"
                                 then:
-                                  - action: media_player.volume_set
-                                    metadata: {}
-                                    data:
-                                      volume_level: "{{num_volume_speaker}}"
-                                    target:
-                                      entity_id: !input media_player
-                                  - action: tts.speak
-                                    target:
-                                      entity_id: !input text_to_speech_engine
-                                    data:
-                                      media_player_entity_id: !input media_player
-                                      message: "{{humans_detected_report.data.humans_detected_description}}"
+                                  - if:
+                                      - condition: template
+                                        value_template: "{{ expand(is_custom_media_player) | selectattr('state', 'in', ['playing', 'buffering']) | list | count > 0 }}"
+                                    then:
+                                      - wait_template: "{{ expand(is_custom_media_player) |selectattr('state', 'in', ['playing', 'buffering', 'unknown', 'unavailable']) |list |count == 0 }}"
+                                        timeout: "00:10:00"
+                                        continue_on_timeout: true
+                                      - if:
+                                          - condition: template
+                                            value_template: "{{ wait.completed }}"
+                                        then:
+                                          - action: media_player.volume_set
+                                            metadata: {}
+                                            data:
+                                              volume_level: "{{num_volume_speaker}}"
+                                            target:
+                                              entity_id: !input media_player
+                                          - action: tts.speak
+                                            target:
+                                              entity_id: !input text_to_speech_engine
+                                            data:
+                                              media_player_entity_id: "{{ is_custom_media_player }}"
+                                              message: "{{humans_detected_report.data.humans_detected_description}}"
+                                        else:
+                                          - action: media_player.volume_set
+                                            metadata: {}
+                                            data:
+                                              volume_level: "{{num_volume_speaker}}"
+                                            target:
+                                              entity_id: !input media_player
+                                          - action: tts.speak
+                                            target:
+                                              entity_id: !input text_to_speech_engine
+                                            data:
+                                              media_player_entity_id: "{{ is_custom_media_player }}"
+                                              message: "{{ is_wait_completed_error }}"
+                                    else:
+                                      - action: media_player.volume_set
+                                        metadata: {}
+                                        data:
+                                          volume_level: "{{num_volume_speaker}}"
+                                        target:
+                                          entity_id: !input media_player
+                                      - action: tts.speak
+                                        target:
+                                          entity_id: !input text_to_speech_engine
+                                        data:
+                                          media_player_entity_id: "{{ is_custom_media_player }}"
+                                          message: "{{humans_detected_report.data.humans_detected_description}}"
                     else:
                       - action: zalo_bot.send_message
                         metadata: {}
@@ -894,7 +965,7 @@ action:
                 sequence:
                   - variables:
                       ai_disable_messages: >
-                        📸 {{camera_name}} | 🚶 Phát hiện chuyển động{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                        📍 {{is_zone_name}} | 🚶 Phát hiện chuyển động{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                   - alias: "Chạy cùng lúc tất cả các Choose"
                     parallel:
                       - if:
@@ -1056,19 +1127,55 @@ action:
                           - condition: template
                             value_template: "{{ include_tts_announcement }}"
                         then:
-                          - action: media_player.volume_set
-                            metadata: {}
-                            data:
-                              volume_level: "{{num_volume_speaker}}"
-                            target:
-                              entity_id: !input media_player
-                          - action: tts.speak
-                            target:
-                              entity_id: !input text_to_speech_engine
-                            data:
-                              media_player_entity_id: !input media_player
-                              message: "Phát hiện chuyển động tại {{camera_name}}"
-
+                          - if:
+                              - condition: template
+                                value_template: "{{ expand(is_custom_media_player) | selectattr('state', 'in', ['playing', 'buffering']) | list | count > 0 }}"
+                            then:
+                              - wait_template: "{{ expand(is_custom_media_player) |selectattr('state', 'in', ['playing', 'buffering', 'unknown', 'unavailable']) |list |count == 0 }}"
+                                timeout: "00:10:00"
+                                continue_on_timeout: true
+                              - if:
+                                  - condition: template
+                                    value_template: "{{ wait.completed }}"
+                                then:
+                                  - action: media_player.volume_set
+                                    metadata: {}
+                                    data:
+                                      volume_level: "{{num_volume_speaker}}"
+                                    target:
+                                      entity_id: !input media_player
+                                  - action: tts.speak
+                                    target:
+                                      entity_id: !input text_to_speech_engine
+                                    data:
+                                      media_player_entity_id: "{{ is_custom_media_player }}"
+                                      message: "Phát hiện chuyển động tại {{camera_name}}"
+                                else:
+                                  - action: media_player.volume_set
+                                    metadata: {}
+                                    data:
+                                      volume_level: "{{num_volume_speaker}}"
+                                    target:
+                                      entity_id: !input media_player
+                                  - action: tts.speak
+                                    target:
+                                      entity_id: !input text_to_speech_engine
+                                    data:
+                                      media_player_entity_id: "{{ is_custom_media_player }}"
+                                      message: "{{ is_wait_completed_error }}"
+                            else:
+                              - action: media_player.volume_set
+                                metadata: {}
+                                data:
+                                  volume_level: "{{num_volume_speaker}}"
+                                target:
+                                  entity_id: !input media_player
+                              - action: tts.speak
+                                target:
+                                  entity_id: !input text_to_speech_engine
+                                data:
+                                  media_player_entity_id: "{{ is_custom_media_player }}"
+                                  message: "Phát hiện chuyển động tại {{camera_name}}"
 
       - if:
           - condition: template
@@ -1126,7 +1233,7 @@ action:
 
                           - variables:
                               ai_messages_record: >
-                                📍 {{camera_name}} | 🚶: {{ humans_detected_report_video.data.humans_detected_video }}{{'\n'}}🎞️👉 {{ humans_detected_report_video.data.humans_detected_description_video }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                📍 {{is_zone_name}} | 🚶: {{ humans_detected_report_video.data.humans_detected_video }}{{'\n'}}🎞️👉 {{ humans_detected_report_video.data.humans_detected_description_video }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                           - if:
                               - condition: template
                                 value_template: >
