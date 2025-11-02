@@ -66,16 +66,6 @@ blueprint:
           default: []
           selector:
             action:
-            
-    variables_customs:
-      name: 📝 Variables
-      description: |
-        Thêm variables để sử dụng trong Automation.
-        Không dùng bỏ qua không nhập
-        Tham khảo tại https://www.home-assistant.io/docs/scripts/#variables
-      default: {}
-      selector:
-        object: {}
 
     ai_structure_description:
       name: 📝 Structure Description
@@ -666,6 +656,7 @@ condition:
     conditions: !input global_conditions
 
 action:
+
       
   - variables:
       action_confirm: "{{ 'CONFIRM_' ~ context.id }}"
@@ -687,7 +678,6 @@ action:
         {% endif %}
       is_wait_completed_error: "Chờ phát thông báo không thành công. Hãy kiểm tra loa hoặc thử lại Automation này."
 
-  - variables: !input variables_customs
   
   - if:
       - condition: template
