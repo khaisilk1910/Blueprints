@@ -523,13 +523,43 @@ blueprint:
           name: ✅ Use Custom Media Player Option (Optional)
           description: |
             Enable khi muốn thêm Media Player custom dạng sensor
+            Sử dụng các cảm biến hiện diện hoặc tùy ý để phát hiện phòng nào đang có người để phát loa.
           default: false
           selector:
             boolean: {}
         custom_media_player:
           name: 🎶 Custom Media Player
-          description: >
+          description: |
             Nhập Sensor đã có với state là các loa.
+            Sensor có thể tạo trong `Helpers` hoặc `template sensor` trong config trong Home assistant 
+            <details>
+            <summary><b>Ví dụ sensor mẫu:</b> - Nhấn để mở rộng</summary>
+              
+              ```yaml
+              {% set listspeaker =
+                [
+                  {'room':'binary_sensor.status_bep', 'speaker':'media_player.phong_bep_speaker'},
+                  {'room':'binary_sensor.pk_status', 'speaker':'media_player.pk_google_speaker'},
+                  {'room':'binary_sensor.pn_status', 'speaker':'media_player.phong_ngu_speaker'},
+                  {'room':'binary_sensor.ph_status', 'speaker':'media_player.ph_google_speaker'}
+                ]
+              %}
+              {% set listspeaker1 =
+                [
+                  'binary_sensor.status_bep',
+                  'binary_sensor.pn_status',
+                  'binary_sensor.pk_status',
+                  'binary_sensor.ph_status'
+                ] | select('is_state','on') | list
+              %}
+              {% set to_add = listspeaker
+                | selectattr('room', 'in', listspeaker1)
+                | map(attribute='speaker')
+                | list
+              %}
+              {{ to_add | to_json }}
+              ```
+            </details>
           default: ""
           selector:
             text:
