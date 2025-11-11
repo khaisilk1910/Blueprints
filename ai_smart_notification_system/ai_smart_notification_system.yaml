@@ -61,7 +61,7 @@ blueprint:
           name: 🛠️ Custom Actions
           description: |
             Thêm bất kỳ hành động nào bạn muốn chạy trong Automation này.
-            🚨 Action này sẽ chạy đầu tiên trong Automation
+            🚨 Action này sẽ chạy đầu tiên trong Automation.
             Sử dụng cho việc muốn Action gì đó trước khi thông báo.
           default: []
           selector:
@@ -375,9 +375,13 @@ blueprint:
 
         zalo_group_id:
           name: ‍🆔 Zalo Group ID
-          description: ID của user hoặc nhóm Zalo.
+          description: |
+            ID của User hoặc Group Zalo.
+            ⚠️ Zalo Type bên dưới chọn User thì ở đây chỉ nhập ID của User
+            ⚠️ Zalo Type bên dưới chọn Group thì ở đây chỉ nhập ID của Group
           selector:
             text:
+              multiple: true
           default: ""
 
         zalo_phone:
@@ -388,7 +392,7 @@ blueprint:
           default: "+84376861184"
 
         zalo_types:
-          name: 👨‍👩‍👧‍👦 Use Zalo Type Option (Optional)
+          name: 👨‍👩‍👧‍👦 Zalo Type Option (Optional)
           description: |
             Chọn thông báo lên Zalo cá nhân hoặc group.
             Xem thêm tại https://github.com/smarthomeblack/zalo_bot
@@ -424,7 +428,7 @@ blueprint:
           default: false
           selector:
             boolean: {}
-     
+
         provider:
           name: 🛠️ Config entry ID
           description: Choose Telegram Bot to use for send Notifications.
@@ -434,15 +438,20 @@ blueprint:
           default: []
 
         telegram_group_id:
-          name: 👨‍👩‍👧‍👦 Telegram Group ID
-          description: ID của nhóm Telegram.
+          name: 👨‍👩‍👧‍👦 User or Group ID
+          description: |
+            ID của cá nhân hoặc nhóm Telegram.
+            ⚠️ Nếu sử dụng nhiều `User or Group ID` thì `Topic ID` bên dưới không được điền
           selector:
             text:
+              multiple: true
           default: ""
 
         telegram_topic:
-          name: 🆔 Telegram Topic ID
-          description: ID của chủ đề trong nhóm Telegram.
+          name: 🆔 Topic ID
+          description: |
+            ID của chủ đề trong nhóm Telegram.
+            ⚠️ Nếu sử dụng nhiều `User or Group ID` bên trên thì `Topic ID` này không được điền
           selector:
             text:
           default: ""
@@ -465,6 +474,7 @@ blueprint:
           description: ID của Channel trong nhóm Discord.
           selector:
             text:
+              multiple: true
           default: ""
 
     tts_notify_settings:
@@ -624,14 +634,22 @@ variables:
   tag: !input tag
   #Zalo Message
   include_zalo_notify: !input "include_zalo_notify"
+  zalo_group_id: !input zalo_group_id
+  filtered_zalo_id: >
+    {{ zalo_group_id | tojson }}
   #Telegram Message
   include_telegram_notify: !input "include_telegram_notify"
   provider: !input provider
   telegram_group_id: !input telegram_group_id
   telegram_topic: !input telegram_topic
+  tele_title: |
+    {{ notify_title | regex_replace('<span[^>]*>', '') | replace('</span>', '') if '<span' in notify_title else notify_title }}
+  filtered_tele_id: >
+    {{ telegram_group_id | tojson }}
   #Discord
   include_discord_notify: !input "include_discord_notify"
   discord_channel: !input discord_channel
+  filtered_discord_id: "{{ discord_channel | tojson }}"
   #TTS Message
   include_tts_announcement: !input "include_tts_announcement"
   num_volume_speaker: !input num_volume_speaker
@@ -767,18 +785,22 @@ action:
                                                   conditions:
                                                     - "{{ is_ios_android == 'ios_device' }}"
                                                   sequence:
-                                                    - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                      data:
-                                                        title: !input notify_title
-                                                        message: >
-                                                          {{ai_task_messages}}
-                                                        data:
-                                                          tag: "{{ tag }}"
-                                                          actions:
-                                                            - action: "{{ action_confirm }}"
-                                                              title: "{{ confirm_text }}"
-                                                            - action: "{{ action_dismiss }}"
-                                                              title: "{{ dismiss_text }}"
+                                                    - alias: Send a notification to each device
+                                                      repeat:
+                                                        for_each: "{{ filtered_devices }}"
+                                                        sequence:
+                                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                            data:
+                                                              title: !input notify_title
+                                                              message: >
+                                                                {{ai_task_messages}}
+                                                              data:
+                                                                tag: "{{ tag }}"
+                                                                actions:
+                                                                  - action: "{{ action_confirm }}"
+                                                                    title: "{{ confirm_text }}"
+                                                                  - action: "{{ action_dismiss }}"
+                                                                    title: "{{ dismiss_text }}"
                                             - alias: "Awaiting response"
                                               wait_for_trigger:
                                                 - platform: event
@@ -831,48 +853,81 @@ action:
                                                   conditions:
                                                     - "{{ is_ios_android == 'ios_device' }}"
                                                   sequence:
-                                                    - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                      data:
-                                                        title: !input notify_title
-                                                        message: "{{ai_task_messages}}"
+                                                    - alias: Send a notification to each device
+                                                      repeat:
+                                                        for_each: "{{ filtered_devices }}"
+                                                        sequence:
+                                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                            data:
+                                                              title: !input notify_title
+                                                              message: "{{ai_task_messages}}"
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_zalo_notify }}"
+                                          value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                       then:
-                                        - action: zalo_bot.send_message
-                                          metadata: {}
-                                          data:
-                                            type: !input zalo_types
-                                            ttl: !input zalo_ttl
-                                            message: "📢 Thông báo{{'\n'}}{{ai_task_messages}}"
-                                            thread_id: !input zalo_group_id
-                                            account_selection: !input zalo_phone
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_zalo_id }}"
+                                            sequence:
+                                              - action: zalo_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  type: !input zalo_types
+                                                  ttl: !input zalo_ttl
+                                                  message: "📢 Thông báo{{'\n'}}{{ai_task_messages}}"
+                                                  thread_id: "{{ repeat.item }}"
+                                                  account_selection: !input zalo_phone
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_telegram_notify }}"
+                                          value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                                       then:
-                                        - action: telegram_bot.send_message
-                                          metadata: {}
-                                          data:
-                                            config_entry_id: "{{ provider }}"
-                                            message: "{{ai_task_messages}}"
-                                            title: !input notify_title
-                                            target: "{{ telegram_group_id }}"
-                                            parse_mode: html
-                                            message_thread_id: "{{ telegram_topic | int(0) }}"
+                                        - if:
+                                            - condition: template
+                                              value_template: "{{ telegram_topic | length > 0 }}"
+                                          then:
+                                            - alias: Send a notification to each device
+                                              repeat:
+                                                for_each: "{{ filtered_tele_id }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      config_entry_id: "{{ provider }}"
+                                                      message: "{{ai_task_messages}}"
+                                                      title: "{{ tele_title }}"
+                                                      target: "{{ repeat.item }}"
+                                                      parse_mode: html
+                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                          else:
+                                            - alias: Send a notification to each device
+                                              repeat:
+                                                for_each: "{{ filtered_tele_id }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      config_entry_id: "{{ provider }}"
+                                                      message: "{{ai_task_messages}}"
+                                                      title: "{{ tele_title }}"
+                                                      target: "{{ repeat.item }}"
+                                                      parse_mode: html
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_discord_notify }}"
+                                          value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                                       then:
-                                        - action: notify.hass_discord
-                                          metadata: {}
-                                          data:
-                                            target: "{{discord_channel | int(0)}}"
-                                            title: !input notify_title
-                                            message: "{{ai_task_messages}}"
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_discord_id }}"
+                                            sequence:
+                                              - action: notify.hass_discord
+                                                metadata: {}
+                                                data:
+                                                  target: "{{ repeat.item }}"
+                                                  title: !input notify_title
+                                                  message: "{{ai_task_messages}}"
 
                                     - if:
                                         - condition: template
@@ -947,41 +1002,70 @@ action:
                               else:
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_zalo_notify }}"
+                                      value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                   then:
-                                    - action: zalo_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        type: !input zalo_types
-                                        ttl: !input zalo_ttl
-                                        message: "{{ai_error_message}}"
-                                        thread_id: !input zalo_group_id
-                                        account_selection: !input zalo_phone
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_zalo_id }}"
+                                        sequence:
+                                          - action: zalo_bot.send_message
+                                            metadata: {}
+                                            data:
+                                              type: !input zalo_types
+                                              ttl: !input zalo_ttl
+                                              message: "{{ai_error_message}}"
+                                              thread_id: "{{ repeat.item }}"
+                                              account_selection: !input zalo_phone
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_telegram_notify }}"
+                                      value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                                   then:
-                                    - action: telegram_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        config_entry_id: "{{ provider }}"
-                                        message: "{{ai_error_message}}"
-                                        title: !input notify_title
-                                        target: "{{ telegram_group_id }}"
-                                        parse_mode: html
-                                        message_thread_id: "{{ telegram_topic | int(0) }}"
+                                    - if:
+                                        - condition: template
+                                          value_template: "{{ telegram_topic | length > 0 }}"
+                                      then:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_error_message}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
+                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                                      else:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_error_message}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_discord_notify }}"
+                                      value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                                   then:
-                                    - action: notify.hass_discord
-                                      metadata: {}
-                                      data:
-                                        target: "{{discord_channel | int(0)}}"
-                                        title: !input notify_title
-                                        message: "{{ai_error_message}}"
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_discord_id }}"
+                                        sequence:
+                                          - action: notify.hass_discord
+                                            metadata: {}
+                                            data:
+                                              target: "{{ repeat.item }}"
+                                              title: !input notify_title
+                                              message: "{{ai_error_message}}"
 
                                 - if:
                                     - condition: template
@@ -1099,18 +1183,22 @@ action:
                                               conditions:
                                                 - "{{ is_ios_android == 'ios_device' }}"
                                               sequence:
-                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                  data:
-                                                    title: !input notify_title
-                                                    message: >
-                                                      {{ai_task_disable_messages}}
-                                                    data:
-                                                      tag: "{{ tag }}"
-                                                      actions:
-                                                        - action: "{{ action_confirm }}"
-                                                          title: "{{ confirm_text }}"
-                                                        - action: "{{ action_dismiss }}"
-                                                          title: "{{ dismiss_text }}"
+                                                - alias: Send a notification to each device
+                                                  repeat:
+                                                    for_each: "{{ filtered_devices }}"
+                                                    sequence:
+                                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                        data:
+                                                          title: !input notify_title
+                                                          message: >
+                                                            {{ai_task_disable_messages}}
+                                                          data:
+                                                            tag: "{{ tag }}"
+                                                            actions:
+                                                              - action: "{{ action_confirm }}"
+                                                                title: "{{ confirm_text }}"
+                                                              - action: "{{ action_dismiss }}"
+                                                                title: "{{ dismiss_text }}"
                                         - alias: "Awaiting response"
                                           wait_for_trigger:
                                             - platform: event
@@ -1163,48 +1251,81 @@ action:
                                               conditions:
                                                 - "{{ is_ios_android == 'ios_device' }}"
                                               sequence:
-                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                  data:
-                                                    title: !input notify_title
-                                                    message: "{{ai_task_disable_messages}}"
+                                                - alias: Send a notification to each device
+                                                  repeat:
+                                                    for_each: "{{ filtered_devices }}"
+                                                    sequence:
+                                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                        data:
+                                                          title: !input notify_title
+                                                          message: "{{ai_task_disable_messages}}"
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_zalo_notify }}"
+                                      value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                   then:
-                                    - action: zalo_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        type: !input zalo_types
-                                        ttl: !input zalo_ttl
-                                        message: "📢 Thông báo{{'\n'}}{{ai_task_disable_messages}}"
-                                        thread_id: !input zalo_group_id
-                                        account_selection: !input zalo_phone
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_zalo_id }}"
+                                        sequence:
+                                          - action: zalo_bot.send_message
+                                            metadata: {}
+                                            data:
+                                              type: !input zalo_types
+                                              ttl: !input zalo_ttl
+                                              message: "📢 Thông báo{{'\n'}}{{ai_task_disable_messages}}"
+                                              thread_id: "{{ repeat.item }}"
+                                              account_selection: !input zalo_phone
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_telegram_notify }}"
+                                      value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                                   then:
-                                    - action: telegram_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        config_entry_id: "{{ provider }}"
-                                        message: "{{ai_task_disable_messages}}"
-                                        title: !input notify_title
-                                        target: "{{ telegram_group_id }}"
-                                        parse_mode: html
-                                        message_thread_id: "{{ telegram_topic | int(0) }}"
+                                    - if:
+                                        - condition: template
+                                          value_template: "{{ telegram_topic | length > 0 }}"
+                                      then:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_task_disable_messages}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
+                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                                      else:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_task_disable_messages}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_discord_notify }}"
+                                      value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                                   then:
-                                    - action: notify.hass_discord
-                                      metadata: {}
-                                      data:
-                                        target: "{{discord_channel | int(0)}}"
-                                        title: !input notify_title
-                                        message: "{{ai_task_disable_messages}}"
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_discord_id }}"
+                                        sequence:
+                                          - action: notify.hass_discord
+                                            metadata: {}
+                                            data:
+                                              target: "{{ repeat.item }}"
+                                              title: !input notify_title
+                                              message: "{{ai_task_disable_messages}}"
 
                                 - if:
                                     - condition: template
@@ -1358,18 +1479,22 @@ action:
                                                   conditions:
                                                     - "{{ is_ios_android == 'ios_device' }}"
                                                   sequence:
-                                                    - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                      data:
-                                                        title: !input notify_title
-                                                        message: >
-                                                          {{ai_task_messages}}
-                                                        data:
-                                                          tag: "{{ tag }}"
-                                                          actions:
-                                                            - action: "{{ action_confirm }}"
-                                                              title: "{{ confirm_text }}"
-                                                            - action: "{{ action_dismiss }}"
-                                                              title: "{{ dismiss_text }}"
+                                                    - alias: Send a notification to each device
+                                                      repeat:
+                                                        for_each: "{{ filtered_devices }}"
+                                                        sequence:
+                                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                            data:
+                                                              title: !input notify_title
+                                                              message: >
+                                                                {{ai_task_messages}}
+                                                              data:
+                                                                tag: "{{ tag }}"
+                                                                actions:
+                                                                  - action: "{{ action_confirm }}"
+                                                                    title: "{{ confirm_text }}"
+                                                                  - action: "{{ action_dismiss }}"
+                                                                    title: "{{ dismiss_text }}"
                                             - alias: "Awaiting response"
                                               wait_for_trigger:
                                                 - platform: event
@@ -1422,48 +1547,81 @@ action:
                                                   conditions:
                                                     - "{{ is_ios_android == 'ios_device' }}"
                                                   sequence:
-                                                    - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                      data:
-                                                        title: !input notify_title
-                                                        message: "{{ai_task_messages}}"
+                                                    - alias: Send a notification to each device
+                                                      repeat:
+                                                        for_each: "{{ filtered_devices }}"
+                                                        sequence:
+                                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                            data:
+                                                              title: !input notify_title
+                                                              message: "{{ai_task_messages}}"
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_zalo_notify }}"
+                                          value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                       then:
-                                        - action: zalo_bot.send_message
-                                          metadata: {}
-                                          data:
-                                            type: !input zalo_types
-                                            ttl: !input zalo_ttl
-                                            message: "📢 Thông báo{{'\n'}}{{ai_task_messages}}"
-                                            thread_id: !input zalo_group_id
-                                            account_selection: !input zalo_phone
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_zalo_id }}"
+                                            sequence:
+                                              - action: zalo_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  type: !input zalo_types
+                                                  ttl: !input zalo_ttl
+                                                  message: "📢 Thông báo{{'\n'}}{{ai_task_messages}}"
+                                                  thread_id: "{{ repeat.item }}"
+                                                  account_selection: !input zalo_phone
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_telegram_notify }}"
+                                          value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                                       then:
-                                        - action: telegram_bot.send_message
-                                          metadata: {}
-                                          data:
-                                            config_entry_id: "{{ provider }}"
-                                            message: "{{ai_task_messages}}"
-                                            title: !input notify_title
-                                            target: "{{ telegram_group_id }}"
-                                            parse_mode: html
-                                            message_thread_id: "{{ telegram_topic | int(0) }}"
+                                        - if:
+                                            - condition: template
+                                              value_template: "{{ telegram_topic | length > 0 }}"
+                                          then:
+                                            - alias: Send a notification to each device
+                                              repeat:
+                                                for_each: "{{ filtered_tele_id }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      config_entry_id: "{{ provider }}"
+                                                      message: "{{ai_task_messages}}"
+                                                      title: "{{ tele_title }}"
+                                                      target: "{{ repeat.item }}"
+                                                      parse_mode: html
+                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                          else:
+                                            - alias: Send a notification to each device
+                                              repeat:
+                                                for_each: "{{ filtered_tele_id }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      config_entry_id: "{{ provider }}"
+                                                      message: "{{ai_task_messages}}"
+                                                      title: "{{ tele_title }}"
+                                                      target: "{{ repeat.item }}"
+                                                      parse_mode: html
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_discord_notify }}"
+                                          value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                                       then:
-                                        - action: notify.hass_discord
-                                          metadata: {}
-                                          data:
-                                            target: "{{discord_channel | int(0)}}"
-                                            title: !input notify_title
-                                            message: "{{ai_task_messages}}"
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_discord_id }}"
+                                            sequence:
+                                              - action: notify.hass_discord
+                                                metadata: {}
+                                                data:
+                                                  target: "{{ repeat.item }}"
+                                                  title: !input notify_title
+                                                  message: "{{ai_task_messages}}"
 
                                     - if:
                                         - condition: template
@@ -1538,41 +1696,70 @@ action:
                               else:
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_zalo_notify }}"
+                                      value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                   then:
-                                    - action: zalo_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        type: !input zalo_types
-                                        ttl: !input zalo_ttl
-                                        message: "{{ai_error_message}}"
-                                        thread_id: !input zalo_group_id
-                                        account_selection: !input zalo_phone
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_zalo_id }}"
+                                        sequence:
+                                          - action: zalo_bot.send_message
+                                            metadata: {}
+                                            data:
+                                              type: !input zalo_types
+                                              ttl: !input zalo_ttl
+                                              message: "{{ai_error_message}}"
+                                              thread_id: "{{ repeat.item }}"
+                                              account_selection: !input zalo_phone
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_telegram_notify }}"
+                                      value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                                   then:
-                                    - action: telegram_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        config_entry_id: "{{ provider }}"
-                                        message: "{{ai_error_message}}"
-                                        title: !input notify_title
-                                        target: "{{ telegram_group_id }}"
-                                        parse_mode: html
-                                        message_thread_id: "{{ telegram_topic | int(0) }}"
+                                    - if:
+                                        - condition: template
+                                          value_template: "{{ telegram_topic | length > 0 }}"
+                                      then:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_error_message}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
+                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                                      else:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_error_message}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_discord_notify }}"
+                                      value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                                   then:
-                                    - action: notify.hass_discord
-                                      metadata: {}
-                                      data:
-                                        target: "{{discord_channel | int(0)}}"
-                                        title: !input notify_title
-                                        message: "{{ai_error_message}}"
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_discord_id }}"
+                                        sequence:
+                                          - action: notify.hass_discord
+                                            metadata: {}
+                                            data:
+                                              target: "{{ repeat.item }}"
+                                              title: !input notify_title
+                                              message: "{{ai_error_message}}"
 
                                 - if:
                                     - condition: template
@@ -1690,18 +1877,22 @@ action:
                                               conditions:
                                                 - "{{ is_ios_android == 'ios_device' }}"
                                               sequence:
-                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                  data:
-                                                    title: !input notify_title
-                                                    message: >
-                                                      {{ai_task_disable_messages}}
-                                                    data:
-                                                      tag: "{{ tag }}"
-                                                      actions:
-                                                        - action: "{{ action_confirm }}"
-                                                          title: "{{ confirm_text }}"
-                                                        - action: "{{ action_dismiss }}"
-                                                          title: "{{ dismiss_text }}"
+                                                - alias: Send a notification to each device
+                                                  repeat:
+                                                    for_each: "{{ filtered_devices }}"
+                                                    sequence:
+                                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                        data:
+                                                          title: !input notify_title
+                                                          message: >
+                                                            {{ai_task_disable_messages}}
+                                                          data:
+                                                            tag: "{{ tag }}"
+                                                            actions:
+                                                              - action: "{{ action_confirm }}"
+                                                                title: "{{ confirm_text }}"
+                                                              - action: "{{ action_dismiss }}"
+                                                                title: "{{ dismiss_text }}"
                                         - alias: "Awaiting response"
                                           wait_for_trigger:
                                             - platform: event
@@ -1754,48 +1945,81 @@ action:
                                               conditions:
                                                 - "{{ is_ios_android == 'ios_device' }}"
                                               sequence:
-                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                  data:
-                                                    title: !input notify_title
-                                                    message: "{{ai_task_disable_messages}}"
+                                                - alias: Send a notification to each device
+                                                  repeat:
+                                                    for_each: "{{ filtered_devices }}"
+                                                    sequence:
+                                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                        data:
+                                                          title: !input notify_title
+                                                          message: "{{ai_task_disable_messages}}"
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_zalo_notify }}"
+                                      value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                   then:
-                                    - action: zalo_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        type: !input zalo_types
-                                        ttl: !input zalo_ttl
-                                        message: "📢 Thông báo{{'\n'}}{{ai_task_disable_messages}}"
-                                        thread_id: !input zalo_group_id
-                                        account_selection: !input zalo_phone
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_zalo_id }}"
+                                        sequence:
+                                          - action: zalo_bot.send_message
+                                            metadata: {}
+                                            data:
+                                              type: !input zalo_types
+                                              ttl: !input zalo_ttl
+                                              message: "📢 Thông báo{{'\n'}}{{ai_task_disable_messages}}"
+                                              thread_id: "{{ repeat.item }}"
+                                              account_selection: !input zalo_phone
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_telegram_notify }}"
+                                      value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                                   then:
-                                    - action: telegram_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        config_entry_id: "{{ provider }}"
-                                        message: "{{ai_task_disable_messages}}"
-                                        title: !input notify_title
-                                        target: "{{ telegram_group_id }}"
-                                        parse_mode: html
-                                        message_thread_id: "{{ telegram_topic | int(0) }}"
+                                    - if:
+                                        - condition: template
+                                          value_template: "{{ telegram_topic | length > 0 }}"
+                                      then:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_task_disable_messages}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
+                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                                      else:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_task_disable_messages}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_discord_notify }}"
+                                      value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                                   then:
-                                    - action: notify.hass_discord
-                                      metadata: {}
-                                      data:
-                                        target: "{{discord_channel | int(0)}}"
-                                        title: !input notify_title
-                                        message: "{{ai_task_disable_messages}}"
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_discord_id }}"
+                                        sequence:
+                                          - action: notify.hass_discord
+                                            metadata: {}
+                                            data:
+                                              target: "{{ repeat.item }}"
+                                              title: !input notify_title
+                                              message: "{{ai_task_disable_messages}}"
 
                                 - if:
                                     - condition: template
@@ -1949,18 +2173,22 @@ action:
                                                   conditions:
                                                     - "{{ is_ios_android == 'ios_device' }}"
                                                   sequence:
-                                                    - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                      data:
-                                                        title: !input notify_title
-                                                        message: >
-                                                          {{ai_task_messages}}
-                                                        data:
-                                                          tag: "{{ tag }}"
-                                                          actions:
-                                                            - action: "{{ action_confirm }}"
-                                                              title: "{{ confirm_text }}"
-                                                            - action: "{{ action_dismiss }}"
-                                                              title: "{{ dismiss_text }}"
+                                                    - alias: Send a notification to each device
+                                                      repeat:
+                                                        for_each: "{{ filtered_devices }}"
+                                                        sequence:
+                                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                            data:
+                                                              title: !input notify_title
+                                                              message: >
+                                                                {{ai_task_messages}}
+                                                              data:
+                                                                tag: "{{ tag }}"
+                                                                actions:
+                                                                  - action: "{{ action_confirm }}"
+                                                                    title: "{{ confirm_text }}"
+                                                                  - action: "{{ action_dismiss }}"
+                                                                    title: "{{ dismiss_text }}"
                                             - alias: "Awaiting response"
                                               wait_for_trigger:
                                                 - platform: event
@@ -2013,48 +2241,81 @@ action:
                                                   conditions:
                                                     - "{{ is_ios_android == 'ios_device' }}"
                                                   sequence:
-                                                    - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                      data:
-                                                        title: !input notify_title
-                                                        message: "{{ai_task_messages}}"
+                                                    - alias: Send a notification to each device
+                                                      repeat:
+                                                        for_each: "{{ filtered_devices }}"
+                                                        sequence:
+                                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                            data:
+                                                              title: !input notify_title
+                                                              message: "{{ai_task_messages}}"
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_zalo_notify }}"
+                                          value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                       then:
-                                        - action: zalo_bot.send_message
-                                          metadata: {}
-                                          data:
-                                            type: !input zalo_types
-                                            ttl: !input zalo_ttl
-                                            message: "📢 Thông báo{{'\n'}}{{ai_task_messages}}"
-                                            thread_id: !input zalo_group_id
-                                            account_selection: !input zalo_phone
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_zalo_id }}"
+                                            sequence:
+                                              - action: zalo_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  type: !input zalo_types
+                                                  ttl: !input zalo_ttl
+                                                  message: "📢 Thông báo{{'\n'}}{{ai_task_messages}}"
+                                                  thread_id: "{{ repeat.item }}"
+                                                  account_selection: !input zalo_phone
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_telegram_notify }}"
+                                          value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                                       then:
-                                        - action: telegram_bot.send_message
-                                          metadata: {}
-                                          data:
-                                            config_entry_id: "{{ provider }}"
-                                            message: "{{ai_task_messages}}"
-                                            title: !input notify_title
-                                            target: "{{ telegram_group_id }}"
-                                            parse_mode: html
-                                            message_thread_id: "{{ telegram_topic | int(0) }}"
+                                        - if:
+                                            - condition: template
+                                              value_template: "{{ telegram_topic | length > 0 }}"
+                                          then:
+                                            - alias: Send a notification to each device
+                                              repeat:
+                                                for_each: "{{ filtered_tele_id }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      config_entry_id: "{{ provider }}"
+                                                      message: "{{ai_task_messages}}"
+                                                      title: "{{ tele_title }}"
+                                                      target: "{{ repeat.item }}"
+                                                      parse_mode: html
+                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                          else:
+                                            - alias: Send a notification to each device
+                                              repeat:
+                                                for_each: "{{ filtered_tele_id }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      config_entry_id: "{{ provider }}"
+                                                      message: "{{ai_task_messages}}"
+                                                      title: "{{ tele_title }}"
+                                                      target: "{{ repeat.item }}"
+                                                      parse_mode: html
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_discord_notify }}"
+                                          value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                                       then:
-                                        - action: notify.hass_discord
-                                          metadata: {}
-                                          data:
-                                            target: "{{discord_channel | int(0)}}"
-                                            title: !input notify_title
-                                            message: "{{ai_task_messages}}"
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_discord_id }}"
+                                            sequence:
+                                              - action: notify.hass_discord
+                                                metadata: {}
+                                                data:
+                                                  target: "{{ repeat.item }}"
+                                                  title: !input notify_title
+                                                  message: "{{ai_task_messages}}"
 
                                     - if:
                                         - condition: template
@@ -2130,41 +2391,70 @@ action:
                               else:
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_zalo_notify }}"
+                                      value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                   then:
-                                    - action: zalo_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        type: !input zalo_types
-                                        ttl: !input zalo_ttl
-                                        message: "{{ai_error_message}}"
-                                        thread_id: !input zalo_group_id
-                                        account_selection: !input zalo_phone
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_zalo_id }}"
+                                        sequence:
+                                          - action: zalo_bot.send_message
+                                            metadata: {}
+                                            data:
+                                              type: !input zalo_types
+                                              ttl: !input zalo_ttl
+                                              message: "{{ai_error_message}}"
+                                              thread_id: "{{ repeat.item }}"
+                                              account_selection: !input zalo_phone
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_telegram_notify }}"
+                                      value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                                   then:
-                                    - action: telegram_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        config_entry_id: "{{ provider }}"
-                                        message: "{{ai_error_message}}"
-                                        title: !input notify_title
-                                        target: "{{ telegram_group_id }}"
-                                        parse_mode: html
-                                        message_thread_id: "{{ telegram_topic | int(0) }}"
+                                    - if:
+                                        - condition: template
+                                          value_template: "{{ telegram_topic | length > 0 }}"
+                                      then:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_error_message}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
+                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                                      else:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_error_message}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_discord_notify }}"
+                                      value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                                   then:
-                                    - action: notify.hass_discord
-                                      metadata: {}
-                                      data:
-                                        target: "{{discord_channel | int(0)}}"
-                                        title: !input notify_title
-                                        message: "{{ai_error_message}}"
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_discord_id }}"
+                                        sequence:
+                                          - action: notify.hass_discord
+                                            metadata: {}
+                                            data:
+                                              target: "{{ repeat.item }}"
+                                              title: !input notify_title
+                                              message: "{{ai_error_message}}"
 
                                 - if:
                                     - condition: template
@@ -2283,18 +2573,22 @@ action:
                                               conditions:
                                                 - "{{ is_ios_android == 'ios_device' }}"
                                               sequence:
-                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                  data:
-                                                    title: !input notify_title
-                                                    message: >
-                                                      {{ai_task_disable_messages}}
-                                                    data:
-                                                      tag: "{{ tag }}"
-                                                      actions:
-                                                        - action: "{{ action_confirm }}"
-                                                          title: "{{ confirm_text }}"
-                                                        - action: "{{ action_dismiss }}"
-                                                          title: "{{ dismiss_text }}"
+                                                - alias: Send a notification to each device
+                                                  repeat:
+                                                    for_each: "{{ filtered_devices }}"
+                                                    sequence:
+                                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                        data:
+                                                          title: !input notify_title
+                                                          message: >
+                                                            {{ai_task_disable_messages}}
+                                                          data:
+                                                            tag: "{{ tag }}"
+                                                            actions:
+                                                              - action: "{{ action_confirm }}"
+                                                                title: "{{ confirm_text }}"
+                                                              - action: "{{ action_dismiss }}"
+                                                                title: "{{ dismiss_text }}"
                                         - alias: "Awaiting response"
                                           wait_for_trigger:
                                             - platform: event
@@ -2347,48 +2641,81 @@ action:
                                               conditions:
                                                 - "{{ is_ios_android == 'ios_device' }}"
                                               sequence:
-                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                  data:
-                                                    title: !input notify_title
-                                                    message: "{{ai_task_disable_messages}}"
+                                                - alias: Send a notification to each device
+                                                  repeat:
+                                                    for_each: "{{ filtered_devices }}"
+                                                    sequence:
+                                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                        data:
+                                                          title: !input notify_title
+                                                          message: "{{ai_task_disable_messages}}"
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_zalo_notify }}"
+                                      value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                   then:
-                                    - action: zalo_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        type: !input zalo_types
-                                        ttl: !input zalo_ttl
-                                        message: "📢 Thông báo{{'\n'}}{{ai_task_disable_messages}}"
-                                        thread_id: !input zalo_group_id
-                                        account_selection: !input zalo_phone
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_zalo_id }}"
+                                        sequence:
+                                          - action: zalo_bot.send_message
+                                            metadata: {}
+                                            data:
+                                              type: !input zalo_types
+                                              ttl: !input zalo_ttl
+                                              message: "📢 Thông báo{{'\n'}}{{ai_task_disable_messages}}"
+                                              thread_id: "{{ repeat.item }}"
+                                              account_selection: !input zalo_phone
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_telegram_notify }}"
+                                      value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                                   then:
-                                    - action: telegram_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        config_entry_id: "{{ provider }}"
-                                        message: "{{ai_task_disable_messages}}"
-                                        title: !input notify_title
-                                        target: "{{ telegram_group_id }}"
-                                        parse_mode: html
-                                        message_thread_id: "{{ telegram_topic | int(0) }}"
+                                    - if:
+                                        - condition: template
+                                          value_template: "{{ telegram_topic | length > 0 }}"
+                                      then:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_task_disable_messages}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
+                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                                      else:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_task_disable_messages}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_discord_notify }}"
+                                      value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                                   then:
-                                    - action: notify.hass_discord
-                                      metadata: {}
-                                      data:
-                                        target: "{{discord_channel | int(0)}}"
-                                        title: !input notify_title
-                                        message: "{{ai_task_disable_messages}}"
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_discord_id }}"
+                                        sequence:
+                                          - action: notify.hass_discord
+                                            metadata: {}
+                                            data:
+                                              target: "{{ repeat.item }}"
+                                              title: !input notify_title
+                                              message: "{{ai_task_disable_messages}}"
 
                                 - if:
                                     - condition: template
@@ -2541,18 +2868,22 @@ action:
                                                   conditions:
                                                     - "{{ is_ios_android == 'ios_device' }}"
                                                   sequence:
-                                                    - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                      data:
-                                                        title: !input notify_title
-                                                        message: >
-                                                          {{ai_task_messages}}
-                                                        data:
-                                                          tag: "{{ tag }}"
-                                                          actions:
-                                                            - action: "{{ action_confirm }}"
-                                                              title: "{{ confirm_text }}"
-                                                            - action: "{{ action_dismiss }}"
-                                                              title: "{{ dismiss_text }}"
+                                                    - alias: Send a notification to each device
+                                                      repeat:
+                                                        for_each: "{{ filtered_devices }}"
+                                                        sequence:
+                                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                            data:
+                                                              title: !input notify_title
+                                                              message: >
+                                                                {{ai_task_messages}}
+                                                              data:
+                                                                tag: "{{ tag }}"
+                                                                actions:
+                                                                  - action: "{{ action_confirm }}"
+                                                                    title: "{{ confirm_text }}"
+                                                                  - action: "{{ action_dismiss }}"
+                                                                    title: "{{ dismiss_text }}"
                                             - alias: "Awaiting response"
                                               wait_for_trigger:
                                                 - platform: event
@@ -2605,48 +2936,81 @@ action:
                                                   conditions:
                                                     - "{{ is_ios_android == 'ios_device' }}"
                                                   sequence:
-                                                    - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                      data:
-                                                        title: !input notify_title
-                                                        message: "{{ai_task_messages}}"
+                                                    - alias: Send a notification to each device
+                                                      repeat:
+                                                        for_each: "{{ filtered_devices }}"
+                                                        sequence:
+                                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                            data:
+                                                              title: !input notify_title
+                                                              message: "{{ai_task_messages}}"
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_zalo_notify }}"
+                                          value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                       then:
-                                        - action: zalo_bot.send_message
-                                          metadata: {}
-                                          data:
-                                            type: !input zalo_types
-                                            ttl: !input zalo_ttl
-                                            message: "📢 Thông báo{{'\n'}}{{ai_task_messages}}"
-                                            thread_id: !input zalo_group_id
-                                            account_selection: !input zalo_phone
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_zalo_id }}"
+                                            sequence:
+                                              - action: zalo_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  type: !input zalo_types
+                                                  ttl: !input zalo_ttl
+                                                  message: "📢 Thông báo{{'\n'}}{{ai_task_messages}}"
+                                                  thread_id: "{{ repeat.item }}"
+                                                  account_selection: !input zalo_phone
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_telegram_notify }}"
+                                          value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                                       then:
-                                        - action: telegram_bot.send_message
-                                          metadata: {}
-                                          data:
-                                            config_entry_id: "{{ provider }}"
-                                            message: "{{ai_task_messages}}"
-                                            title: !input notify_title
-                                            target: "{{ telegram_group_id }}"
-                                            parse_mode: html
-                                            message_thread_id: "{{ telegram_topic | int(0) }}"
+                                        - if:
+                                            - condition: template
+                                              value_template: "{{ telegram_topic | length > 0 }}"
+                                          then:
+                                            - alias: Send a notification to each device
+                                              repeat:
+                                                for_each: "{{ filtered_tele_id }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      config_entry_id: "{{ provider }}"
+                                                      message: "{{ai_task_messages}}"
+                                                      title: "{{ tele_title }}"
+                                                      target: "{{ repeat.item }}"
+                                                      parse_mode: html
+                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                          else:
+                                            - alias: Send a notification to each device
+                                              repeat:
+                                                for_each: "{{ filtered_tele_id }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      config_entry_id: "{{ provider }}"
+                                                      message: "{{ai_task_messages}}"
+                                                      title: "{{ tele_title }}"
+                                                      target: "{{ repeat.item }}"
+                                                      parse_mode: html
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_discord_notify }}"
+                                          value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                                       then:
-                                        - action: notify.hass_discord
-                                          metadata: {}
-                                          data:
-                                            target: "{{discord_channel | int(0)}}"
-                                            title: !input notify_title
-                                            message: "{{ai_task_messages}}"
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_discord_id }}"
+                                            sequence:
+                                              - action: notify.hass_discord
+                                                metadata: {}
+                                                data:
+                                                  target: "{{ repeat.item }}"
+                                                  title: !input notify_title
+                                                  message: "{{ai_task_messages}}"
 
                                     - if:
                                         - condition: template
@@ -2721,41 +3085,70 @@ action:
                               else:
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_zalo_notify }}"
+                                      value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                   then:
-                                    - action: zalo_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        type: !input zalo_types
-                                        ttl: !input zalo_ttl
-                                        message: "{{ai_error_message}}"
-                                        thread_id: !input zalo_group_id
-                                        account_selection: !input zalo_phone
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_zalo_id }}"
+                                        sequence:
+                                          - action: zalo_bot.send_message
+                                            metadata: {}
+                                            data:
+                                              type: !input zalo_types
+                                              ttl: !input zalo_ttl
+                                              message: "{{ai_error_message}}"
+                                              thread_id: "{{ repeat.item }}"
+                                              account_selection: !input zalo_phone
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_telegram_notify }}"
+                                      value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                                   then:
-                                    - action: telegram_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        config_entry_id: "{{ provider }}"
-                                        message: "{{ai_error_message}}"
-                                        title: !input notify_title
-                                        target: "{{ telegram_group_id }}"
-                                        parse_mode: html
-                                        message_thread_id: "{{ telegram_topic | int(0) }}"
+                                    - if:
+                                        - condition: template
+                                          value_template: "{{ telegram_topic | length > 0 }}"
+                                      then:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_error_message}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
+                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                                      else:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_error_message}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_discord_notify }}"
+                                      value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                                   then:
-                                    - action: notify.hass_discord
-                                      metadata: {}
-                                      data:
-                                        target: "{{discord_channel | int(0)}}"
-                                        title: !input notify_title
-                                        message: "{{ai_error_message}}"
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_discord_id }}"
+                                        sequence:
+                                          - action: notify.hass_discord
+                                            metadata: {}
+                                            data:
+                                              target: "{{ repeat.item }}"
+                                              title: !input notify_title
+                                              message: "{{ai_error_message}}"
 
                                 - if:
                                     - condition: template
@@ -2873,18 +3266,22 @@ action:
                                               conditions:
                                                 - "{{ is_ios_android == 'ios_device' }}"
                                               sequence:
-                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                  data:
-                                                    title: !input notify_title
-                                                    message: >
-                                                      {{ai_task_disable_messages}}
-                                                    data:
-                                                      tag: "{{ tag }}"
-                                                      actions:
-                                                        - action: "{{ action_confirm }}"
-                                                          title: "{{ confirm_text }}"
-                                                        - action: "{{ action_dismiss }}"
-                                                          title: "{{ dismiss_text }}"
+                                                - alias: Send a notification to each device
+                                                  repeat:
+                                                    for_each: "{{ filtered_devices }}"
+                                                    sequence:
+                                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                        data:
+                                                          title: !input notify_title
+                                                          message: >
+                                                            {{ai_task_disable_messages}}
+                                                          data:
+                                                            tag: "{{ tag }}"
+                                                            actions:
+                                                              - action: "{{ action_confirm }}"
+                                                                title: "{{ confirm_text }}"
+                                                              - action: "{{ action_dismiss }}"
+                                                                title: "{{ dismiss_text }}"
                                         - alias: "Awaiting response"
                                           wait_for_trigger:
                                             - platform: event
@@ -2937,48 +3334,81 @@ action:
                                               conditions:
                                                 - "{{ is_ios_android == 'ios_device' }}"
                                               sequence:
-                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                  data:
-                                                    title: !input notify_title
-                                                    message: "{{ai_task_disable_messages}}"
+                                                - alias: Send a notification to each device
+                                                  repeat:
+                                                    for_each: "{{ filtered_devices }}"
+                                                    sequence:
+                                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                        data:
+                                                          title: !input notify_title
+                                                          message: "{{ai_task_disable_messages}}"
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_zalo_notify }}"
+                                      value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                   then:
-                                    - action: zalo_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        type: !input zalo_types
-                                        ttl: !input zalo_ttl
-                                        message: "📢 Thông báo{{'\n'}}{{ai_task_disable_messages}}"
-                                        thread_id: !input zalo_group_id
-                                        account_selection: !input zalo_phone
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_zalo_id }}"
+                                        sequence:
+                                          - action: zalo_bot.send_message
+                                            metadata: {}
+                                            data:
+                                              type: !input zalo_types
+                                              ttl: !input zalo_ttl
+                                              message: "📢 Thông báo{{'\n'}}{{ai_task_disable_messages}}"
+                                              thread_id: "{{ repeat.item }}"
+                                              account_selection: !input zalo_phone
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_telegram_notify }}"
+                                      value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                                   then:
-                                    - action: telegram_bot.send_message
-                                      metadata: {}
-                                      data:
-                                        config_entry_id: "{{ provider }}"
-                                        message: "{{ai_task_disable_messages}}"
-                                        title: !input notify_title
-                                        target: "{{ telegram_group_id }}"
-                                        parse_mode: html
-                                        message_thread_id: "{{ telegram_topic | int(0) }}"
+                                    - if:
+                                        - condition: template
+                                          value_template: "{{ telegram_topic | length > 0 }}"
+                                      then:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_task_disable_messages}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
+                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                                      else:
+                                        - alias: Send a notification to each device
+                                          repeat:
+                                            for_each: "{{ filtered_tele_id }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  config_entry_id: "{{ provider }}"
+                                                  message: "{{ai_task_disable_messages}}"
+                                                  title: "{{ tele_title }}"
+                                                  target: "{{ repeat.item }}"
+                                                  parse_mode: html
 
                                 - if:
                                     - condition: template
-                                      value_template: "{{ include_discord_notify }}"
+                                      value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                                   then:
-                                    - action: notify.hass_discord
-                                      metadata: {}
-                                      data:
-                                        target: "{{discord_channel | int(0)}}"
-                                        title: !input notify_title
-                                        message: "{{ai_task_disable_messages}}"
+                                    - alias: Send a notification to each device
+                                      repeat:
+                                        for_each: "{{ filtered_discord_id }}"
+                                        sequence:
+                                          - action: notify.hass_discord
+                                            metadata: {}
+                                            data:
+                                              target: "{{ repeat.item }}"
+                                              title: !input notify_title
+                                              message: "{{ai_task_disable_messages}}"
 
                                 - if:
                                     - condition: template
@@ -3129,18 +3559,22 @@ action:
                                         conditions:
                                           - "{{ is_ios_android == 'ios_device' }}"
                                         sequence:
-                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                            data:
-                                              title: !input notify_title
-                                              message: >
-                                                {{ai_task_messages}}
-                                              data:
-                                                tag: "{{ tag }}"
-                                                actions:
-                                                  - action: "{{ action_confirm }}"
-                                                    title: "{{ confirm_text }}"
-                                                  - action: "{{ action_dismiss }}"
-                                                    title: "{{ dismiss_text }}"
+                                          - alias: Send a notification to each device
+                                            repeat:
+                                              for_each: "{{ filtered_devices }}"
+                                              sequence:
+                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                  data:
+                                                    title: !input notify_title
+                                                    message: >
+                                                      {{ai_task_messages}}
+                                                    data:
+                                                      tag: "{{ tag }}"
+                                                      actions:
+                                                        - action: "{{ action_confirm }}"
+                                                          title: "{{ confirm_text }}"
+                                                        - action: "{{ action_dismiss }}"
+                                                          title: "{{ dismiss_text }}"
                                   - alias: "Awaiting response"
                                     wait_for_trigger:
                                       - platform: event
@@ -3193,48 +3627,81 @@ action:
                                         conditions:
                                           - "{{ is_ios_android == 'ios_device' }}"
                                         sequence:
-                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                            data:
-                                              title: !input notify_title
-                                              message: "{{ai_task_messages}}"
+                                          - alias: Send a notification to each device
+                                            repeat:
+                                              for_each: "{{ filtered_devices }}"
+                                              sequence:
+                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                  data:
+                                                    title: !input notify_title
+                                                    message: "{{ai_task_messages}}"
 
                           - if:
                               - condition: template
-                                value_template: "{{ include_zalo_notify }}"
+                                value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                             then:
-                              - action: zalo_bot.send_message
-                                metadata: {}
-                                data:
-                                  type: !input zalo_types
-                                  ttl: !input zalo_ttl
-                                  message: "📢 Thông báo{{'\n'}}{{ai_task_messages}}"
-                                  thread_id: !input zalo_group_id
-                                  account_selection: !input zalo_phone
+                              - alias: Send a notification to each device
+                                repeat:
+                                  for_each: "{{ filtered_zalo_id }}"
+                                  sequence:
+                                    - action: zalo_bot.send_message
+                                      metadata: {}
+                                      data:
+                                        type: !input zalo_types
+                                        ttl: !input zalo_ttl
+                                        message: "📢 Thông báo{{'\n'}}{{ai_task_messages}}"
+                                        thread_id: "{{ repeat.item }}"
+                                        account_selection: !input zalo_phone
 
                           - if:
                               - condition: template
-                                value_template: "{{ include_telegram_notify }}"
+                                value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                             then:
-                              - action: telegram_bot.send_message
-                                metadata: {}
-                                data:
-                                  config_entry_id: "{{ provider }}"
-                                  message: "{{ai_task_messages}}"
-                                  title: !input notify_title
-                                  target: "{{ telegram_group_id }}"
-                                  parse_mode: html
-                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                              - if:
+                                  - condition: template
+                                    value_template: "{{ telegram_topic | length > 0 }}"
+                                then:
+                                  - alias: Send a notification to each device
+                                    repeat:
+                                      for_each: "{{ filtered_tele_id }}"
+                                      sequence:
+                                        - action: telegram_bot.send_message
+                                          metadata: {}
+                                          data:
+                                            config_entry_id: "{{ provider }}"
+                                            message: "{{ai_task_messages}}"
+                                            title: "{{ tele_title }}"
+                                            target: "{{ repeat.item }}"
+                                            parse_mode: html
+                                            message_thread_id: "{{ telegram_topic | int(0) }}"
+                                else:
+                                  - alias: Send a notification to each device
+                                    repeat:
+                                      for_each: "{{ filtered_tele_id }}"
+                                      sequence:
+                                        - action: telegram_bot.send_message
+                                          metadata: {}
+                                          data:
+                                            config_entry_id: "{{ provider }}"
+                                            message: "{{ai_task_messages}}"
+                                            title: "{{ tele_title }}"
+                                            target: "{{ repeat.item }}"
+                                            parse_mode: html
 
                           - if:
                               - condition: template
-                                value_template: "{{ include_discord_notify }}"
+                                value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                             then:
-                              - action: notify.hass_discord
-                                metadata: {}
-                                data:
-                                  target: "{{discord_channel | int(0)}}"
-                                  title: !input notify_title
-                                  message: "{{ai_task_messages}}"
+                              - alias: Send a notification to each device
+                                repeat:
+                                  for_each: "{{ filtered_discord_id }}"
+                                  sequence:
+                                    - action: notify.hass_discord
+                                      metadata: {}
+                                      data:
+                                        target: "{{ repeat.item }}"
+                                        title: !input notify_title
+                                        message: "{{ai_task_messages}}"
 
                           - if:
                               - condition: template
@@ -3309,41 +3776,70 @@ action:
                     else:
                       - if:
                           - condition: template
-                            value_template: "{{ include_zalo_notify }}"
+                            value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                         then:
-                          - action: zalo_bot.send_message
-                            metadata: {}
-                            data:
-                              type: !input zalo_types
-                              ttl: !input zalo_ttl
-                              message: "{{ai_error_message}}"
-                              thread_id: !input zalo_group_id
-                              account_selection: !input zalo_phone
+                          - alias: Send a notification to each device
+                            repeat:
+                              for_each: "{{ filtered_zalo_id }}"
+                              sequence:
+                                - action: zalo_bot.send_message
+                                  metadata: {}
+                                  data:
+                                    type: !input zalo_types
+                                    ttl: !input zalo_ttl
+                                    message: "{{ai_error_message}}"
+                                    thread_id: "{{ repeat.item }}"
+                                    account_selection: !input zalo_phone
 
                       - if:
                           - condition: template
-                            value_template: "{{ include_telegram_notify }}"
+                            value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                         then:
-                          - action: telegram_bot.send_message
-                            metadata: {}
-                            data:
-                              config_entry_id: "{{ provider }}"
-                              message: "{{ai_error_message}}"
-                              title: !input notify_title
-                              target: "{{ telegram_group_id }}"
-                              parse_mode: html
-                              message_thread_id: "{{ telegram_topic | int(0) }}"
+                          - if:
+                              - condition: template
+                                value_template: "{{ telegram_topic | length > 0 }}"
+                            then:
+                              - alias: Send a notification to each device
+                                repeat:
+                                  for_each: "{{ filtered_tele_id }}"
+                                  sequence:
+                                    - action: telegram_bot.send_message
+                                      metadata: {}
+                                      data:
+                                        config_entry_id: "{{ provider }}"
+                                        message: "{{ai_error_message}}"
+                                        title: "{{ tele_title }}"
+                                        target: "{{ repeat.item }}"
+                                        parse_mode: html
+                                        message_thread_id: "{{ telegram_topic | int(0) }}"
+                            else:
+                              - alias: Send a notification to each device
+                                repeat:
+                                  for_each: "{{ filtered_tele_id }}"
+                                  sequence:
+                                    - action: telegram_bot.send_message
+                                      metadata: {}
+                                      data:
+                                        config_entry_id: "{{ provider }}"
+                                        message: "{{ai_error_message}}"
+                                        title: "{{ tele_title }}"
+                                        target: "{{ repeat.item }}"
+                                        parse_mode: html
 
                       - if:
                           - condition: template
-                            value_template: "{{ include_discord_notify }}"
+                            value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                         then:
-                          - action: notify.hass_discord
-                            metadata: {}
-                            data:
-                              target: "{{discord_channel | int(0)}}"
-                              title: !input notify_title
-                              message: "{{ai_error_message}}"
+                          - alias: Send a notification to each device
+                            repeat:
+                              for_each: "{{ filtered_discord_id }}"
+                              sequence:
+                                - action: notify.hass_discord
+                                  metadata: {}
+                                  data:
+                                    target: "{{ repeat.item }}"
+                                    title: !input notify_title
+                                    message: "{{ai_error_message}}"
 
                       - if:
                           - condition: template
@@ -3461,18 +3957,22 @@ action:
                                     conditions:
                                       - "{{ is_ios_android == 'ios_device' }}"
                                     sequence:
-                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                        data:
-                                          title: !input notify_title
-                                          message: >
-                                            {{ai_task_disable_messages}}
-                                          data:
-                                            tag: "{{ tag }}"
-                                            actions:
-                                              - action: "{{ action_confirm }}"
-                                                title: "{{ confirm_text }}"
-                                              - action: "{{ action_dismiss }}"
-                                                title: "{{ dismiss_text }}"
+                                      - alias: Send a notification to each device
+                                        repeat:
+                                          for_each: "{{ filtered_devices }}"
+                                          sequence:
+                                            - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                              data:
+                                                title: !input notify_title
+                                                message: >
+                                                  {{ai_task_disable_messages}}
+                                                data:
+                                                  tag: "{{ tag }}"
+                                                  actions:
+                                                    - action: "{{ action_confirm }}"
+                                                      title: "{{ confirm_text }}"
+                                                    - action: "{{ action_dismiss }}"
+                                                      title: "{{ dismiss_text }}"
                               - alias: "Awaiting response"
                                 wait_for_trigger:
                                   - platform: event
@@ -3525,48 +4025,81 @@ action:
                                     conditions:
                                       - "{{ is_ios_android == 'ios_device' }}"
                                     sequence:
-                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                        data:
-                                          title: !input notify_title
-                                          message: "{{ai_task_disable_messages}}"
+                                      - alias: Send a notification to each device
+                                        repeat:
+                                          for_each: "{{ filtered_devices }}"
+                                          sequence:
+                                            - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                              data:
+                                                title: !input notify_title
+                                                message: "{{ai_task_disable_messages}}"
 
                       - if:
                           - condition: template
-                            value_template: "{{ include_zalo_notify }}"
+                            value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                         then:
-                          - action: zalo_bot.send_message
-                            metadata: {}
-                            data:
-                              type: !input zalo_types
-                              ttl: !input zalo_ttl
-                              message: "📢 Thông báo{{'\n'}}{{ai_task_disable_messages}}"
-                              thread_id: !input zalo_group_id
-                              account_selection: !input zalo_phone
+                          - alias: Send a notification to each device
+                            repeat:
+                              for_each: "{{ filtered_zalo_id }}"
+                              sequence:
+                                - action: zalo_bot.send_message
+                                  metadata: {}
+                                  data:
+                                    type: !input zalo_types
+                                    ttl: !input zalo_ttl
+                                    message: "📢 Thông báo{{'\n'}}{{ai_task_disable_messages}}"
+                                    thread_id: "{{ repeat.item }}"
+                                    account_selection: !input zalo_phone
 
                       - if:
                           - condition: template
-                            value_template: "{{ include_telegram_notify }}"
+                            value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
                         then:
-                          - action: telegram_bot.send_message
-                            metadata: {}
-                            data:
-                              config_entry_id: "{{ provider }}"
-                              message: "{{ai_task_disable_messages}}"
-                              title: !input notify_title
-                              target: "{{ telegram_group_id }}"
-                              parse_mode: html
-                              message_thread_id: "{{ telegram_topic | int(0) }}"
+                          - if:
+                              - condition: template
+                                value_template: "{{ telegram_topic | length > 0 }}"
+                            then:
+                              - alias: Send a notification to each device
+                                repeat:
+                                  for_each: "{{ filtered_tele_id }}"
+                                  sequence:
+                                    - action: telegram_bot.send_message
+                                      metadata: {}
+                                      data:
+                                        config_entry_id: "{{ provider }}"
+                                        message: "{{ai_task_disable_messages}}"
+                                        title: "{{ tele_title }}"
+                                        target: "{{ repeat.item }}"
+                                        parse_mode: html
+                                        message_thread_id: "{{ telegram_topic | int(0) }}"
+                            else:
+                              - alias: Send a notification to each device
+                                repeat:
+                                  for_each: "{{ filtered_tele_id }}"
+                                  sequence:
+                                    - action: telegram_bot.send_message
+                                      metadata: {}
+                                      data:
+                                        config_entry_id: "{{ provider }}"
+                                        message: "{{ai_task_disable_messages}}"
+                                        title: "{{ tele_title }}"
+                                        target: "{{ repeat.item }}"
+                                        parse_mode: html
 
                       - if:
                           - condition: template
-                            value_template: "{{ include_discord_notify }}"
+                            value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
                         then:
-                          - action: notify.hass_discord
-                            metadata: {}
-                            data:
-                              target: "{{discord_channel | int(0)}}"
-                              title: !input notify_title
-                              message: "{{ai_task_disable_messages}}"
+                          - alias: Send a notification to each device
+                            repeat:
+                              for_each: "{{ filtered_discord_id }}"
+                              sequence:
+                                - action: notify.hass_discord
+                                  metadata: {}
+                                  data:
+                                    target: "{{ repeat.item }}"
+                                    title: !input notify_title
+                                    message: "{{ai_task_disable_messages}}"
 
                       - if:
                           - condition: template
@@ -3645,6 +4178,6 @@ action:
             value_template: "{{ include_custom_actions }}"
         sequence: !input custom_actions
 
-mode: queued
-max: 10
+mode: restart
+#max: 10
 max_exceeded: silent
