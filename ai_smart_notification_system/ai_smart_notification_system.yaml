@@ -389,7 +389,7 @@ blueprint:
           description: Số điện thoại của Zalo Bot.
           selector:
             text:
-          default: "+84376861184"
+          default: "+84987987987"
 
         zalo_types:
           name: 👨‍👩‍👧‍👦 Zalo Type Option (Optional)
