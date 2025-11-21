@@ -955,44 +955,56 @@ action:
                                           - condition: template
                                             value_template: "{{ wait.completed }}"
                                         then:
-                                          - action: media_player.volume_set
-                                            metadata: {}
-                                            data:
-                                              volume_level: "{{num_volume_speaker}}"
-                                            target:
-                                              entity_id: !input media_player
-                                          - action: tts.speak
-                                            target:
-                                              entity_id: !input text_to_speech_engine
-                                            data:
-                                              media_player_entity_id: "{{ is_custom_media_player }}"
-                                              message: "{{humans_detected_report.data.humans_detected_description}}"
+                                          - alias: Send a TTS to each mobile
+                                            repeat:
+                                              for_each: "{{ is_custom_media_player }}"
+                                              sequence:
+                                                - action: media_player.volume_set
+                                                  metadata: {}
+                                                  data:
+                                                    volume_level: "{{num_volume_speaker}}"
+                                                  target:
+                                                    entity_id: "{{ repeat.item }}"
+                                                - action: tts.speak
+                                                  target:
+                                                    entity_id: !input text_to_speech_engine
+                                                  data:
+                                                    media_player_entity_id: "{{ repeat.item }}"
+                                                    message: "{{humans_detected_report.data.humans_detected_description}}"
                                         else:
-                                          - action: media_player.volume_set
-                                            metadata: {}
-                                            data:
-                                              volume_level: "{{num_volume_speaker}}"
-                                            target:
-                                              entity_id: !input media_player
-                                          - action: tts.speak
-                                            target:
-                                              entity_id: !input text_to_speech_engine
-                                            data:
-                                              media_player_entity_id: "{{ is_custom_media_player }}"
-                                              message: "{{ is_wait_completed_error }}"
+                                          - alias: Send a TTS to each mobile
+                                            repeat:
+                                              for_each: "{{ is_custom_media_player }}"
+                                              sequence:
+                                                - action: media_player.volume_set
+                                                  metadata: {}
+                                                  data:
+                                                    volume_level: "{{num_volume_speaker}}"
+                                                  target:
+                                                    entity_id: "{{ repeat.item }}"
+                                                - action: tts.speak
+                                                  target:
+                                                    entity_id: !input text_to_speech_engine
+                                                  data:
+                                                    media_player_entity_id: "{{ repeat.item }}"
+                                                    message: "{{ is_wait_completed_error }}"
                                     else:
-                                      - action: media_player.volume_set
-                                        metadata: {}
-                                        data:
-                                          volume_level: "{{num_volume_speaker}}"
-                                        target:
-                                          entity_id: !input media_player
-                                      - action: tts.speak
-                                        target:
-                                          entity_id: !input text_to_speech_engine
-                                        data:
-                                          media_player_entity_id: "{{ is_custom_media_player }}"
-                                          message: "{{humans_detected_report.data.humans_detected_description}}"
+                                      - alias: Send a TTS to each mobile
+                                        repeat:
+                                          for_each: "{{ is_custom_media_player }}"
+                                          sequence:
+                                            - action: media_player.volume_set
+                                              metadata: {}
+                                              data:
+                                                volume_level: "{{num_volume_speaker}}"
+                                              target:
+                                                entity_id: "{{ repeat.item }}"
+                                            - action: tts.speak
+                                              target:
+                                                entity_id: !input text_to_speech_engine
+                                              data:
+                                                media_player_entity_id: "{{ repeat.item }}"
+                                                message: "{{humans_detected_report.data.humans_detected_description}}"
                     else:
                       - action: zalo_bot.send_message
                         metadata: {}
@@ -1204,44 +1216,56 @@ action:
                                   - condition: template
                                     value_template: "{{ wait.completed }}"
                                 then:
-                                  - action: media_player.volume_set
-                                    metadata: {}
-                                    data:
-                                      volume_level: "{{num_volume_speaker}}"
-                                    target:
-                                      entity_id: !input media_player
-                                  - action: tts.speak
-                                    target:
-                                      entity_id: !input text_to_speech_engine
-                                    data:
-                                      media_player_entity_id: "{{ is_custom_media_player }}"
-                                      message: "Phát hiện chuyển động tại {{camera_name}}"
+                                  - alias: Send a TTS to each mobile
+                                    repeat:
+                                      for_each: "{{ is_custom_media_player }}"
+                                      sequence:
+                                        - action: media_player.volume_set
+                                          metadata: {}
+                                          data:
+                                            volume_level: "{{num_volume_speaker}}"
+                                          target:
+                                            entity_id: "{{ repeat.item }}"
+                                        - action: tts.speak
+                                          target:
+                                            entity_id: !input text_to_speech_engine
+                                          data:
+                                            media_player_entity_id: "{{ repeat.item }}"
+                                            message: "Phát hiện chuyển động tại {{camera_name}}"
                                 else:
-                                  - action: media_player.volume_set
-                                    metadata: {}
-                                    data:
-                                      volume_level: "{{num_volume_speaker}}"
-                                    target:
-                                      entity_id: !input media_player
-                                  - action: tts.speak
-                                    target:
-                                      entity_id: !input text_to_speech_engine
-                                    data:
-                                      media_player_entity_id: "{{ is_custom_media_player }}"
-                                      message: "{{ is_wait_completed_error }}"
+                                  - alias: Send a TTS to each mobile
+                                    repeat:
+                                      for_each: "{{ is_custom_media_player }}"
+                                      sequence:
+                                        - action: media_player.volume_set
+                                          metadata: {}
+                                          data:
+                                            volume_level: "{{num_volume_speaker}}"
+                                          target:
+                                            entity_id: "{{ repeat.item }}"
+                                        - action: tts.speak
+                                          target:
+                                            entity_id: !input text_to_speech_engine
+                                          data:
+                                            media_player_entity_id: "{{ repeat.item }}"
+                                            message: "{{ is_wait_completed_error }}"
                             else:
-                              - action: media_player.volume_set
-                                metadata: {}
-                                data:
-                                  volume_level: "{{num_volume_speaker}}"
-                                target:
-                                  entity_id: !input media_player
-                              - action: tts.speak
-                                target:
-                                  entity_id: !input text_to_speech_engine
-                                data:
-                                  media_player_entity_id: "{{ is_custom_media_player }}"
-                                  message: "Phát hiện chuyển động tại {{camera_name}}"
+                              - alias: Send a TTS to each mobile
+                                repeat:
+                                  for_each: "{{ is_custom_media_player }}"
+                                  sequence:
+                                    - action: media_player.volume_set
+                                      metadata: {}
+                                      data:
+                                        volume_level: "{{num_volume_speaker}}"
+                                      target:
+                                        entity_id: "{{ repeat.item }}"
+                                    - action: tts.speak
+                                      target:
+                                        entity_id: !input text_to_speech_engine
+                                      data:
+                                        media_player_entity_id: "{{ repeat.item }}"
+                                        message: "Phát hiện chuyển động tại {{camera_name}}"
 
       - if:
           - condition: template
