@@ -50,23 +50,23 @@ blueprint:
     global_conditions:
       name: 🛠️ Add Condition(s) to run this Automation
       description: |
-        Thêm Condition để chạy Automation.
-        Automation chỉ chạy khi Conditions này là True.
+        👉 Thêm Condition để chạy Automation.
+        ⚠️ Automation chỉ chạy khi Conditions này là True.
       default: []
       selector:
         condition:
 
     camera_device:
       name: 📸 Camera
-      description: Camera mà bạn muốn chụp ảnh
+      description: 👉 Camera mà bạn muốn chụp ảnh
       selector:
         entity:
           domain: camera
     zone_name:
       name: 📍 Zone Name
       description: |
-        Tên vị trí camera đang quan sát theo dõi
-        Sẽ hiển thị trong nội dung phân tích khi gửi thông báo
+        👉 Tên vị trí camera đang quan sát theo dõi
+        ⚠️ Sẽ hiển thị trong nội dung phân tích khi gửi thông báo
       default: ""
       selector:
         text:
@@ -79,26 +79,26 @@ blueprint:
         overwrite_image:
           name: 🏞️ Overwrite Image (Optional)
           description: |
-            Tùy chọn lưu ảnh Ghi đè ảnh cũ (ảnh cũ sẽ bị ghi đè bởi ảnh mới)
-            Nếu tắt tính năng này sẽ lưu nhiều ảnh, ảnh được đặt tên chứa `context.id` của mỗi lần chạy Automation và sẽ chiếm dung lượng server do lưu nhiều ảnh.
+            👉 Tùy chọn lưu ảnh Ghi đè ảnh cũ (ảnh cũ sẽ bị ghi đè bởi ảnh mới)
+            ⚠️ Nếu tắt tính năng này sẽ lưu nhiều ảnh, ảnh được đặt tên chứa `context.id` của mỗi lần chạy Automation và sẽ chiếm dung lượng server do lưu nhiều ảnh.
           default: true
           selector:
             boolean: {}
         ai_powered:
           name: ✅ AI-powered (Optional)
           description: |
-            Sử dụng AI để phân tích ảnh và đưa nội dung phân tích ảnh vào thông báo.
-            Nếu sử dụng AI phân tích sẽ bị trễ thông báo vài giây so với ảnh chụp vì phải chờ thời gian AI phân tích ảnh xem có người mới gửi thông báo.
-            Nếu không sử dụng AI sẽ hay bị gửi thông báo ảo khi không có người trong ảnh do sensor phát hiện nhầm có chuyển động do môi trường, động vật.
-            Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
+            👉 Sử dụng AI để phân tích ảnh và đưa nội dung phân tích ảnh vào thông báo.
+            ⚠️ Nếu sử dụng AI phân tích sẽ bị trễ thông báo vài giây so với ảnh chụp vì phải chờ thời gian AI phân tích ảnh xem có người mới gửi thông báo.
+            ⚠️ Nếu không sử dụng AI sẽ hay bị gửi thông báo ảo khi không có người trong ảnh do sensor phát hiện nhầm có chuyển động do môi trường, động vật.
+            🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
           default: true
           selector:
             boolean: {}
         ai_provider:
           name: 🤖 Provider of AI
           description: |
-            Chọn AI sủ dụng cho việc phân tích ảnh.
-            Nếu không Bật sử dụng AI bên trên không cần chọn
+            👉 Chọn AI sủ dụng cho việc phân tích ảnh.
+            ⚠️ Nếu không Bật sử dụng AI bên trên không cần chọn
           selector:
             entity:
               domain: ai_task
@@ -106,9 +106,9 @@ blueprint:
         ai_task_instructions:
           name: ✍️ AI Task Instructions
           description: |
-            Chuỗi chứa các hướng dẫn cụ thể để AI tuân theo khi tạo văn bản.
-            Bạn có thể thay đổi nội dung này nếu kết quả phân tích ảnh không được như bạn mong muốn.
-            Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
+            👉 Chuỗi chứa các hướng dẫn cụ thể để AI tuân theo khi tạo văn bản.
+            ⚠️ Bạn có thể thay đổi nội dung này nếu kết quả phân tích ảnh không được như bạn mong muốn.
+            🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
           selector:
             text:
               multiline: true
@@ -124,9 +124,9 @@ blueprint:
         ai_structure_description:
           name: 📝 AI Task Structure Description
           description: |
-            Từ điển xác định cấu trúc của dữ liệu đầu ra của nội dung phân tích ảnh.
-            Bạn có thể thay đổi nội dung mẫu nếu muốn.
-            Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/#action-ai_taskgenerate_data
+            👉 Từ điển xác định cấu trúc của dữ liệu đầu ra của nội dung phân tích ảnh.
+            ⚠️ Bạn có thể thay đổi nội dung mẫu nếu muốn.
+            🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/#action-ai_taskgenerate_data
 
             ⚠️ Lưu ý giữ nguyên dòng: `- Nếu trong chuỗi ảnh không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong chuỗi ảnh khi so sánh".`
           selector:
@@ -146,28 +146,28 @@ blueprint:
         record_video:
           name: 🎞️ Recording (Optional)
           description: |
-            Tùy chọn ghi video để gửi khi có phát hiện chuyển động.
-            Mặc định ghi video 10s. Vì vậy thông báo video sẽ trễ hơn.
-            Thời điểm ghi video vẫn là thời điểm kích hoạt bới cảm biến chuyển động.
-            Gửi video lên các nền tảng nhắn tin Zalo, Telegram, Discord.
-            Tham khảo: https://www.home-assistant.io/integrations/camera/#action-record
+            👉 Tùy chọn ghi video để gửi khi có phát hiện chuyển động.
+            ⚠️ Mặc định ghi video 10s. Vì vậy thông báo video sẽ trễ hơn.
+            ⚠️ Thời điểm ghi video vẫn là thời điểm kích hoạt bới cảm biến chuyển động.
+            ⚠️ Gửi video lên các nền tảng nhắn tin Zalo, Telegram, Discord.
+            🌐 Tham khảo: https://www.home-assistant.io/integrations/camera/#action-record
           default: true
           selector:
             boolean: {}
         ai_powered_record_video:
           name: ✅ AI-powered (Optional)
           description: |
-            Sử dụng AI để phân tích ảnh và đưa nội dung phân tích ảnh vào thông báo.
-            Nếu sử dụng AI phân tích sẽ bị trễ thông báo vài giây so với ảnh chụp vì phải chờ thời gian AI phân tích ảnh xem có người mới gửi thông báo.
-            Nếu không sử dụng AI sẽ hay bị gửi thông báo ảo khi không có người trong ảnh do sensor phát hiện nhầm có chuyển động do môi trường, động vật.
-            Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
+            👉 Sử dụng AI để phân tích ảnh và đưa nội dung phân tích ảnh vào thông báo.
+            ⚠️ Nếu sử dụng AI phân tích sẽ bị trễ thông báo vài giây so với ảnh chụp vì phải chờ thời gian AI phân tích ảnh xem có người mới gửi thông báo.
+            ⚠️ Nếu không sử dụng AI sẽ hay bị gửi thông báo ảo khi không có người trong ảnh do sensor phát hiện nhầm có chuyển động do môi trường, động vật.
+            🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
           default: true
           selector:
             boolean: {}
         ai_provider_record_video:
           name: 🤖 Provider of AI
           description: |
-            Chọn AI sủ dụng cho việc phân tích video.
+            👉 Chọn AI sủ dụng cho việc phân tích video.
           selector:
             entity:
               domain: ai_task
@@ -175,9 +175,9 @@ blueprint:
         ai_task_instructions_record_video:
           name: ✍️ AI Task Instructions
           description: |
-            Chuỗi chứa các hướng dẫn cụ thể để AI tuân theo khi tạo văn bản.
-            Bạn có thể thay đổi nội dung này nếu kết quả phân tích video không được như bạn mong muốn.
-            Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
+            👉 Chuỗi chứa các hướng dẫn cụ thể để AI tuân theo khi tạo văn bản.
+            ⚠️ Bạn có thể thay đổi nội dung này nếu kết quả phân tích video không được như bạn mong muốn.
+            🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
           selector:
             text:
               multiline: true
@@ -192,10 +192,9 @@ blueprint:
         ai_structure_description_record_video:
           name: 📝 AI Task Structure Description
           description: |
-            Từ điển xác định cấu trúc của dữ liệu đầu ra của nội dung phân tích video.
-            Bạn có thể thay đổi nội dung mẫu nếu muốn.
-            Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/#action-ai_taskgenerate_data
-
+            👉 Từ điển xác định cấu trúc của dữ liệu đầu ra của nội dung phân tích video.
+            ⚠️ Bạn có thể thay đổi nội dung mẫu nếu muốn.
+            🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/#action-ai_taskgenerate_data
             ⚠️ Lưu ý giữ nguyên dòng: `- Nếu trong video không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong các khung hình".`
           selector:
             text:
@@ -214,15 +213,15 @@ blueprint:
         include_notify:
           name: ✅ Mobile App Notify Option (Optional)
           description: |
-            Enable nếu muốn gửi thông báo lên điện thoại đã chọn bên dưới.
-            Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic
+            👉 Enable nếu muốn gửi thông báo lên điện thoại đã chọn bên dưới.
+            🌐 Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic
           default: false
           selector:
             boolean: {}
         is_ios_android:
           name: 🔔 Android or iOS device?
           description: |
-            Chọn điện thoại đẩy thông báo là Android hay iOS?
+            👉 Chọn điện thoại đẩy thông báo là Android hay iOS?
           default: android_device
           selector:
             select:
@@ -234,7 +233,7 @@ blueprint:
         notify_device:
           name: 📱 Devices Notified
           description: |
-            Chọn Điện thoại muốn thông bảo đẩy lên.
+            👉 Chọn Điện thoại muốn thông bảo đẩy lên.
           default: []
           selector:
             device:
@@ -244,8 +243,8 @@ blueprint:
         notify_title:
           name: 📝 Title
           description: |
-            Nhập Title của Thông báo.
-            Có thẻ dùng CSS HTML để thiết lập màu sắc, In đậm,... cho nội dung
+            👉 Nhập Title của Thông báo.
+            ⚠️ Có thẻ dùng CSS HTML để thiết lập màu sắc, In đậm,... cho nội dung
           default: >
             📢 <b><span style="color: red">Có chuyển động</span></b>
           selector:
@@ -253,8 +252,8 @@ blueprint:
         tap_navigate:
           name: 📲 Tap Navigate
           description: |
-            Mở Home Assistant và đi đến vị trí bên dưới khi Thông báo được mở.
-            Ví dụ: /lovelace/cameras
+            👉 Mở Home Assistant và đi đến vị trí bên dưới khi Thông báo được mở.
+            ⚠️ Ví dụ: /lovelace/cameras
           default: /lovelace/camera
           selector:
             text:
@@ -263,9 +262,9 @@ blueprint:
         status_bar_icon:
           name: "🌠 Status Bar Icon"
           description: |
-            `Dành cho Android`
-            Thiết lập icon cho thông báo trên Status Bar điện thoại
-            Tìm icon tại https://pictogrammers.com/library/mdi/
+            👉 `Dành cho Android`
+            ⚠️ Thiết lập icon cho thông báo trên Status Bar điện thoại
+            🌐 Tìm icon tại https://pictogrammers.com/library/mdi/
           default: mdi:motion-sensor
           selector:
             icon:
@@ -273,63 +272,68 @@ blueprint:
         notification_color:
           name: "🎨 Notification Color"
           description: |
-            `Dành cho Android`
-            Thiết lập màu cho icon thông báo trên Status Bar điện thoại
+            👉 `Dành cho Android`
+            ⚠️ Thiết lập màu cho icon thông báo trên Status Bar điện thoại
           default: [255, 0, 0]
           selector:
             color_rgb:
         include_actions:
           name: ✅ Use Actions For Mobile App Notify Option (Optional)
           description: |
-            Enable nếu muốn có Actions trong thông báo lên điện thoại đã chọn.
-            Xem thêm tại https://companion.home-assistant.io/docs/notifications/actionable-notifications
+            👉 Enable nếu muốn có Actions trong thông báo lên điện thoại đã chọn.
+            🌐 Xem thêm tại https://companion.home-assistant.io/docs/notifications/actionable-notifications
           default: false
           selector:
             boolean: {}
         confirm_text:
           name: ✅ Confirmation Text
-          description: "Text to show on the confirmation button"
+          description: |
+            👉 Text to show on the confirmation button
           default: "✅ Confirm"
           selector:
             text:
         confirm_action:
           name: 👇 Confirmation Action
-          description: "Action to run when notification is confirmed"
+          description: |
+            👉 Action to run when notification is confirmed
           default: []
           selector:
             action:
         dismiss_text:
           name: 📝 Dismiss Text
-          description: "Text to show on the dismiss button"
+          description: |
+            👉 Text to show on the dismiss button
           default: "❌ Dismiss"
           selector:
             text:
         enable_custom_dismiss_action:
           name: ✅ Custom Dismiss Action
-          description: "Display notification on Android Auto interface."
+          description: |
+            👉 Display notification on Android Auto interface
           default: false
           selector:
             boolean: {}
         custom_dismiss_action:
           name: 👇 Custom Dismiss Action
-          description: "Action to run when notification is dismissed"
+          description: |
+            👉 Action to run when notification is dismissed
           default: []
           selector:
             action:
         tag:
           name: "\U0001F516 Tag"
           description: |
-            Được sử dụng để định danh duy nhất thông báo.
-            Tham khảo thêm: https://companion.home-assistant.io/docs/notifications/actionable-notifications
+            👉 Được sử dụng để định danh duy nhất thông báo.
+            🌐 Tham khảo: https://companion.home-assistant.io/docs/notifications/actionable-notifications
           default: "dimiss_notifications_now"
           selector:
             text: {}
         timeout:
           name: ⌛️ Timeout Duration
           description: |
-            Khoảng thời gian chờ phản hồi hành động trước khi kích hoạt hành động khi hết thời gian chờ (timeout).
-            Khuyến nghị: tối thiểu 1 phút để đảm bảo thông báo được gửi đi.
-            Mặc định: 10 phút.
+            👉 Khoảng thời gian chờ phản hồi hành động trước khi kích hoạt hành động khi hết thời gian chờ (timeout).
+            ⚠️ Khuyến nghị: tối thiểu 1 phút để đảm bảo thông báo được gửi đi.
+            ✅ Mặc định: 10 phút.
           default:
             hours: 0
             minutes: 10
@@ -345,15 +349,15 @@ blueprint:
         include_zalo_notify:
           name: ✅ Zalo Option (Optional)
           description: |
-            Enable nếu muốn gửi thông báo lên Zalo.
-            Xem thêm tại https://github.com/smarthomeblack/zalo_bot
+            👉 Enable nếu muốn gửi thông báo lên Zalo.
+            🌐 Xem thêm https://github.com/smarthomeblack/zalo_bot
           default: false
           selector:
             boolean: {}
         zalo_group_id:
           name: 🧑‍💻 User or Group ID
           description: |
-            ID của User hoặc Group Zalo.
+            👉 ID của User hoặc Group Zalo.
             ⚠️ Zalo Type bên dưới chọn User thì ở đây chỉ nhập ID của User
             ⚠️ Zalo Type bên dưới chọn Group thì ở đây chỉ nhập ID của Group
           selector:
@@ -362,14 +366,15 @@ blueprint:
           default: ""
         zalo_phone:
           name: 📞 Zalo Acc
-          description: Số điện thoại của Zalo Bot.
+          description: |
+            👉 Số điện thoại của Zalo Bot.
           selector:
             text:
           default: "+84376861184"
         zalo_types:
           name: 👨‍👨‍👦 Zalo Type Option (Optional)
           description: |
-            Chọn thông báo lên Zalo cá nhân hoặc group.
+            👉 Chọn thông báo lên Zalo cá nhân hoặc group.
             ⚠️ Chọn `User` thì ở `User or Group ID` bên trên chỉ nhập ID của User
             ⚠️ Chọn `Group` thì ở `User or Group ID` bên trên chỉ nhập ID của Group
             Xem thêm tại https://github.com/smarthomeblack/zalo_bot
@@ -383,7 +388,8 @@ blueprint:
                   value: "1"
         zalo_ttl:
           name: ⏳ TTL
-          description: Thời gian chờ sau thời gian này tin nhắn sẽ tự xóa.
+          description: |
+            👉 Thời gian chờ sau thời gian này tin nhắn sẽ tự xóa.
           selector:
             number:
               min: 0
@@ -393,7 +399,8 @@ blueprint:
           default: 0
         zalo_video:
           name: 🎞️ Send Video (Optional)
-          description: Tùy chọn có gửi video lên Zalo không?
+          description: |
+            👉 Tùy chọn có gửi video lên Zalo không?
           default: false
           selector:
             boolean: {}
@@ -405,33 +412,33 @@ blueprint:
         include_telegram_notify:
           name: ✅ Telegram Option (Optional)
           description: |
-            Enable nếu muốn gửi thông báo lên Telegram.
-            Xem thêm tại https://www.home-assistant.io/integrations/?search=telegram
+            👉 Enable nếu muốn gửi thông báo lên Telegram.
+            🌐 Xem thêm tại https://www.home-assistant.io/integrations/?search=telegram
           default: false
           selector:
             boolean: {}
         provider:
           name: 🛠️ Config entry ID
-          description: Choose Telegram Bot to use for send Notifications.
+          description: 👉 Choose Telegram Bot to use for send Notifications.
           selector:
             config_entry:
               integration: telegram_bot
           default: []
         telegram_group_id:
           name: 👨‍👨‍👦 Group ID
-          description: ID của nhóm Telegram.
+          description: 👉 ID của nhóm Telegram.
           selector:
             text:
           default: ""
         telegram_topic:
           name: 🧑‍💻 Topic ID
-          description: ID của chủ đề trong nhóm Telegram.
+          description: 👉 ID của chủ đề trong nhóm Telegram.
           selector:
             text:
           default: ""
         tele_video:
           name: 🎞️ Send Video (Optional)
-          description: Tùy chọn có gửi video lên Telegram không?
+          description: 👉 Tùy chọn có gửi video lên Telegram không?
           default: true
           selector:
             boolean: {}
@@ -443,15 +450,15 @@ blueprint:
         include_discord_notify:
           name: ✅ Discord Option (Optional)
           description: |
-            Enable nếu muốn gửi thông báo lên Discord.
-            Xem thêm tại https://www.home-assistant.io/integrations/discord/
+            👉 Enable nếu muốn gửi thông báo lên Discord.
+            🌐 Xem thêm https://www.home-assistant.io/integrations/discord/
           default: false
           selector:
             boolean: {}
         discord_provider:
           name: 🛠️ Config entry ID
           description: |
-            Choose Discord Bot to use for send Notifications.
+            👉 Choose Discord Bot to use for send Notifications.
             ⚠️ Vào `/config/integrations/integration/discord` copy tên của Bot rồi dán vào đây thay thế tên bot mặc định
           selector:
             text:
@@ -463,14 +470,14 @@ blueprint:
 #          default: []
         discord_channel:
           name: 👨‍👨‍👦 Channel ID
-          description: ID của Channel trong nhóm Discord
+          description: 👉 ID của Channel trong nhóm Discord
           selector:
             text:
           default: ""
        
         discord_video:
           name: 🎞️ Send Video (Optional)
-          description: Tùy chọn có gửi video lên Discord không?
+          description: 👉 Tùy chọn có gửi video lên Discord không?
           default: true
           selector:
             boolean: {}
@@ -482,14 +489,14 @@ blueprint:
         include_tts_announcement:
           name: ✅ Use The Text-to-Speech Announcement Option (Optional)
           description: |
-            Enable khi muốn gửi TTS ra loa sẽ chọn bên dưới.
-            Xem thêm tại https://www.home-assistant.io/integrations/?search=tts
+            👉 Enable khi muốn gửi TTS ra loa sẽ chọn bên dưới.
+            🌐 Xem thêm tại https://www.home-assistant.io/integrations/?search=tts
           default: false
           selector:
             boolean: {}
         num_volume_speaker:
           name: 🔊 Volume Set
-          description: Thiết lập Âm lượng cho Loa. ( từ 0.1 đến 1)
+          description: 👉 Thiết lập Âm lượng cho Loa. ( từ 0.1 đến 1)
           selector:
             number:
               min: 0.1
@@ -500,7 +507,7 @@ blueprint:
         text_to_speech_engine:
           name: 🗣️ Text-to-Speech Service Provider
           description: |
-            Chọn dịch vụ TTS hỗ trợ.
+            👉 Chọn dịch vụ TTS hỗ trợ.
           default: []
           selector:
             entity:
@@ -509,7 +516,7 @@ blueprint:
         media_player:
           name: 🎶 Media Player
           description: |
-            Chọn loa để phát thông báo
+            👉 Chọn loa để phát thông báo
           default: []
           selector:
             entity:
@@ -519,14 +526,14 @@ blueprint:
         include_custom_media_player:
           name: ✅ Use Custom Media Player Option (Optional)
           description: |
-            Enable khi muốn thêm Media Player custom dạng sensor
+            👉 Enable khi muốn thêm Media Player custom dạng sensor
           default: false
           selector:
             boolean: {}
         custom_media_player:
           name: 🎶 Custom Media Player
           description: >
-            Nhập Sensor đã có với state là các loa.
+            👉 Nhập Sensor đã có với state là các loa
           default: ""
           selector:
             text:
@@ -538,7 +545,7 @@ blueprint:
       input:
         num_snapshots:
           name: ⌛ Number of Snapshots
-          description: Số ảnh sẽ chụp để so sánh (từ 1 đến 5)
+          description: 👉 Số ảnh sẽ chụp để so sánh (từ 1 đến 5)
           selector:
             number:
               min: 1
@@ -548,7 +555,7 @@ blueprint:
           default: 1
         num_delay:
           name: ⌛ Delay after Snapshots
-          description: Thời gian trễ sau mỗi lần Snapshots (tính theo giây)
+          description: 👉 Thời gian trễ sau mỗi lần Snapshots (tính theo giây)
           selector:
             number:
               min: 0
@@ -559,8 +566,8 @@ blueprint:
         num_delay_actions:
           name: ⌛ Delays
           description: |
-            Thời gian chờ sau khi hoàn thành tất cả các hành động (tính theo giây)
-            Automation này chỉ hoạt động lại sau khi hết thời gian Delay này.
+            👉 Thời gian chờ sau khi hoàn thành tất cả các hành động (tính theo giây)
+            ⚠️ Automation này chỉ hoạt động lại sau khi hết thời gian Delay này.
           selector:
             number:
               min: 5
@@ -576,15 +583,15 @@ blueprint:
         include_custom_actions:
           name: ✅ Use The Custom Action Options (Optional)
           description: |
-            Chọn Enable Custom Actions và thêm Actions bên dưới nếu bạn muốn thêm các Hành động khác để thực hiện trong Automation này.
+            👉 Chọn Enable Custom Actions và thêm Actions bên dưới nếu bạn muốn thêm các Hành động khác để thực hiện trong Automation này.
           default: false
           selector:
             boolean: {}
         custom_actions:
           name: 🛠️ Custom Actions
           description: |
-            Thêm bất kỳ hành động nào bạn muốn chạy trong Automation này.
-            Biến lấy nội dung phân tích AI cho các nội dung khác: `humans_detected_report.data.humans_detected_description`
+            👉 Thêm bất kỳ hành động nào bạn muốn chạy trong Automation này.
+            ⚠️ Biến lấy nội dung phân tích AI cho các nội dung khác: `humans_detected_report.data.humans_detected_description`
           default: []
           selector:
             action:
