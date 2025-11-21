@@ -40,13 +40,13 @@ blueprint:
       name: 🛠️ Add Condition(s) to run this Automation
       description: |
         Thêm Condition để chạy Automation.
-        Automation chỉ chạy khi Conditions này là True.
+        Automation chỉ chạy khi Conditions này là `True`.
       default: []
       selector:
         condition:
 
     custom_actions_1_settings:
-      name: "Custom Actions"
+      name: "Custom Actions 1"
       icon: mdi:gesture-tap-button
       collapsed: true
       input:
@@ -60,9 +60,10 @@ blueprint:
         custom_actions_1:
           name: 🛠️ Custom Actions
           description: |
-            Thêm bất kỳ hành động nào bạn muốn chạy trong Automation này.
             🚨 Action này sẽ chạy đầu tiên trong Automation.
-            Sử dụng cho việc muốn Action gì đó trước khi thông báo.
+            🚨 Sử dụng `variables.set:` cho `variables_custom` để thêm Biến nếu muốn
+            Sử dụng cho việc muốn chạy Action gì đó trước khi thông báo.
+            Thêm bất kỳ hành động nào bạn muốn chạy trong Automation này.
           default: []
           selector:
             action:
@@ -91,12 +92,12 @@ blueprint:
           multiline: true
               
     repeat_settings:
-      name: "Repeat Notify Settings"
+      name: "Repeat Settings"
       icon: mdi:repeat-variant
       collapsed: true
       input:
         repeat_types:
-          name: ✅ Repeat Notify Option (Optional)
+          name: ✅ Repeat Option (Optional)
           description: |
             Enable loại Vòng Lặp nếu muốn lặp gửi thông báo
             Chọn loại nào thì nhập điều kiện tương ứng bên dưới
@@ -167,7 +168,7 @@ blueprint:
 
     ai_task_settings:
       name: "AI Task Settings"
-      icon: mdi:repeat-variant
+      icon: mdi:robot-happy-outline
       collapsed: true
       input:
         ai_powered:
@@ -201,6 +202,7 @@ blueprint:
           description: |
             Chuỗi chứa các hướng dẫn cụ thể để AI tuân theo khi tạo văn bản.
             Tùy theo sự sáng tạo và yêu cầu bạn muốn để có thể thay đổi các hướng dẫn mẫu sẵn có.
+            ⚠️ Hãy thay đỗi dữ liệu các sensor theo của bạn để sử dụng tốt Automation
           default: |
             Đây là dữ liệu bạn sẽ dùng:
             - Thời gian {{now().hour}} giờ {{now().minute}} phút
@@ -239,7 +241,7 @@ blueprint:
             boolean: {}
 
         is_ios_android:
-          name: 🔔 Is it an Android or iOS device?
+          name: 🔔 Android or iOS device?
           description: |
             Chọn điện thoại đẩy thông báo là Android hay iOS?
           default: android_device
@@ -360,12 +362,12 @@ blueprint:
 
 
     zalo_settings:
-      name: "Zalo Notifications Settings"
+      name: "Zalo Settings"
       icon: mdi:message-image-outline
       collapsed: true
       input:
         include_zalo_notify:
-          name: ✅ Use Zalo Notifications Option (Optional)
+          name: ✅ Zalo Option (Optional)
           description: |
             Enable nếu muốn gửi thông báo lên Zalo.
             Xem thêm tại https://github.com/smarthomeblack/zalo_bot
@@ -374,11 +376,13 @@ blueprint:
             boolean: {}
 
         zalo_group_id:
-          name: ‍🆔 Zalo Group ID
+          name: ‍🆔 User or Group ID
           description: |
             ID của User hoặc Group Zalo.
             ⚠️ Zalo Type bên dưới chọn User thì ở đây chỉ nhập ID của User
             ⚠️ Zalo Type bên dưới chọn Group thì ở đây chỉ nhập ID của Group
+            ⚠️ Không thể sử dụng cùng lúc ID của User và ID của Group.
+            ✅ Chỉ nhập 1 loại là ID User hoặc ID Group
           selector:
             text:
               multiple: true
@@ -389,14 +393,17 @@ blueprint:
           description: Số điện thoại của Zalo Bot.
           selector:
             text:
-          default: "+84987987987"
+          default: "+84376861184"
 
         zalo_types:
           name: 👨‍👩‍👧‍👦 Zalo Type Option (Optional)
           description: |
             Chọn thông báo lên Zalo cá nhân hoặc group.
-            Xem thêm tại https://github.com/smarthomeblack/zalo_bot
-          default: "0"
+            ⚠️ Chọn User thì ở `User or Group ID` chỉ nhập ID của User
+            ⚠️ Chọn Group thì ở `User or Group ID` chỉ nhập ID của Group
+            ⚠️ Không thể sử dụng cùng lúc ID của User và ID của Group.
+            ✅ `User or Group ID` chỉ nhập 1 loại là ID User hoặc ID Group
+          default: "1"
           selector:
             select:
               options:
@@ -416,12 +423,12 @@ blueprint:
           default: 0
 
     telegram_settings:
-      name: "Telegram Notifications Settings"
+      name: "Telegram Settings"
       icon: mdi:message-badge
       collapsed: true
       input:
         include_telegram_notify:
-          name: ✅ Use Telegram Notifications Option (Optional)
+          name: ✅ Telegram Option (Optional)
           description: |
             Enable nếu muốn gửi thông báo lên Telegram.
             Xem thêm tại https://www.home-assistant.io/integrations/?search=telegram
@@ -457,18 +464,27 @@ blueprint:
           default: ""
             
     discord_settings:
-      name: "Discord Notifications Settings"
+      name: "Discord Settings"
       icon: mdi:message-bulleted
       collapsed: true
       input:
         include_discord_notify:
-          name: ✅ Use Discord Notifications Option (Optional)
+          name: ✅ Discord Option (Optional)
           description: |
             Enable nếu muốn gửi thông báo lên Discord.
             Xem thêm tại https://www.home-assistant.io/integrations/discord/
           default: false
           selector:
             boolean: {}
+        discord_provider:
+          name: 🛠️ Config entry ID
+          description: |
+            Choose Discord Bot to use for send Notifications.
+            ⚠️ Vào `/config/integrations/integration/discord` copy tên của Bot rồi dán vào đây thay thế tên bot mặc định
+          selector:
+            text:
+              multiline: false
+          default: "hass_discord"
         discord_channel:
           name: 🆔 Discord Channel ID
           description: ID của Channel trong nhóm Discord.
@@ -609,7 +625,7 @@ blueprint:
               multiple: true
 
     custom_actions_settings:
-      name: "Custom Actions"
+      name: "Custom Actions 2"
       icon: mdi:gesture-tap-button
       collapsed: true
       input:
@@ -623,7 +639,8 @@ blueprint:
         custom_actions:
           name: 🛠️ Custom Actions
           description: |
-            Thêm bất kỳ hành động nào bạn muốn chạy trong Automation này.
+            🚨 Action này sẽ chạy cuối cùng trong Automation.
+            Sử dụng cho việc muốn chạy Action gì đó sau khi thông báo hoàn tất.
             Biến lấy nội dung phân tích AI cho các nội dung khác: `response_thong_bao.data.thong_bao`
           default: []
           selector:
@@ -666,7 +683,7 @@ variables:
   include_zalo_notify: !input "include_zalo_notify"
   zalo_group_id: !input zalo_group_id
   filtered_zalo_id: >
-    {{ zalo_group_id | tojson }}
+    {{ (zalo_group_id if zalo_group_id is iterable and zalo_group_id is not string else [zalo_group_id|string]) | map('string') | list | tojson }}
   #Telegram Message
   include_telegram_notify: !input "include_telegram_notify"
   provider: !input provider
@@ -675,11 +692,13 @@ variables:
   tele_title: |
     {{ notify_title | regex_replace('<span[^>]*>', '') | replace('</span>', '') if '<span' in notify_title else notify_title }}
   filtered_tele_id: >
-    {{ telegram_group_id | tojson }}
+    {{ (telegram_group_id if telegram_group_id is iterable and telegram_group_id is not string else [telegram_group_id|string]) | map('string') | list | tojson }}
   #Discord
   include_discord_notify: !input "include_discord_notify"
+  discord_provider: !input discord_provider
   discord_channel: !input discord_channel
-  filtered_discord_id: "{{ discord_channel | tojson }}"
+  filtered_discord_id: >
+    {{ (discord_channel if discord_channel is iterable and discord_channel is not string else [discord_channel|string]) | map('string') | list | tojson }}
   #TTS Message
   include_tts_announcement: !input "include_tts_announcement"
   num_volume_speaker: !input num_volume_speaker
@@ -696,6 +715,8 @@ variables:
   include_custom_actions: !input "include_custom_actions"
   #Global Conditions
   global_conditions: !input global_conditions
+  #Custom Variables
+  variables_custom: ''
 
 # All Conditions
 condition:
@@ -952,7 +973,7 @@ action:
                                           repeat:
                                             for_each: "{{ filtered_discord_id }}"
                                             sequence:
-                                              - action: notify.hass_discord
+                                              - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                                 metadata: {}
                                                 data:
                                                   target: "{{ repeat.item }}"
@@ -974,44 +995,56 @@ action:
                                                 - condition: template
                                                   value_template: "{{ wait.completed }}"
                                               then:
-                                                - action: media_player.volume_set
-                                                  metadata: {}
-                                                  data:
-                                                    volume_level: "{{num_volume_speaker}}"
-                                                  target:
-                                                    entity_id: !input media_player
-                                                - action: tts.speak
-                                                  target:
-                                                    entity_id: !input text_to_speech_engine
-                                                  data:
-                                                    media_player_entity_id: "{{ is_custom_media_player }}"
-                                                    message: "{{response_thong_bao.data.thong_bao}}"
+                                                - alias: Send a TTS to each speaker
+                                                  repeat:
+                                                    for_each: "{{ is_custom_media_player }}"
+                                                    sequence:
+                                                      - action: media_player.volume_set
+                                                        metadata: {}
+                                                        data:
+                                                          volume_level: "{{num_volume_speaker}}"
+                                                        target:
+                                                          entity_id: "{{ repeat.item }}"
+                                                      - action: tts.speak
+                                                        target:
+                                                          entity_id: !input text_to_speech_engine
+                                                        data:
+                                                          media_player_entity_id: "{{ repeat.item }}"
+                                                          message: "{{response_thong_bao.data.thong_bao}}"
                                               else:
-                                                - action: media_player.volume_set
-                                                  metadata: {}
-                                                  data:
-                                                    volume_level: "{{num_volume_speaker}}"
-                                                  target:
-                                                    entity_id: !input media_player
-                                                - action: tts.speak
-                                                  target:
-                                                    entity_id: !input text_to_speech_engine
-                                                  data:
-                                                    media_player_entity_id: "{{ is_custom_media_player }}"
-                                                    message: "{{ is_wait_completed_error }}"
+                                                - alias: Send a TTS to each speaker
+                                                  repeat:
+                                                    for_each: "{{ is_custom_media_player }}"
+                                                    sequence:
+                                                      - action: media_player.volume_set
+                                                        metadata: {}
+                                                        data:
+                                                          volume_level: "{{num_volume_speaker}}"
+                                                        target:
+                                                          entity_id: "{{ repeat.item }}"
+                                                      - action: tts.speak
+                                                        target:
+                                                          entity_id: !input text_to_speech_engine
+                                                        data:
+                                                          media_player_entity_id: "{{ repeat.item }}"
+                                                          message: "{{ is_wait_completed_error }}"
                                           else:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{response_thong_bao.data.thong_bao}}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{response_thong_bao.data.thong_bao}}"
 
                                     - if:
                                         - condition: template
@@ -1090,7 +1123,7 @@ action:
                                       repeat:
                                         for_each: "{{ filtered_discord_id }}"
                                         sequence:
-                                          - action: notify.hass_discord
+                                          - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                             metadata: {}
                                             data:
                                               target: "{{ repeat.item }}"
@@ -1112,44 +1145,56 @@ action:
                                             - condition: template
                                               value_template: "{{ wait.completed }}"
                                           then:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ai_error_message}}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ai_error_message}}"
                                           else:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ is_wait_completed_error }}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ is_wait_completed_error }}"
                                       else:
-                                        - action: media_player.volume_set
-                                          metadata: {}
-                                          data:
-                                            volume_level: "{{num_volume_speaker}}"
-                                          target:
-                                            entity_id: !input media_player
-                                        - action: tts.speak
-                                          target:
-                                            entity_id: !input text_to_speech_engine
-                                          data:
-                                            media_player_entity_id: "{{ is_custom_media_player }}"
-                                            message: "{{ai_error_message}}"
+                                        - alias: Send a TTS to each speaker
+                                          repeat:
+                                            for_each: "{{ is_custom_media_player }}"
+                                            sequence:
+                                              - action: media_player.volume_set
+                                                metadata: {}
+                                                data:
+                                                  volume_level: "{{num_volume_speaker}}"
+                                                target:
+                                                  entity_id: "{{ repeat.item }}"
+                                              - action: tts.speak
+                                                target:
+                                                  entity_id: !input text_to_speech_engine
+                                                data:
+                                                  media_player_entity_id: "{{ repeat.item }}"
+                                                  message: "{{ai_error_message}}"
 
                                 - if:
                                     - condition: template
@@ -1350,7 +1395,7 @@ action:
                                       repeat:
                                         for_each: "{{ filtered_discord_id }}"
                                         sequence:
-                                          - action: notify.hass_discord
+                                          - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                             metadata: {}
                                             data:
                                               target: "{{ repeat.item }}"
@@ -1372,44 +1417,56 @@ action:
                                             - condition: template
                                               value_template: "{{ wait.completed }}"
                                           then:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ai_structure_description}}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ai_structure_description}}"
                                           else:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ is_wait_completed_error }}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ is_wait_completed_error }}"
                                       else:
-                                        - action: media_player.volume_set
-                                          metadata: {}
-                                          data:
-                                            volume_level: "{{num_volume_speaker}}"
-                                          target:
-                                            entity_id: !input media_player
-                                        - action: tts.speak
-                                          target:
-                                            entity_id: !input text_to_speech_engine
-                                          data:
-                                            media_player_entity_id: "{{ is_custom_media_player }}"
-                                            message: "{{ai_structure_description}}"
+                                        - alias: Send a TTS to each speaker
+                                          repeat:
+                                            for_each: "{{ is_custom_media_player }}"
+                                            sequence:
+                                              - action: media_player.volume_set
+                                                metadata: {}
+                                                data:
+                                                  volume_level: "{{num_volume_speaker}}"
+                                                target:
+                                                  entity_id: "{{ repeat.item }}"
+                                              - action: tts.speak
+                                                target:
+                                                  entity_id: !input text_to_speech_engine
+                                                data:
+                                                  media_player_entity_id: "{{ repeat.item }}"
+                                                  message: "{{ai_structure_description}}"
 
                                 - if:
                                     - condition: template
@@ -1646,7 +1703,7 @@ action:
                                           repeat:
                                             for_each: "{{ filtered_discord_id }}"
                                             sequence:
-                                              - action: notify.hass_discord
+                                              - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                                 metadata: {}
                                                 data:
                                                   target: "{{ repeat.item }}"
@@ -1668,44 +1725,56 @@ action:
                                                 - condition: template
                                                   value_template: "{{ wait.completed }}"
                                               then:
-                                                - action: media_player.volume_set
-                                                  metadata: {}
-                                                  data:
-                                                    volume_level: "{{num_volume_speaker}}"
-                                                  target:
-                                                    entity_id: !input media_player
-                                                - action: tts.speak
-                                                  target:
-                                                    entity_id: !input text_to_speech_engine
-                                                  data:
-                                                    media_player_entity_id: "{{ is_custom_media_player }}"
-                                                    message: "{{response_thong_bao.data.thong_bao}}"
+                                                - alias: Send a TTS to each speaker
+                                                  repeat:
+                                                    for_each: "{{ is_custom_media_player }}"
+                                                    sequence:
+                                                      - action: media_player.volume_set
+                                                        metadata: {}
+                                                        data:
+                                                          volume_level: "{{num_volume_speaker}}"
+                                                        target:
+                                                          entity_id: "{{ repeat.item }}"
+                                                      - action: tts.speak
+                                                        target:
+                                                          entity_id: !input text_to_speech_engine
+                                                        data:
+                                                          media_player_entity_id: "{{ repeat.item }}"
+                                                          message: "{{response_thong_bao.data.thong_bao}}"
                                               else:
-                                                - action: media_player.volume_set
-                                                  metadata: {}
-                                                  data:
-                                                    volume_level: "{{num_volume_speaker}}"
-                                                  target:
-                                                    entity_id: !input media_player
-                                                - action: tts.speak
-                                                  target:
-                                                    entity_id: !input text_to_speech_engine
-                                                  data:
-                                                    media_player_entity_id: "{{ is_custom_media_player }}"
-                                                    message: "{{ is_wait_completed_error }}"
+                                                - alias: Send a TTS to each speaker
+                                                  repeat:
+                                                    for_each: "{{ is_custom_media_player }}"
+                                                    sequence:
+                                                      - action: media_player.volume_set
+                                                        metadata: {}
+                                                        data:
+                                                          volume_level: "{{num_volume_speaker}}"
+                                                        target:
+                                                          entity_id: "{{ repeat.item }}"
+                                                      - action: tts.speak
+                                                        target:
+                                                          entity_id: !input text_to_speech_engine
+                                                        data:
+                                                          media_player_entity_id: "{{ repeat.item }}"
+                                                          message: "{{ is_wait_completed_error }}"
                                           else:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{response_thong_bao.data.thong_bao}}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{response_thong_bao.data.thong_bao}}"
 
                                     - if:
                                         - condition: template
@@ -1784,7 +1853,7 @@ action:
                                       repeat:
                                         for_each: "{{ filtered_discord_id }}"
                                         sequence:
-                                          - action: notify.hass_discord
+                                          - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                             metadata: {}
                                             data:
                                               target: "{{ repeat.item }}"
@@ -1822,44 +1891,56 @@ action:
                                             - condition: template
                                               value_template: "{{ wait.completed }}"
                                           then:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ai_error_message}}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ai_error_message}}"
                                           else:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ is_wait_completed_error }}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ is_wait_completed_error }}"
                                       else:
-                                        - action: media_player.volume_set
-                                          metadata: {}
-                                          data:
-                                            volume_level: "{{num_volume_speaker}}"
-                                          target:
-                                            entity_id: !input media_player
-                                        - action: tts.speak
-                                          target:
-                                            entity_id: !input text_to_speech_engine
-                                          data:
-                                            media_player_entity_id: "{{ is_custom_media_player }}"
-                                            message: "{{ai_error_message}}"
+                                        - alias: Send a TTS to each speaker
+                                          repeat:
+                                            for_each: "{{ is_custom_media_player }}"
+                                            sequence:
+                                              - action: media_player.volume_set
+                                                metadata: {}
+                                                data:
+                                                  volume_level: "{{num_volume_speaker}}"
+                                                target:
+                                                  entity_id: "{{ repeat.item }}"
+                                              - action: tts.speak
+                                                target:
+                                                  entity_id: !input text_to_speech_engine
+                                                data:
+                                                  media_player_entity_id: "{{ repeat.item }}"
+                                                  message: "{{ai_error_message}}"
 
                         - alias: "Check if AI Task is disable"
                           conditions:
@@ -2044,7 +2125,7 @@ action:
                                       repeat:
                                         for_each: "{{ filtered_discord_id }}"
                                         sequence:
-                                          - action: notify.hass_discord
+                                          - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                             metadata: {}
                                             data:
                                               target: "{{ repeat.item }}"
@@ -2082,44 +2163,56 @@ action:
                                             - condition: template
                                               value_template: "{{ wait.completed }}"
                                           then:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ai_structure_description}}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ai_structure_description}}"
                                           else:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ is_wait_completed_error }}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ is_wait_completed_error }}"
                                       else:
-                                        - action: media_player.volume_set
-                                          metadata: {}
-                                          data:
-                                            volume_level: "{{num_volume_speaker}}"
-                                          target:
-                                            entity_id: !input media_player
-                                        - action: tts.speak
-                                          target:
-                                            entity_id: !input text_to_speech_engine
-                                          data:
-                                            media_player_entity_id: "{{ is_custom_media_player }}"
-                                            message: "{{ai_structure_description}}"
+                                        - alias: Send a TTS to each speaker
+                                          repeat:
+                                            for_each: "{{ is_custom_media_player }}"
+                                            sequence:
+                                              - action: media_player.volume_set
+                                                metadata: {}
+                                                data:
+                                                  volume_level: "{{num_volume_speaker}}"
+                                                target:
+                                                  entity_id: "{{ repeat.item }}"
+                                              - action: tts.speak
+                                                target:
+                                                  entity_id: !input text_to_speech_engine
+                                                data:
+                                                  media_player_entity_id: "{{ repeat.item }}"
+                                                  message: "{{ai_structure_description}}"
                                                 
                     - delay:
                         seconds: "{{ repeat_delay }}"
@@ -2340,7 +2433,7 @@ action:
                                           repeat:
                                             for_each: "{{ filtered_discord_id }}"
                                             sequence:
-                                              - action: notify.hass_discord
+                                              - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                                 metadata: {}
                                                 data:
                                                   target: "{{ repeat.item }}"
@@ -2378,44 +2471,56 @@ action:
                                                 - condition: template
                                                   value_template: "{{ wait.completed }}"
                                               then:
-                                                - action: media_player.volume_set
-                                                  metadata: {}
-                                                  data:
-                                                    volume_level: "{{num_volume_speaker}}"
-                                                  target:
-                                                    entity_id: !input media_player
-                                                - action: tts.speak
-                                                  target:
-                                                    entity_id: !input text_to_speech_engine
-                                                  data:
-                                                    media_player_entity_id: "{{ is_custom_media_player }}"
-                                                    message: "{{response_thong_bao.data.thong_bao}}"
+                                                - alias: Send a TTS to each speaker
+                                                  repeat:
+                                                    for_each: "{{ is_custom_media_player }}"
+                                                    sequence:
+                                                      - action: media_player.volume_set
+                                                        metadata: {}
+                                                        data:
+                                                          volume_level: "{{num_volume_speaker}}"
+                                                        target:
+                                                          entity_id: "{{ repeat.item }}"
+                                                      - action: tts.speak
+                                                        target:
+                                                          entity_id: !input text_to_speech_engine
+                                                        data:
+                                                          media_player_entity_id: "{{ repeat.item }}"
+                                                          message: "{{response_thong_bao.data.thong_bao}}"
                                               else:
-                                                - action: media_player.volume_set
-                                                  metadata: {}
-                                                  data:
-                                                    volume_level: "{{num_volume_speaker}}"
-                                                  target:
-                                                    entity_id: !input media_player
-                                                - action: tts.speak
-                                                  target:
-                                                    entity_id: !input text_to_speech_engine
-                                                  data:
-                                                    media_player_entity_id: "{{ is_custom_media_player }}"
-                                                    message: "{{ is_wait_completed_error }}"
+                                                - alias: Send a TTS to each speaker
+                                                  repeat:
+                                                    for_each: "{{ is_custom_media_player }}"
+                                                    sequence:
+                                                      - action: media_player.volume_set
+                                                        metadata: {}
+                                                        data:
+                                                          volume_level: "{{num_volume_speaker}}"
+                                                        target:
+                                                          entity_id: "{{ repeat.item }}"
+                                                      - action: tts.speak
+                                                        target:
+                                                          entity_id: !input text_to_speech_engine
+                                                        data:
+                                                          media_player_entity_id: "{{ repeat.item }}"
+                                                          message: "{{ is_wait_completed_error }}"
                                           else:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{response_thong_bao.data.thong_bao}}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{response_thong_bao.data.thong_bao}}"
                                                     
 
                               else:
@@ -2479,7 +2584,7 @@ action:
                                       repeat:
                                         for_each: "{{ filtered_discord_id }}"
                                         sequence:
-                                          - action: notify.hass_discord
+                                          - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                             metadata: {}
                                             data:
                                               target: "{{ repeat.item }}"
@@ -2517,44 +2622,56 @@ action:
                                             - condition: template
                                               value_template: "{{ wait.completed }}"
                                           then:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ai_error_message}}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ai_error_message}}"
                                           else:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ is_wait_completed_error }}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ is_wait_completed_error }}"
                                       else:
-                                        - action: media_player.volume_set
-                                          metadata: {}
-                                          data:
-                                            volume_level: "{{num_volume_speaker}}"
-                                          target:
-                                            entity_id: !input media_player
-                                        - action: tts.speak
-                                          target:
-                                            entity_id: !input text_to_speech_engine
-                                          data:
-                                            media_player_entity_id: "{{ is_custom_media_player }}"
-                                            message: "{{ai_error_message}}"
+                                        - alias: Send a TTS to each speaker
+                                          repeat:
+                                            for_each: "{{ is_custom_media_player }}"
+                                            sequence:
+                                              - action: media_player.volume_set
+                                                metadata: {}
+                                                data:
+                                                  volume_level: "{{num_volume_speaker}}"
+                                                target:
+                                                  entity_id: "{{ repeat.item }}"
+                                              - action: tts.speak
+                                                target:
+                                                  entity_id: !input text_to_speech_engine
+                                                data:
+                                                  media_player_entity_id: "{{ repeat.item }}"
+                                                  message: "{{ai_error_message}}"
                                                 
 
                         - alias: "Check if AI Task is disable"
@@ -2740,7 +2857,7 @@ action:
                                       repeat:
                                         for_each: "{{ filtered_discord_id }}"
                                         sequence:
-                                          - action: notify.hass_discord
+                                          - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                             metadata: {}
                                             data:
                                               target: "{{ repeat.item }}"
@@ -2778,44 +2895,56 @@ action:
                                             - condition: template
                                               value_template: "{{ wait.completed }}"
                                           then:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ai_structure_description}}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ai_structure_description}}"
                                           else:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ is_wait_completed_error }}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ is_wait_completed_error }}"
                                       else:
-                                        - action: media_player.volume_set
-                                          metadata: {}
-                                          data:
-                                            volume_level: "{{num_volume_speaker}}"
-                                          target:
-                                            entity_id: !input media_player
-                                        - action: tts.speak
-                                          target:
-                                            entity_id: !input text_to_speech_engine
-                                          data:
-                                            media_player_entity_id: "{{ is_custom_media_player }}"
-                                            message: "{{ai_structure_description}}"
+                                        - alias: Send a TTS to each speaker
+                                          repeat:
+                                            for_each: "{{ is_custom_media_player }}"
+                                            sequence:
+                                              - action: media_player.volume_set
+                                                metadata: {}
+                                                data:
+                                                  volume_level: "{{num_volume_speaker}}"
+                                                target:
+                                                  entity_id: "{{ repeat.item }}"
+                                              - action: tts.speak
+                                                target:
+                                                  entity_id: !input text_to_speech_engine
+                                                data:
+                                                  media_player_entity_id: "{{ repeat.item }}"
+                                                  message: "{{ai_structure_description}}"
 
 
                     - delay:
@@ -3035,7 +3164,7 @@ action:
                                           repeat:
                                             for_each: "{{ filtered_discord_id }}"
                                             sequence:
-                                              - action: notify.hass_discord
+                                              - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                                 metadata: {}
                                                 data:
                                                   target: "{{ repeat.item }}"
@@ -3073,44 +3202,56 @@ action:
                                                 - condition: template
                                                   value_template: "{{ wait.completed }}"
                                               then:
-                                                - action: media_player.volume_set
-                                                  metadata: {}
-                                                  data:
-                                                    volume_level: "{{num_volume_speaker}}"
-                                                  target:
-                                                    entity_id: !input media_player
-                                                - action: tts.speak
-                                                  target:
-                                                    entity_id: !input text_to_speech_engine
-                                                  data:
-                                                    media_player_entity_id: "{{ is_custom_media_player }}"
-                                                    message: "{{response_thong_bao.data.thong_bao}}"
+                                                - alias: Send a TTS to each speaker
+                                                  repeat:
+                                                    for_each: "{{ is_custom_media_player }}"
+                                                    sequence:
+                                                      - action: media_player.volume_set
+                                                        metadata: {}
+                                                        data:
+                                                          volume_level: "{{num_volume_speaker}}"
+                                                        target:
+                                                          entity_id: "{{ repeat.item }}"
+                                                      - action: tts.speak
+                                                        target:
+                                                          entity_id: !input text_to_speech_engine
+                                                        data:
+                                                          media_player_entity_id: "{{ repeat.item }}"
+                                                          message: "{{response_thong_bao.data.thong_bao}}"
                                               else:
-                                                - action: media_player.volume_set
-                                                  metadata: {}
-                                                  data:
-                                                    volume_level: "{{num_volume_speaker}}"
-                                                  target:
-                                                    entity_id: !input media_player
-                                                - action: tts.speak
-                                                  target:
-                                                    entity_id: !input text_to_speech_engine
-                                                  data:
-                                                    media_player_entity_id: "{{ is_custom_media_player }}"
-                                                    message: "{{ is_wait_completed_error }}"
+                                                - alias: Send a TTS to each speaker
+                                                  repeat:
+                                                    for_each: "{{ is_custom_media_player }}"
+                                                    sequence:
+                                                      - action: media_player.volume_set
+                                                        metadata: {}
+                                                        data:
+                                                          volume_level: "{{num_volume_speaker}}"
+                                                        target:
+                                                          entity_id: "{{ repeat.item }}"
+                                                      - action: tts.speak
+                                                        target:
+                                                          entity_id: !input text_to_speech_engine
+                                                        data:
+                                                          media_player_entity_id: "{{ repeat.item }}"
+                                                          message: "{{ is_wait_completed_error }}"
                                           else:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{response_thong_bao.data.thong_bao}}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{response_thong_bao.data.thong_bao}}"
 
                               else:
                                 - if:
@@ -3173,7 +3314,7 @@ action:
                                       repeat:
                                         for_each: "{{ filtered_discord_id }}"
                                         sequence:
-                                          - action: notify.hass_discord
+                                          - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                             metadata: {}
                                             data:
                                               target: "{{ repeat.item }}"
@@ -3211,44 +3352,56 @@ action:
                                             - condition: template
                                               value_template: "{{ wait.completed }}"
                                           then:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ai_error_message}}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ai_error_message}}"
                                           else:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ is_wait_completed_error }}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ is_wait_completed_error }}"
                                       else:
-                                        - action: media_player.volume_set
-                                          metadata: {}
-                                          data:
-                                            volume_level: "{{num_volume_speaker}}"
-                                          target:
-                                            entity_id: !input media_player
-                                        - action: tts.speak
-                                          target:
-                                            entity_id: !input text_to_speech_engine
-                                          data:
-                                            media_player_entity_id: "{{ is_custom_media_player }}"
-                                            message: "{{ai_error_message}}"
+                                        - alias: Send a TTS to each speaker
+                                          repeat:
+                                            for_each: "{{ is_custom_media_player }}"
+                                            sequence:
+                                              - action: media_player.volume_set
+                                                metadata: {}
+                                                data:
+                                                  volume_level: "{{num_volume_speaker}}"
+                                                target:
+                                                  entity_id: "{{ repeat.item }}"
+                                              - action: tts.speak
+                                                target:
+                                                  entity_id: !input text_to_speech_engine
+                                                data:
+                                                  media_player_entity_id: "{{ repeat.item }}"
+                                                  message: "{{ai_error_message}}"
 
                         - alias: "Check if AI Task is disable"
                           conditions:
@@ -3433,7 +3586,7 @@ action:
                                       repeat:
                                         for_each: "{{ filtered_discord_id }}"
                                         sequence:
-                                          - action: notify.hass_discord
+                                          - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                             metadata: {}
                                             data:
                                               target: "{{ repeat.item }}"
@@ -3471,44 +3624,56 @@ action:
                                             - condition: template
                                               value_template: "{{ wait.completed }}"
                                           then:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ai_structure_description}}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ai_structure_description}}"
                                           else:
-                                            - action: media_player.volume_set
-                                              metadata: {}
-                                              data:
-                                                volume_level: "{{num_volume_speaker}}"
-                                              target:
-                                                entity_id: !input media_player
-                                            - action: tts.speak
-                                              target:
-                                                entity_id: !input text_to_speech_engine
-                                              data:
-                                                media_player_entity_id: "{{ is_custom_media_player }}"
-                                                message: "{{ is_wait_completed_error }}"
+                                            - alias: Send a TTS to each speaker
+                                              repeat:
+                                                for_each: "{{ is_custom_media_player }}"
+                                                sequence:
+                                                  - action: media_player.volume_set
+                                                    metadata: {}
+                                                    data:
+                                                      volume_level: "{{num_volume_speaker}}"
+                                                    target:
+                                                      entity_id: "{{ repeat.item }}"
+                                                  - action: tts.speak
+                                                    target:
+                                                      entity_id: !input text_to_speech_engine
+                                                    data:
+                                                      media_player_entity_id: "{{ repeat.item }}"
+                                                      message: "{{ is_wait_completed_error }}"
                                       else:
-                                        - action: media_player.volume_set
-                                          metadata: {}
-                                          data:
-                                            volume_level: "{{num_volume_speaker}}"
-                                          target:
-                                            entity_id: !input media_player
-                                        - action: tts.speak
-                                          target:
-                                            entity_id: !input text_to_speech_engine
-                                          data:
-                                            media_player_entity_id: "{{ is_custom_media_player }}"
-                                            message: "{{ai_structure_description}}"
+                                        - alias: Send a TTS to each speaker
+                                          repeat:
+                                            for_each: "{{ is_custom_media_player }}"
+                                            sequence:
+                                              - action: media_player.volume_set
+                                                metadata: {}
+                                                data:
+                                                  volume_level: "{{num_volume_speaker}}"
+                                                target:
+                                                  entity_id: "{{ repeat.item }}"
+                                              - action: tts.speak
+                                                target:
+                                                  entity_id: !input text_to_speech_engine
+                                                data:
+                                                  media_player_entity_id: "{{ repeat.item }}"
+                                                  message: "{{ai_structure_description}}"
                                                 
                     - delay:
                         seconds: "{{ repeat_delay }}"
@@ -3726,7 +3891,7 @@ action:
                                 repeat:
                                   for_each: "{{ filtered_discord_id }}"
                                   sequence:
-                                    - action: notify.hass_discord
+                                    - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                       metadata: {}
                                       data:
                                         target: "{{ repeat.item }}"
@@ -3764,45 +3929,57 @@ action:
                                       - condition: template
                                         value_template: "{{ wait.completed }}"
                                     then:
-                                      - action: media_player.volume_set
-                                        metadata: {}
-                                        data:
-                                          volume_level: "{{num_volume_speaker}}"
-                                        target:
-                                          entity_id: !input media_player
-                                      - action: tts.speak
-                                        target:
-                                          entity_id: !input text_to_speech_engine
-                                        data:
-                                          media_player_entity_id: "{{ is_custom_media_player }}"
-                                          message: "{{response_thong_bao.data.thong_bao}}"
+                                      - alias: Send a TTS to each speaker
+                                        repeat:
+                                          for_each: "{{ is_custom_media_player }}"
+                                          sequence:
+                                            - action: media_player.volume_set
+                                              metadata: {}
+                                              data:
+                                                volume_level: "{{num_volume_speaker}}"
+                                              target:
+                                                entity_id: "{{ repeat.item }}"
+                                            - action: tts.speak
+                                              target:
+                                                entity_id: !input text_to_speech_engine
+                                              data:
+                                                media_player_entity_id: "{{ repeat.item }}"
+                                                message: "{{response_thong_bao.data.thong_bao}}"
                                     else:
-                                      - action: media_player.volume_set
-                                        metadata: {}
-                                        data:
-                                          volume_level: "{{num_volume_speaker}}"
-                                        target:
-                                          entity_id: !input media_player
-                                      - action: tts.speak
-                                        target:
-                                          entity_id: !input text_to_speech_engine
-                                        data:
-                                          media_player_entity_id: "{{ is_custom_media_player }}"
-                                          message: "{{ is_wait_completed_error }}"
+                                      - alias: Send a TTS to each speaker
+                                        repeat:
+                                          for_each: "{{ is_custom_media_player }}"
+                                          sequence:
+                                            - action: media_player.volume_set
+                                              metadata: {}
+                                              data:
+                                                volume_level: "{{num_volume_speaker}}"
+                                              target:
+                                                entity_id: "{{ repeat.item }}"
+                                            - action: tts.speak
+                                              target:
+                                                entity_id: !input text_to_speech_engine
+                                              data:
+                                                media_player_entity_id: "{{ repeat.item }}"
+                                                message: "{{ is_wait_completed_error }}"
 
                                 else:
-                                  - action: media_player.volume_set
-                                    metadata: {}
-                                    data:
-                                      volume_level: "{{num_volume_speaker}}"
-                                    target:
-                                      entity_id: !input media_player
-                                  - action: tts.speak
-                                    target:
-                                      entity_id: !input text_to_speech_engine
-                                    data:
-                                      media_player_entity_id: "{{ is_custom_media_player }}"
-                                      message: "{{response_thong_bao.data.thong_bao}}"
+                                  - alias: Send a TTS to each speaker
+                                    repeat:
+                                      for_each: "{{ is_custom_media_player }}"
+                                      sequence:
+                                        - action: media_player.volume_set
+                                          metadata: {}
+                                          data:
+                                            volume_level: "{{num_volume_speaker}}"
+                                          target:
+                                            entity_id: "{{ repeat.item }}"
+                                        - action: tts.speak
+                                          target:
+                                            entity_id: !input text_to_speech_engine
+                                          data:
+                                            media_player_entity_id: "{{ repeat.item }}"
+                                            message: "{{response_thong_bao.data.thong_bao}}"
                     else:
                       - if:
                           - condition: template
@@ -3864,7 +4041,7 @@ action:
                             repeat:
                               for_each: "{{ filtered_discord_id }}"
                               sequence:
-                                - action: notify.hass_discord
+                                - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                   metadata: {}
                                   data:
                                     target: "{{ repeat.item }}"
@@ -3902,44 +4079,56 @@ action:
                                   - condition: template
                                     value_template: "{{ wait.completed }}"
                                 then:
-                                  - action: media_player.volume_set
-                                    metadata: {}
-                                    data:
-                                      volume_level: "{{num_volume_speaker}}"
-                                    target:
-                                      entity_id: !input media_player
-                                  - action: tts.speak
-                                    target:
-                                      entity_id: !input text_to_speech_engine
-                                    data:
-                                      media_player_entity_id: "{{ is_custom_media_player }}"
-                                      message: "{{ai_error_message}}"
+                                  - alias: Send a TTS to each speaker
+                                    repeat:
+                                      for_each: "{{ is_custom_media_player }}"
+                                      sequence:
+                                        - action: media_player.volume_set
+                                          metadata: {}
+                                          data:
+                                            volume_level: "{{num_volume_speaker}}"
+                                          target:
+                                            entity_id: "{{ repeat.item }}"
+                                        - action: tts.speak
+                                          target:
+                                            entity_id: !input text_to_speech_engine
+                                          data:
+                                            media_player_entity_id: "{{ repeat.item }}"
+                                            message: "{{ai_error_message}}"
                                 else:
-                                  - action: media_player.volume_set
-                                    metadata: {}
-                                    data:
-                                      volume_level: "{{num_volume_speaker}}"
-                                    target:
-                                      entity_id: !input media_player
-                                  - action: tts.speak
-                                    target:
-                                      entity_id: !input text_to_speech_engine
-                                    data:
-                                      media_player_entity_id: "{{ is_custom_media_player }}"
-                                      message: "{{ is_wait_completed_error }}"
+                                  - alias: Send a TTS to each speaker
+                                    repeat:
+                                      for_each: "{{ is_custom_media_player }}"
+                                      sequence:
+                                        - action: media_player.volume_set
+                                          metadata: {}
+                                          data:
+                                            volume_level: "{{num_volume_speaker}}"
+                                          target:
+                                            entity_id: "{{ repeat.item }}"
+                                        - action: tts.speak
+                                          target:
+                                            entity_id: !input text_to_speech_engine
+                                          data:
+                                            media_player_entity_id: "{{ repeat.item }}"
+                                            message: "{{ is_wait_completed_error }}"
                             else:
-                              - action: media_player.volume_set
-                                metadata: {}
-                                data:
-                                  volume_level: "{{num_volume_speaker}}"
-                                target:
-                                  entity_id: !input media_player
-                              - action: tts.speak
-                                target:
-                                  entity_id: !input text_to_speech_engine
-                                data:
-                                  media_player_entity_id: "{{ is_custom_media_player }}"
-                                  message: "{{ai_error_message}}"
+                              - alias: Send a TTS to each speaker
+                                repeat:
+                                  for_each: "{{ is_custom_media_player }}"
+                                  sequence:
+                                    - action: media_player.volume_set
+                                      metadata: {}
+                                      data:
+                                        volume_level: "{{num_volume_speaker}}"
+                                      target:
+                                        entity_id: "{{ repeat.item }}"
+                                    - action: tts.speak
+                                      target:
+                                        entity_id: !input text_to_speech_engine
+                                      data:
+                                        media_player_entity_id: "{{ repeat.item }}"
+                                        message: "{{ai_error_message}}"
 
               - alias: "Check if AI Task is disable"
                 conditions:
@@ -4124,7 +4313,7 @@ action:
                             repeat:
                               for_each: "{{ filtered_discord_id }}"
                               sequence:
-                                - action: notify.hass_discord
+                                - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                   metadata: {}
                                   data:
                                     target: "{{ repeat.item }}"
@@ -4162,44 +4351,56 @@ action:
                                   - condition: template
                                     value_template: "{{ wait.completed }}"
                                 then:
-                                  - action: media_player.volume_set
-                                    metadata: {}
-                                    data:
-                                      volume_level: "{{num_volume_speaker}}"
-                                    target:
-                                      entity_id: !input media_player
-                                  - action: tts.speak
-                                    target:
-                                      entity_id: !input text_to_speech_engine
-                                    data:
-                                      media_player_entity_id: "{{ is_custom_media_player }}"
-                                      message: "{{ ai_structure_description }}"
+                                  - alias: Send a TTS to each speaker
+                                    repeat:
+                                      for_each: "{{ is_custom_media_player }}"
+                                      sequence:
+                                        - action: media_player.volume_set
+                                          metadata: {}
+                                          data:
+                                            volume_level: "{{num_volume_speaker}}"
+                                          target:
+                                            entity_id: "{{ repeat.item }}"
+                                        - action: tts.speak
+                                          target:
+                                            entity_id: !input text_to_speech_engine
+                                          data:
+                                            media_player_entity_id: "{{ repeat.item }}"
+                                            message: "{{ ai_structure_description }}"
                                 else:
-                                  - action: media_player.volume_set
-                                    metadata: {}
-                                    data:
-                                      volume_level: "{{num_volume_speaker}}"
-                                    target:
-                                      entity_id: !input media_player
-                                  - action: tts.speak
-                                    target:
-                                      entity_id: !input text_to_speech_engine
-                                    data:
-                                      media_player_entity_id: "{{ is_custom_media_player }}"
-                                      message: "{{ is_wait_completed_error }}"
+                                  - alias: Send a TTS to each speaker
+                                    repeat:
+                                      for_each: "{{ is_custom_media_player }}"
+                                      sequence:
+                                        - action: media_player.volume_set
+                                          metadata: {}
+                                          data:
+                                            volume_level: "{{num_volume_speaker}}"
+                                          target:
+                                            entity_id: "{{ repeat.item }}"
+                                        - action: tts.speak
+                                          target:
+                                            entity_id: !input text_to_speech_engine
+                                          data:
+                                            media_player_entity_id: "{{ repeat.item }}"
+                                            message: "{{ is_wait_completed_error }}"
                             else:
-                              - action: media_player.volume_set
-                                metadata: {}
-                                data:
-                                  volume_level: "{{num_volume_speaker}}"
-                                target:
-                                  entity_id: !input media_player
-                              - action: tts.speak
-                                target:
-                                  entity_id: !input text_to_speech_engine
-                                data:
-                                  media_player_entity_id: "{{ is_custom_media_player }}"
-                                  message: "{{ai_structure_description}}"
+                              - alias: Send a TTS to each speaker
+                                repeat:
+                                  for_each: "{{ is_custom_media_player }}"
+                                  sequence:
+                                    - action: media_player.volume_set
+                                      metadata: {}
+                                      data:
+                                        volume_level: "{{num_volume_speaker}}"
+                                      target:
+                                        entity_id: "{{ repeat.item }}"
+                                    - action: tts.speak
+                                      target:
+                                        entity_id: !input text_to_speech_engine
+                                      data:
+                                        media_player_entity_id: "{{ repeat.item }}"
+                                        message: "{{ai_structure_description}}"
 
   - choose:
       - alias: "Perform the custom action"
@@ -4208,6 +4409,6 @@ action:
             value_template: "{{ include_custom_actions }}"
         sequence: !input custom_actions
 
-mode: restart
-#max: 10
+mode: parallel
+max: 10
 max_exceeded: silent
