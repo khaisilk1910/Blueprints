@@ -81,7 +81,7 @@ blueprint:
           multiline: true
 
     template_customs:
-      name: 🧩 Template Customs
+      name: 🧩 Custom Template
       description: |
         👉 Sử dụng để chèn một `template mẫu` để tùy biến thêm dữ liệu trong Automation này
         ✅ Sử dụng `{{ template_customs }}` để lấy dữ liệu từ đây cho các nội dung trong automation
@@ -92,7 +92,7 @@ blueprint:
         template:
 
     message_customs:
-      name: 🪧 Message Customs
+      name: 🪧 Custom Message
       description: |
         👉 Nội dung tin nhắn custom dùng cho gửi thông báo Zalo, Telegram, Discord
         ⚠️ Bật AI hoặc Không dùng bỏ trống
