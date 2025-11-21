@@ -32,7 +32,7 @@ blueprint:
         6- **Có thể thêm nhiều Hành động tùy chọn nếu muốn thực hiện.**
         
         7- **Có thể thêm nhiều Điều kiện để chạy Automation**
-    </details>      
+    </details>
 
   domain: automation
   input:
@@ -207,12 +207,12 @@ blueprint:
             - Không mô tả các vật thể hoặc tòa nhà cố định.
             - Nếu trong video không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong các khung hình".
     mobile_app_notify_settings:
-      name: "Mobile App Notify"
+      name: "Mobile App Notify Settings"
       icon: mdi:devices
       collapsed: true
       input:
         include_notify:
-          name: ✅ Use The Mobile App Notify Option (Optional)
+          name: ✅ Mobile App Notify Option (Optional)
           description: |
             Enable nếu muốn gửi thông báo lên điện thoại đã chọn bên dưới.
             Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic
@@ -220,7 +220,7 @@ blueprint:
           selector:
             boolean: {}
         is_ios_android:
-          name: 🔔 Is it an Android or iOS device?
+          name: 🔔 Android or iOS device?
           description: |
             Chọn điện thoại đẩy thông báo là Android hay iOS?
           default: android_device
@@ -338,12 +338,12 @@ blueprint:
             duration:
               enable_day: false
     zalo_settings:
-      name: "Zalo Notifications Settings"
+      name: "Zalo Settings"
       icon: mdi:message-image-outline
       collapsed: true
       input:
         include_zalo_notify:
-          name: ✅ Use Zalo Notifications Option (Optional)
+          name: ✅ Zalo Option (Optional)
           description: |
             Enable nếu muốn gửi thông báo lên Zalo.
             Xem thêm tại https://github.com/smarthomeblack/zalo_bot
@@ -351,21 +351,27 @@ blueprint:
           selector:
             boolean: {}
         zalo_group_id:
-          name: 🧑‍💻 Zalo Group ID
-          description: ID của user hoặc nhóm Zalo.
+          name: 🧑‍💻 User or Group ID
+          description: |
+            ID của User hoặc Group Zalo.
+            ⚠️ Zalo Type bên dưới chọn User thì ở đây chỉ nhập ID của User
+            ⚠️ Zalo Type bên dưới chọn Group thì ở đây chỉ nhập ID của Group
           selector:
             text:
+              multiple: true
           default: ""
         zalo_phone:
           name: 📞 Zalo Acc
           description: Số điện thoại của Zalo Bot.
           selector:
             text:
-          default: "+84000000000"
+          default: "+84376861184"
         zalo_types:
           name: 👨‍👨‍👦 Zalo Type Option (Optional)
           description: |
             Chọn thông báo lên Zalo cá nhân hoặc group.
+            ⚠️ Chọn `User` thì ở `User or Group ID` bên trên chỉ nhập ID của User
+            ⚠️ Chọn `Group` thì ở `User or Group ID` bên trên chỉ nhập ID của Group
             Xem thêm tại https://github.com/smarthomeblack/zalo_bot
           default: "0"
           selector:
@@ -392,12 +398,12 @@ blueprint:
           selector:
             boolean: {}
     telegram_settings:
-      name: "Telegram Notifications Settings"
+      name: "Telegram Settings"
       icon: mdi:message-badge
       collapsed: true
       input:
         include_telegram_notify:
-          name: ✅ Use Telegram Notifications Option (Optional)
+          name: ✅ Telegram Option (Optional)
           description: |
             Enable nếu muốn gửi thông báo lên Telegram.
             Xem thêm tại https://www.home-assistant.io/integrations/?search=telegram
@@ -412,13 +418,13 @@ blueprint:
               integration: telegram_bot
           default: []
         telegram_group_id:
-          name: 👨‍👨‍👦 Telegram Group ID
+          name: 👨‍👨‍👦 Group ID
           description: ID của nhóm Telegram.
           selector:
             text:
           default: ""
         telegram_topic:
-          name: 🧑‍💻 Telegram Topic ID
+          name: 🧑‍💻 Topic ID
           description: ID của chủ đề trong nhóm Telegram.
           selector:
             text:
@@ -430,20 +436,33 @@ blueprint:
           selector:
             boolean: {}
     discord_settings:
-      name: "Discord Notifications Settings"
+      name: "Discord Settings"
       icon: mdi:message-bulleted
       collapsed: true
       input:
         include_discord_notify:
-          name: ✅ Use Discord Notifications Option (Optional)
+          name: ✅ Discord Option (Optional)
           description: |
             Enable nếu muốn gửi thông báo lên Discord.
             Xem thêm tại https://www.home-assistant.io/integrations/discord/
           default: false
           selector:
             boolean: {}
+        discord_provider:
+          name: 🛠️ Config entry ID
+          description: |
+            Choose Discord Bot to use for send Notifications.
+            ⚠️ Vào `/config/integrations/integration/discord` copy tên của Bot rồi dán vào đây thay thế tên bot mặc định
+          selector:
+            text:
+              multiline: false
+          default: "hass_discord"
+#          selector:
+#            config_entry:
+#              integration: discord
+#          default: []
         discord_channel:
-          name: 👨‍👨‍👦 Discord Channel ID
+          name: 👨‍👨‍👦 Channel ID
           description: ID của Channel trong nhóm Discord
           selector:
             text:
@@ -607,6 +626,24 @@ variables:
   #Zalo Message
   zalo_video: !input zalo_video
   include_zalo_notify: !input include_zalo_notify
+  zalo_group_id: !input zalo_group_id
+  filtered_zalo_id: >
+    {{ (zalo_group_id if zalo_group_id is iterable and zalo_group_id is not string else [zalo_group_id|string]) | map('string') | list | tojson }}
+  #Telegram Message
+  include_telegram_notify: !input include_telegram_notify
+  provider: !input provider
+  telegram_group_id: !input telegram_group_id
+  telegram_topic: !input telegram_topic
+  tele_video: !input tele_video
+  tele_title: |
+    {{ notify_title | regex_replace('<span[^>]*>', '') | replace('</span>', '') if '<span' in notify_title else notify_title }}
+  #Discord
+  include_discord_notify: !input include_discord_notify
+  discord_provider: !input discord_provider
+#  filtered_discord: >
+#    {{ discord_provider }}
+  discord_channel: !input discord_channel
+  discord_video: !input discord_video
   #Camera
   camera_device: !input camera_device
   camera_name: "{{ state_attr(camera_device, 'friendly_name') }}"
@@ -619,16 +656,6 @@ variables:
   num_delay_actions: !input num_delay_actions
   num_snapshots: !input num_snapshots
   num_delay: !input num_delay
-  #Telegram Message
-  include_telegram_notify: !input include_telegram_notify
-  provider: !input provider
-  telegram_group_id: !input telegram_group_id
-  telegram_topic: !input telegram_topic
-  tele_video: !input tele_video
-  #Discord
-  include_discord_notify: !input include_discord_notify
-  discord_channel: !input discord_channel
-  discord_video: !input discord_video
   #TTS Message
   include_tts_announcement: !input include_tts_announcement
   num_volume_speaker: !input num_volume_speaker
@@ -772,21 +799,25 @@ action:
                                             conditions:
                                               - "{{ is_ios_android == 'ios_device' }}"
                                             sequence:
-                                              - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                data:
-                                                  title: !input notify_title
-                                                  message: >
-                                                    {{ ai_messages }}
-                                                  data:
-                                                    attachment:
-                                                      url: "{{snapshot_access_file_path}}"
-                                                      content_type: "JPEG"
-                                                    tag: "{{ tag }}"
-                                                    actions:
-                                                      - action: "{{ action_confirm }}"
-                                                        title: "{{ confirm_text }}"
-                                                      - action: "{{ action_dismiss }}"
-                                                        title: "{{ dismiss_text }}"
+                                              - alias: Send a notification to each device
+                                                repeat:
+                                                  for_each: "{{ filtered_devices }}"
+                                                  sequence:
+                                                    - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                      data:
+                                                        title: !input notify_title
+                                                        message: >
+                                                          {{ ai_messages }}
+                                                        data:
+                                                          attachment:
+                                                            url: "{{snapshot_access_file_path}}"
+                                                            content_type: "JPEG"
+                                                          tag: "{{ tag }}"
+                                                          actions:
+                                                            - action: "{{ action_confirm }}"
+                                                              title: "{{ confirm_text }}"
+                                                            - action: "{{ action_dismiss }}"
+                                                              title: "{{ dismiss_text }}"
                                       - alias: "Awaiting response"
                                         wait_for_trigger:
                                           - platform: event
@@ -809,12 +840,20 @@ action:
                                                   - condition: template
                                                     value_template: "{{ not enable_custom_dismiss_action}}"
                                                 then:
-                                                  - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                    data:
-                                                      message: "clear_notification"
-                                                      data:
-                                                        tag: "{{ tag }}"
-                                                else: !input custom_dismiss_action
+                                                  - alias: Send a notification to each device
+                                                    repeat:
+                                                      for_each: "{{ filtered_devices }}"
+                                                      sequence:
+                                                        - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                          data:
+                                                            message: "clear_notification"
+                                                            data:
+                                                              tag: "{{ tag }}"
+                                                else:
+                                                  - alias: Send a notification to each device
+                                                    repeat:
+                                                      for_each: "{{ filtered_devices }}"
+                                                      sequence: !input custom_dismiss_action
                                     else:
                                       - choose:
                                           - alias: "Check if Android"
@@ -840,30 +879,37 @@ action:
                                             conditions:
                                               - "{{ is_ios_android == 'ios_device' }}"
                                             sequence:
-                                              - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                data:
-                                                  title: !input notify_title
-                                                  message: >
-                                                    {{ ai_messages }}
-                                                  data:
-                                                    attachment:
-                                                      url: "{{snapshot_access_file_path}}"
-                                                      content_type: "JPEG"
+                                              - alias: Send a notification to each device
+                                                repeat:
+                                                  for_each: "{{ filtered_devices }}"
+                                                  sequence:
+                                                    - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                      data:
+                                                        title: !input notify_title
+                                                        message: >
+                                                          {{ ai_messages }}
+                                                        data:
+                                                          attachment:
+                                                            url: "{{snapshot_access_file_path}}"
+                                                            content_type: "JPEG"
 
                               - if:
                                   - condition: template
-                                    value_template: "{{ include_zalo_notify }}"
+                                    value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                                 then:
-                                  - action: zalo_bot.send_image
-                                    metadata: {}
-                                    data:
-                                      type: !input zalo_types
-                                      image_path: "{{ snapshot_access_file_path_social }}"
-                                      message: >
-                                        {{ ai_messages }}
-                                      thread_id: !input zalo_group_id
-                                      account_selection: !input zalo_phone
-                                      ttl: !input zalo_ttl
+                                  - alias: Send a notification to each device
+                                    repeat:
+                                      for_each: "{{ filtered_zalo_id }}"
+                                      sequence:
+                                        - action: zalo_bot.send_image
+                                          metadata: {}
+                                          data:
+                                            type: !input zalo_types
+                                            image_path: "{{ snapshot_access_file_path_social }}"
+                                            message: "{{ ai_messages }}"
+                                            thread_id: "{{ repeat.item }}"
+                                            account_selection: !input zalo_phone
+                                            ttl: !input zalo_ttl
 
                               - if:
                                   - condition: template
@@ -883,7 +929,7 @@ action:
                                   - condition: template
                                     value_template: "{{ include_discord_notify }}"
                                 then:
-                                  - action: notify.hass_discord
+                                  - action: "notify.{{ discord_provider | slugify }}" #notify.hass_discord
                                     metadata: {}
                                     data:
                                       target: "{{discord_channel | int(0)}}"
@@ -1006,20 +1052,24 @@ action:
                                     conditions:
                                       - "{{ is_ios_android == 'ios_device' }}"
                                     sequence:
-                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                        data:
-                                          title: !input notify_title
-                                          message:  "{{ ai_disable_messages }}"
-                                          data:
-                                            attachment:
-                                              url: "{{snapshot_access_file_path}}"
-                                              content_type: "JPEG"
-                                            tag: "{{ tag }}"
-                                            actions:
-                                              - action: "{{ action_confirm }}"
-                                                title: "{{ confirm_text }}"
-                                              - action: "{{ action_dismiss }}"
-                                                title: "{{ dismiss_text }}"
+                                      - alias: Send a notification to each device
+                                        repeat:
+                                          for_each: "{{ filtered_devices }}"
+                                          sequence:
+                                            - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                              data:
+                                                title: !input notify_title
+                                                message:  "{{ ai_disable_messages }}"
+                                                data:
+                                                  attachment:
+                                                    url: "{{snapshot_access_file_path}}"
+                                                    content_type: "JPEG"
+                                                  tag: "{{ tag }}"
+                                                  actions:
+                                                    - action: "{{ action_confirm }}"
+                                                      title: "{{ confirm_text }}"
+                                                    - action: "{{ action_dismiss }}"
+                                                      title: "{{ dismiss_text }}"
                               - alias: "Awaiting response"
                                 wait_for_trigger:
                                   - platform: event
@@ -1042,12 +1092,20 @@ action:
                                           - condition: template
                                             value_template: "{{ not enable_custom_dismiss_action}}"
                                         then:
-                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                            data:
-                                              message: "clear_notification"
-                                              data:
-                                                tag: "{{ tag }}"
-                                        else: !input custom_dismiss_action
+                                          - alias: Send a notification to each device
+                                            repeat:
+                                              for_each: "{{ filtered_devices }}"
+                                              sequence:
+                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                                  data:
+                                                    message: "clear_notification"
+                                                    data:
+                                                      tag: "{{ tag }}"
+                                        else:
+                                          - alias: Send a notification to each device
+                                            repeat:
+                                              for_each: "{{ filtered_devices }}"
+                                              sequence: !input custom_dismiss_action
                             else:
                               - choose:
                                   - alias: "Check if Android"
@@ -1073,28 +1131,36 @@ action:
                                     conditions:
                                       - "{{ is_ios_android == 'ios_device' }}"
                                     sequence:
-                                      - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                        data:
-                                          title: !input notify_title
-                                          message:  "{{ ai_disable_messages }}"
-                                          data:
-                                            attachment:
-                                              url: "{{snapshot_access_file_path}}"
-                                              content_type: "JPEG"
+                                      - alias: Send a notification to each device
+                                        repeat:
+                                          for_each: "{{ filtered_devices }}"
+                                          sequence:
+                                            - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                                              data:
+                                                title: !input notify_title
+                                                message:  "{{ ai_disable_messages }}"
+                                                data:
+                                                  attachment:
+                                                    url: "{{snapshot_access_file_path}}"
+                                                    content_type: "JPEG"
 
                       - if:
                           - condition: template
-                            value_template: "{{ include_zalo_notify }}"
+                            value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
                         then:
-                          - action: zalo_bot.send_image
-                            metadata: {}
-                            data:
-                              type: !input zalo_types
-                              image_path: "{{ snapshot_access_file_path_social }}"
-                              message: "{{ ai_disable_messages }}"
-                              thread_id: !input zalo_group_id
-                              account_selection: !input zalo_phone
-                              ttl: !input zalo_ttl
+                          - alias: Send a notification to each device
+                            repeat:
+                              for_each: "{{ filtered_zalo_id }}"
+                              sequence:
+                                - action: zalo_bot.send_image
+                                  metadata: {}
+                                  data:
+                                    type: !input zalo_types
+                                    image_path: "{{ snapshot_access_file_path_social }}"
+                                    message: "{{ ai_disable_messages }}"
+                                    thread_id: "{{ repeat.item }}"
+                                    account_selection: !input zalo_phone
+                                    ttl: !input zalo_ttl
 
                       - if:
                           - condition: template
@@ -1113,7 +1179,7 @@ action:
                           - condition: template
                             value_template: "{{ include_discord_notify }}"
                         then:
-                          - action: notify.hass_discord
+                          - action: "notify.{{ discord_provider | slugify }}"
                             metadata: {}
                             data:
                               target: "{{discord_channel | int(0)}}"
@@ -1243,21 +1309,24 @@ action:
                                 parallel:
                                   - if:
                                       - condition: template
-                                        value_template: "{{ include_zalo_notify and zalo_video }}"
+                                        value_template: "{{ include_zalo_notify and zalo_video and (filtered_zalo_id | length > 0) }}"
                                     then:
-                                      - action: zalo_bot.send_video
-                                        metadata: {}
-                                        data:
-                                          message: >
-                                            {{ ai_messages_record }}
-                                          ttl: !input zalo_ttl
-                                          type: !input zalo_types
-                                          video_path_or_url: "{{ url_video }}"
-                                          thumbnail_url: "{{ thumbnail_url_record }}"
-                                          account_selection: !input zalo_phone
-                                          thread_id: !input zalo_group_id
-                                          width: 1280
-                                          height: 720
+                                      - alias: Send a notification to each device
+                                        repeat:
+                                          for_each: "{{ filtered_zalo_id }}"
+                                          sequence:
+                                            - action: zalo_bot.send_video
+                                              metadata: {}
+                                              data:
+                                                message: "{{ ai_messages_record }}"
+                                                ttl: !input zalo_ttl
+                                                type: !input zalo_types
+                                                video_path_or_url: "{{ url_video }}"
+                                                thumbnail_url: "{{ thumbnail_url_record }}"
+                                                account_selection: !input zalo_phone
+                                                thread_id: "{{ repeat.item }}"
+                                                width: 1280
+                                                height: 720
                                   - if:
                                       - condition: template
                                         value_template: "{{ include_telegram_notify and tele_video }}"
@@ -1265,7 +1334,7 @@ action:
                                       - action: telegram_bot.send_video
                                         metadata: {}
                                         data:
-                                          config_entry_id: "{{  provider }}"
+                                          config_entry_id: "{{ provider }}"
                                           authentication: digest
                                           file:  "{{ url_video }}"
                                           target: "{{ telegram_group_id }}"
@@ -1276,7 +1345,7 @@ action:
                                       - condition: template
                                         value_template: "{{ include_discord_notify and discord_video }}"
                                     then:
-                                      - action: notify.hass_discord
+                                      - action: "notify.{{ discord_provider | slugify }}"
                                         metadata: {}
                                         data:
                                           target: "{{discord_channel | int(0)}}"
@@ -1308,20 +1377,24 @@ action:
                         parallel:
                           - if:
                               - condition: template
-                                value_template: "{{ include_zalo_notify and zalo_video }}"
+                                value_template: "{{ include_zalo_notify and zalo_video and (filtered_zalo_id | length > 0) }}"
                             then:
-                              - action: zalo_bot.send_video
-                                metadata: {}
-                                data:
-                                  message: "{{ ai_disable_messages_record }}"
-                                  ttl: !input zalo_ttl
-                                  type: !input zalo_types
-                                  video_path_or_url: "{{ url_video }}"
-                                  thumbnail_url: snapshot_access_file_path
-                                  account_selection: !input zalo_phone
-                                  thread_id: !input zalo_group_id
-                                  width: 1280
-                                  height: 720
+                              - alias: Send a notification to each device
+                                repeat:
+                                  for_each: "{{ filtered_zalo_id }}"
+                                  sequence:
+                                    - action: zalo_bot.send_video
+                                      metadata: {}
+                                      data:
+                                        message: "{{ ai_disable_messages_record }}"
+                                        ttl: !input zalo_ttl
+                                        type: !input zalo_types
+                                        video_path_or_url: "{{ url_video }}"
+                                        thumbnail_url: snapshot_access_file_path
+                                        account_selection: !input zalo_phone
+                                        thread_id: "{{ repeat.item }}"
+                                        width: 1280
+                                        height: 720
                           - if:
                               - condition: template
                                 value_template: "{{ include_telegram_notify and tele_video }}"
@@ -1339,7 +1412,7 @@ action:
                               - condition: template
                                 value_template: "{{ include_discord_notify and discord_video }}"
                             then:
-                              - action: notify.hass_discord
+                              - action: "notify.{{ discord_provider | slugify }}"
                                 metadata: {}
                                 data:
                                   target: "{{discord_channel | int(0)}}"
