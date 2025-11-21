@@ -61,7 +61,6 @@ blueprint:
           name: 🛠️ Custom Actions
           description: |
             🚨 Action này sẽ chạy đầu tiên trong Automation.
-            🚨 Sử dụng `variables.set:` cho `variables_custom` để thêm Biến nếu muốn
             Sử dụng cho việc muốn chạy Action gì đó trước khi thông báo.
             Thêm bất kỳ hành động nào bạn muốn chạy trong Automation này.
           default: []
@@ -71,21 +70,32 @@ blueprint:
     ai_structure_description:
       name: 📝 Structure Description
       description: |
-        Nhập nội dung thông báo bạn muốn ở đây.
-        Nếu sử dụng AI thì nội dung này sẽ được AI thay đổi ngẫu nhiên tránh nhàm chán mỗi lần lặp thông báo.
-        Nếu không sử dụng AI thì thông báo sẽ sử dụng chính xác câu từ trong nội dung này.
-        Tham khảo thêm tại: https://www.home-assistant.io/integrations/ai_task/
+        👉 Nhập nội dung thông báo bạn muốn ở đây.
+        ⚠️ Nếu sử dụng AI thì nội dung này sẽ được AI thay đổi ngẫu nhiên tránh nhàm chán mỗi lần lặp thông báo.
+        ⚠️ Nếu không sử dụng AI thì thông báo sẽ sử dụng chính xác câu từ trong nội dung này.
+        🌐 Tham khảo thêm tại: https://www.home-assistant.io/integrations/ai_task/
       default: >
         Dựa vào dữ liệu đã cung cấp tạo một thông báo chào buổi sáng với đầy đủ dữ liệu đã cung cấp. Nếu có sự kiện hãy nhắc nhở. Nhắc nhở giữ gìn sức khỏe, mặc quần áo, trang bị theo thời tiết, nhiệt độ ngoài trời.
       selector:
         text:
           multiline: true
 
-    message_customs:
-      name: 📝 Message Customs
+    template_customs:
+      name: 🧩 Template Customs
       description: |
-        Nội dung tin nhắn custom dùng cho gửi thông báo Zalo, Telegram, Discord
-        🚨 Bật AI hoặc Không dùng bỏ trống
+        👉 Sử dụng để chèn một `template mẫu` để tùy biến thêm dữ liệu trong Automation này
+        ✅ Sử dụng `{{ template_customs }}` để lấy dữ liệu từ đây cho các nội dung trong automation
+        ⚠️ Để trống nếu không sử dụng
+        🌐 Tham khảo về mẫu: https://www.home-assistant.io/docs/configuration/templating/
+      default: ""
+      selector:
+        template:
+
+    message_customs:
+      name: 🪧 Message Customs
+      description: |
+        👉 Nội dung tin nhắn custom dùng cho gửi thông báo Zalo, Telegram, Discord
+        ⚠️ Bật AI hoặc Không dùng bỏ trống
       default: ""
       selector:
         text:
@@ -99,9 +109,9 @@ blueprint:
         repeat_types:
           name: ✅ Repeat Option (Optional)
           description: |
-            Enable loại Vòng Lặp nếu muốn lặp gửi thông báo
-            Chọn loại nào thì nhập điều kiện tương ứng bên dưới
-            Tham khảo thêm: https://www.home-assistant.io/docs/scripts/#repeat-a-group-of-actions
+            👉 Enable loại Vòng Lặp nếu muốn lặp gửi thông báo
+            ⚠️ Chọn loại nào thì nhập điều kiện tương ứng bên dưới
+            🌐 Tham khảo thêm: https://www.home-assistant.io/docs/scripts/#repeat-a-group-of-actions
           default: disable_repeat
           selector:
             select:
@@ -119,8 +129,8 @@ blueprint:
         repeat_count:
           name: 🔢 Count
           description: >
-            Lặp lại hành động n lần
-            Tham khảo thêm: https://www.home-assistant.io/docs/scripts/#repeat-a-group-of-actions
+            👉 Lặp lại hành động n lần
+            🌐 Tham khảo thêm: https://www.home-assistant.io/docs/scripts/#repeat-a-group-of-actions
           selector:
             number:
               min: 1
@@ -131,32 +141,32 @@ blueprint:
         repeat_until:
           name: ♻️ Until
           description: >
-            Lặp lại hành động trừ khi điều kiện là đúng
-            Tham khảo thêm: https://www.home-assistant.io/docs/scripts/#repeat-a-group-of-actions
+            👉 Lặp lại hành động trừ khi điều kiện là đúng
+            🌐 Tham khảo thêm: https://www.home-assistant.io/docs/scripts/#repeat-a-group-of-actions
           default: []
           selector:
             condition:
         repeat_while:
           name: 🔚 While
           description: >
-            Lặp lại hành động trong khi điều kiện là đúng
-            Tham khảo thêm: https://www.home-assistant.io/docs/scripts/#repeat-a-group-of-actions
+            👉 Lặp lại hành động trong khi điều kiện là đúng
+            🌐 Tham khảo thêm: https://www.home-assistant.io/docs/scripts/#repeat-a-group-of-actions
           default: []
           selector:
             condition:
         repeat_for_each:
           name: 🔁 For Each
           description: >
-            Lặp lại hành động với mỗi phần tử
+            👉 Lặp lại hành động với mỗi phần tử
           default: {}
           selector:
             object: {}
         repeat_delay:
           name: ⌛ Delay
           description: |
-            Thời gian trễ sau mỗi lần lặp lại hành động (tính theo giây)
-            Tránh lặp lại hành động quá nhanh hệ thống không phản hồi kịp
-            Mặc định delay 1 phút (60s)
+            👉 Thời gian trễ sau mỗi lần lặp lại hành động (tính theo giây)
+            ⚠️ Tránh lặp lại hành động quá nhanh hệ thống không phản hồi kịp
+            ⚠️ Mặc định delay 1 phút (60s)
           selector:
             number:
               min: 0
@@ -164,7 +174,6 @@ blueprint:
               step: 5
               unit_of_measurement: seconds
           default: 60
-
 
     ai_task_settings:
       name: "AI Task Settings"
@@ -174,16 +183,16 @@ blueprint:
         ai_powered:
           name: ✅ AI Task (Optional)
           description: |
-            Sử dụng AI để thay đổi ngẫu nhiên nội dung mỗi lần gửi thông báo.
-            Tham khảo thêm tại: https://www.home-assistant.io/integrations/ai_task/
+            👉 Sử dụng AI để thay đổi ngẫu nhiên nội dung mỗi lần gửi thông báo.
+            🌐 Tham khảo thêm tại: https://www.home-assistant.io/integrations/ai_task/
           default: false
           selector:
             boolean: {}
         ai_task_entity_id:
           name: 🤖 Entity ID of AI Task
           description: |
-            Chọn AI sủ dụng cho việc tạo nội dung.
-            Nếu không Bật sử dụng AI bên trên không cần chọn
+            👉 Chọn AI sủ dụng cho việc tạo nội dung.
+            ⚠️ Nếu không Bật sử dụng AI bên trên không cần chọn
           selector:
             entity:
               domain: ai_task
@@ -191,7 +200,7 @@ blueprint:
         ai_task_name:
           name: 📝 Task Name
           description: >
-            Nhập Tiêu đề cho Task
+            👉 Nhập Tiêu đề cho Task
           default: >
             Thông báo
           selector:
@@ -200,9 +209,9 @@ blueprint:
         ai_instructions:
           name: ✍️ Instructions
           description: |
-            Chuỗi chứa các hướng dẫn cụ thể để AI tuân theo khi tạo văn bản.
-            Tùy theo sự sáng tạo và yêu cầu bạn muốn để có thể thay đổi các hướng dẫn mẫu sẵn có.
-            ⚠️ Hãy thay đỗi dữ liệu các sensor theo của bạn để sử dụng tốt Automation
+            👉 Chuỗi chứa các hướng dẫn cụ thể để AI tuân theo khi tạo văn bản.
+            ⚠️ Tùy theo sự sáng tạo và yêu cầu bạn muốn để có thể thay đổi các hướng dẫn mẫu sẵn có.
+            ⚠️ Hãy thay đỗi dữ liệu các sensor theo của bạn để sử dụng cho Automation
           default: |
             Đây là dữ liệu bạn sẽ dùng:
             - Thời gian {{now().hour}} giờ {{now().minute}} phút
@@ -234,8 +243,8 @@ blueprint:
         include_notify:
           name: ✅ Use The Mobile App Notify Option (Optional)
           description: |
-            Enable nếu muốn gửi thông báo lên điện thoại đã chọn bên dưới.
-            Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic
+            👉 Enable nếu muốn gửi thông báo lên điện thoại đã chọn bên dưới.
+            🌐 Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic
           default: false
           selector:
             boolean: {}
@@ -243,7 +252,7 @@ blueprint:
         is_ios_android:
           name: 🔔 Android or iOS device?
           description: |
-            Chọn điện thoại đẩy thông báo là Android hay iOS?
+            👉 Chọn điện thoại đẩy thông báo là Android hay iOS?
           default: android_device
           selector:
             select:
@@ -255,7 +264,7 @@ blueprint:
         notify_device:
           name: 📱 Devices Notified
           description: |
-            Chọn Điện thoại muốn thông bảo đẩy lên.
+            👉 Chọn Điện thoại muốn thông bảo đẩy lên.
           default: []
           selector:
             device:
@@ -265,8 +274,8 @@ blueprint:
         notify_title:
           name: 📝 Title
           description: |
-            Nhập Title của Thông báo.
-            Có thẻ dùng CSS HTML để thiết lập màu sắc, In đậm,... cho nội dung
+            👉 Nhập Title của Thông báo.
+            ⚠️ Có thẻ dùng CSS HTML để thiết lập màu sắc, In đậm,... cho nội dung
           default: >
             📢 <b><span style="color: red">Thông báo</span></b>
           selector:
@@ -274,8 +283,8 @@ blueprint:
         tap_navigate:
           name: 📲 Tap Navigate
           description: |
-            Mở Home Assistant và đi đến vị trí bên dưới khi Thông báo được mở.
-            Ví dụ: /lovelace/cameras.
+            ⚠️ Mở Home Assistant và đi đến vị trí bên dưới khi Thông báo được mở.
+            ⚠️ Ví dụ: /lovelace/cameras.
           default: /lovelace
           selector:
             text:
@@ -285,8 +294,8 @@ blueprint:
           name: "🌠 Status Bar Icon"
           description: |
             `Dành cho Android`
-            Thiết lập icon cho thông báo trên Status Bar điện thoại
-            Tìm icon tại https://pictogrammers.com/library/mdi/
+            👉 Thiết lập icon cho thông báo trên Status Bar điện thoại
+            🌐 Tìm icon tại https://pictogrammers.com/library/mdi/
           default: mdi:motion-sensor
           selector:
             icon:
@@ -295,7 +304,7 @@ blueprint:
           name: "🎨 Notification Color"
           description: |
             `Dành cho Android`
-            Thiết lập màu cho icon thông báo trên Status Bar điện thoại
+            👉 Thiết lập màu cho icon thông báo trên Status Bar điện thoại
           default: [255, 0, 0]
           selector:
             color_rgb:
@@ -303,8 +312,8 @@ blueprint:
         include_actions:
           name: ✅ Use Actions For Mobile App Notify Option (Optional)
           description: |
-            Enable nếu muốn có Actions trong thông báo lên điện thoại đã chọn.
-            Xem thêm tại https://companion.home-assistant.io/docs/notifications/actionable-notifications
+            👉 Enable nếu muốn có Actions trong thông báo lên điện thoại đã chọn.
+            🌐 Xem thêm tại https://companion.home-assistant.io/docs/notifications/actionable-notifications
           default: false
           selector:
             boolean: {}
@@ -341,17 +350,17 @@ blueprint:
         tag:
           name: "\U0001F516 Tag"
           description: |
-            Được sử dụng để định danh duy nhất thông báo.
-            Tham khảo thêm: https://companion.home-assistant.io/docs/notifications/actionable-notifications
+            👉 Được sử dụng để định danh duy nhất thông báo.
+            🌐 Tham khảo thêm: https://companion.home-assistant.io/docs/notifications/actionable-notifications
           default: "dimiss_notifications_now"
           selector:
             text: {}
         timeout:
           name: ⌛️ Timeout Duration
           description: |
-            Khoảng thời gian chờ phản hồi hành động trước khi kích hoạt hành động khi hết thời gian chờ (timeout).
-            Khuyến nghị: tối thiểu 1 phút để đảm bảo thông báo được gửi đi.
-            Mặc định: 10 phút.
+            👉 Khoảng thời gian chờ phản hồi hành động trước khi kích hoạt hành động khi hết thời gian chờ (timeout).
+            ⚠️ Khuyến nghị: tối thiểu 1 phút để đảm bảo thông báo được gửi đi.
+            ⚠️ Mặc định: 10 phút.
           default:
             hours: 0
             minutes: 10
@@ -369,8 +378,8 @@ blueprint:
         include_zalo_notify:
           name: ✅ Zalo Option (Optional)
           description: |
-            Enable nếu muốn gửi thông báo lên Zalo.
-            Xem thêm tại https://github.com/smarthomeblack/zalo_bot
+            👉 Enable nếu muốn gửi thông báo lên Zalo.
+            🌐 Xem thêm tại https://github.com/smarthomeblack/zalo_bot
           default: false
           selector:
             boolean: {}
@@ -378,7 +387,7 @@ blueprint:
         zalo_group_id:
           name: ‍🆔 User or Group ID
           description: |
-            ID của User hoặc Group Zalo.
+            👉 ID của User hoặc Group Zalo.
             ⚠️ Zalo Type bên dưới chọn User thì ở đây chỉ nhập ID của User
             ⚠️ Zalo Type bên dưới chọn Group thì ở đây chỉ nhập ID của Group
             ⚠️ Không thể sử dụng cùng lúc ID của User và ID của Group.
@@ -390,7 +399,7 @@ blueprint:
 
         zalo_phone:
           name: 📞 Zalo Acc
-          description: Số điện thoại của Zalo Bot.
+          description: 👉 Số điện thoại của Zalo Bot.
           selector:
             text:
           default: "+84376861184"
@@ -398,7 +407,7 @@ blueprint:
         zalo_types:
           name: 👨‍👩‍👧‍👦 Zalo Type Option (Optional)
           description: |
-            Chọn thông báo lên Zalo cá nhân hoặc group.
+            👉 Chọn thông báo lên Zalo cá nhân hoặc group.
             ⚠️ Chọn User thì ở `User or Group ID` chỉ nhập ID của User
             ⚠️ Chọn Group thì ở `User or Group ID` chỉ nhập ID của Group
             ⚠️ Không thể sử dụng cùng lúc ID của User và ID của Group.
@@ -413,7 +422,7 @@ blueprint:
                   value: "1"
         zalo_ttl:
           name: ⏳ TTL
-          description: Thời gian chờ sau thời gian này tin nhắn sẽ tự xóa.
+          description: 👉 Thời gian chờ sau thời gian này tin nhắn sẽ tự xóa.
           selector:
             number:
               min: 0
@@ -430,15 +439,15 @@ blueprint:
         include_telegram_notify:
           name: ✅ Telegram Option (Optional)
           description: |
-            Enable nếu muốn gửi thông báo lên Telegram.
-            Xem thêm tại https://www.home-assistant.io/integrations/?search=telegram
+            👉 Enable nếu muốn gửi thông báo lên Telegram.
+            🌐 Xem thêm tại https://www.home-assistant.io/integrations/?search=telegram
           default: false
           selector:
             boolean: {}
 
         provider:
           name: 🛠️ Config entry ID
-          description: Choose Telegram Bot to use for send Notifications.
+          description: 👉 Choose Telegram Bot to use for send Notifications.
           selector:
             config_entry:
               integration: telegram_bot
@@ -447,7 +456,7 @@ blueprint:
         telegram_group_id:
           name: 👨‍👩‍👧‍👦 User or Group ID
           description: |
-            ID của cá nhân hoặc nhóm Telegram.
+            👉 ID của cá nhân hoặc nhóm Telegram.
             ⚠️ Nếu sử dụng nhiều `User or Group ID` thì `Topic ID` bên dưới không được điền
           selector:
             text:
@@ -457,7 +466,7 @@ blueprint:
         telegram_topic:
           name: 🆔 Topic ID
           description: |
-            ID của chủ đề trong nhóm Telegram.
+            👉 ID của chủ đề trong nhóm Telegram.
             ⚠️ Nếu sử dụng nhiều `User or Group ID` bên trên thì `Topic ID` này không được điền
           selector:
             text:
@@ -471,15 +480,15 @@ blueprint:
         include_discord_notify:
           name: ✅ Discord Option (Optional)
           description: |
-            Enable nếu muốn gửi thông báo lên Discord.
-            Xem thêm tại https://www.home-assistant.io/integrations/discord/
+            👉 Enable nếu muốn gửi thông báo lên Discord.
+            🌐 Xem thêm tại https://www.home-assistant.io/integrations/discord/
           default: false
           selector:
             boolean: {}
         discord_provider:
           name: 🛠️ Config entry ID
           description: |
-            Choose Discord Bot to use for send Notifications.
+            👉 Chọn Bot để gửi thông báo.
             ⚠️ Vào `/config/integrations/integration/discord` copy tên của Bot rồi dán vào đây thay thế tên bot mặc định
           selector:
             text:
@@ -487,7 +496,7 @@ blueprint:
           default: "hass_discord"
         discord_channel:
           name: 🆔 Discord Channel ID
-          description: ID của Channel trong nhóm Discord.
+          description: 👉 ID của Channel trong nhóm Discord.
           selector:
             text:
               multiple: true
@@ -501,14 +510,14 @@ blueprint:
         include_tts_announcement:
           name: ✅ Use The Text-to-Speech Announcement Option (Optional)
           description: |
-            Enable khi muốn gửi TTS ra loa sẽ chọn bên dưới.
-            Xem thêm tại https://www.home-assistant.io/integrations/?search=tts
+            👉 Enable khi muốn gửi TTS ra loa sẽ chọn bên dưới.
+            🌐 Xem thêm tại https://www.home-assistant.io/integrations/?search=tts
           default: false
           selector:
             boolean: {}
         num_volume_speaker:
           name: 🔊 Volume Set
-          description: Thiết lập Âm lượng cho Loa. ( từ 0.1 đến 1)
+          description: 👉 Thiết lập Âm lượng cho Loa. ( từ 0.1 đến 1)
           selector:
             number:
               min: 0.1
@@ -528,7 +537,7 @@ blueprint:
         media_player:
           name: 🎶 Media Player
           description: >
-            Chọn loa để phát thông báo
+            👉 Chọn loa để phát thông báo
           default: []
           selector:
             entity:
@@ -538,16 +547,16 @@ blueprint:
         include_custom_media_player:
           name: ✅ Use Custom Media Player Option (Optional)
           description: |
-            Enable khi muốn thêm Media Player custom dạng sensor
-            Sử dụng các cảm biến hiện diện hoặc tùy ý để phát hiện phòng nào đang có người để phát loa.
+            👉 Enable khi muốn thêm Media Player custom dạng sensor
+            ⚠️ Sử dụng các cảm biến hiện diện hoặc tùy ý để phát hiện phòng nào đang có người để phát loa.
           default: false
           selector:
             boolean: {}
         custom_media_player:
           name: 🎶 Custom Media Player
           description: |
-            Nhập Sensor đã có với state là các loa.
-            Sensor có thể tạo trong `Helpers` hoặc `template sensor` trong config trong Home assistant 
+            👉 Nhập Sensor đã có với state là các loa.
+            ⚠️ Sensor có thể tạo trong `Helpers` hoặc `template sensor` trong config trong Home assistant 
             <details>
             <summary><b>Ví dụ sensor mẫu:</b> - Nhấn để mở rộng</summary>
               
@@ -589,19 +598,19 @@ blueprint:
         include_tts_to_mobile:
           name: ✅ Use The Mobile App TTS Option (Optional)
           description: |
-            Enable nếu muốn gửi thông báo ra loa ngoài điện thoại đã chọn bên dưới.
-            Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic/#text-to-speech-notifications
+            👉 Enable nếu muốn gửi thông báo ra loa ngoài điện thoại đã chọn bên dưới.
+            🌐 Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic/#text-to-speech-notifications
           default: false
           selector:
             boolean: {}
         tts_to_mobile_media_stream_types:
           name: ✅ TTS Media Stream Option (Optional)
           description: |
-            Enable kiểu media_stream muốn TTS ra điện thoại
-            tts: Phát TTS phụ thuộc âm lượng điện thoại
-            alarm_stream: Phát TTS với âm lượng trung bình kể cả khi âm lượng là 0
-            alarm_stream_max: Phát TTS max loa ngoài kể cả khi âm lượng là 0
-            Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic/#text-to-speech-notifications
+            👉 Enable kiểu media_stream muốn TTS ra điện thoại
+            ⚠️ tts: Phát TTS phụ thuộc âm lượng điện thoại
+            ⚠️ alarm_stream: Phát TTS với âm lượng trung bình kể cả khi âm lượng là 0
+            ⚠️ alarm_stream_max: Phát TTS max loa ngoài kể cả khi âm lượng là 0
+            🌐 Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic/#text-to-speech-notifications
           default: alarm_stream_max
           selector:
             select:
@@ -615,8 +624,8 @@ blueprint:
         tts_to_mobile:
           name: 🗣️ TTS To Mobiles
           description: |
-            Chọn Điện thoại muốn thông báo đọc ra loa của điện thoại.
-            Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic/#text-to-speech-notifications
+            👉 Chọn Điện thoại muốn thông báo đọc ra loa của điện thoại.
+            🌐 Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic/#text-to-speech-notifications
           default: []
           selector:
             device:
@@ -632,7 +641,7 @@ blueprint:
         include_custom_actions:
           name: ✅ Use The Custom Action Options (Optional)
           description: |
-            Chọn Enable Custom Actions và thêm Actions bên dưới nếu bạn muốn thêm các Hành động khác để thực hiện trong Automation này.
+            👉 Chọn Enable Custom Actions và thêm Actions bên dưới nếu bạn muốn thêm các Hành động khác để thực hiện trong Automation này.
           default: false
           selector:
             boolean: {}
@@ -640,8 +649,8 @@ blueprint:
           name: 🛠️ Custom Actions
           description: |
             🚨 Action này sẽ chạy cuối cùng trong Automation.
-            Sử dụng cho việc muốn chạy Action gì đó sau khi thông báo hoàn tất.
-            Biến lấy nội dung phân tích AI cho các nội dung khác: `response_thong_bao.data.thong_bao`
+            👉 Sử dụng cho việc muốn chạy Action gì đó sau khi thông báo hoàn tất.
+            ⚠️ Biến lấy nội dung phân tích AI cho các nội dung khác: `response_thong_bao.data.thong_bao`
           default: []
           selector:
             action:
@@ -651,6 +660,7 @@ trigger: !input global_triggers
 
 variables:
   message_customs: !input message_customs
+  template_customs: !input template_customs
   #Custom Actions 1
   include_custom_1_actions: !input "include_custom_1_actions"
   #Repeat
@@ -715,8 +725,6 @@ variables:
   include_custom_actions: !input "include_custom_actions"
   #Global Conditions
   global_conditions: !input global_conditions
-  #Custom Variables
-  variables_custom: ''
 
 # All Conditions
 condition:
@@ -746,8 +754,11 @@ action:
           {{''}}
         {% endif %}
       is_wait_completed_error: "Chờ phát thông báo không thành công. Hãy kiểm tra loa hoặc thử lại Automation này."
+  - variables:
+      template_customs: |
+        {{ '' if template_customs == '' else template_customs }}
 
-  
+
   - if:
       - condition: template
         value_template: "{{ include_custom_1_actions }}"
