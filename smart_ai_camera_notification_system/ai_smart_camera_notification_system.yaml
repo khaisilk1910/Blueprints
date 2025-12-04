@@ -532,7 +532,7 @@ blueprint:
             boolean: {}
         custom_media_player:
           name: 🎶 Custom Media Player
-          description: >
+          description: |
             👉 Nhập Sensor đã có với state là các loa
           default: ""
           selector:
@@ -1463,7 +1463,8 @@ action:
   - delay:
       seconds: "{{ num_delay_actions }}"
       
+mode: single
 #mode: restart
-mode: parallel
-max: 10
+#mode: parallel
+#max: 10
 max_exceeded: silent
