@@ -98,8 +98,7 @@ blueprint:
         ⚠️ Bật AI hoặc Không dùng bỏ trống
       default: ""
       selector:
-        text:
-          multiline: true
+        template:
               
     repeat_settings:
       name: "Repeat Settings"
@@ -692,7 +691,7 @@ blueprint:
 trigger: !input global_triggers
 
 variables:
-  message_customs: !input message_customs
+  #message_customs: !input message_customs
   template_customs: !input template_customs
   #Custom Actions 1
   include_custom_1_actions: !input "include_custom_1_actions"
@@ -773,6 +772,9 @@ action:
       - variables:
           template_customs: |
             {{ '' if template_customs == '' else template_customs }}
+      - variables:
+          message_customs: !input message_customs
+            
       - variables:
           action_confirm: "{{ 'CONFIRM_' ~ context.id }}"
           action_dismiss: "{{ 'DISMISS_' ~ context.id }}"
