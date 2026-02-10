@@ -1299,6 +1299,12 @@ action:
                       - "{{ ai_powered_record_video }}"
                     sequence:
 
+                      - delay:
+                          hours: 0
+                          minutes: 0
+                          seconds: 30
+                          milliseconds: 0
+                          
                       - action: ai_task.generate_data
                         data:
                           task_name: Phan tich video
