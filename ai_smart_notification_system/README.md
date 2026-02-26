@@ -7,6 +7,7 @@
 - Blueprint này giúp bạn tạo ngẫu nhiên thông báo bằng AI và đưa ra nội dung thông báo qua các nền tảng Socials nếu bạn đã bật.
 - Hành động sẽ được kích hoạt khi Trigger kích hoạt. Bạn có thể thêm Trigger tùy ý
 - Tùy chọn lặp lại thông báo
+- Với thông báo ra loa sẽ chờ khi loa đang có thông báo khác xong sẽ phát hoặc quá 10 phút sẽ phát
 
 
 ## 2. Yêu cầu
