@@ -417,19 +417,17 @@ blueprint:
           default: false
           selector:
             boolean: {}
-        provider:
-          name: 🛠️ Config entry ID
-          description: 👉 Choose Telegram Bot to use for send Notifications.
-          selector:
-            config_entry:
-              integration: telegram_bot
+        notify_tele_target:
+          name: 📱 Notification targets
+          description: |
+            👉 Chọn bot muốn thông bảo đẩy lên.
           default: []
-        telegram_group_id:
-          name: 👨‍👨‍👦 Group ID
-          description: 👉 ID của nhóm Telegram.
           selector:
-            text:
-          default: ""
+            entity:
+              filter:
+                - domain: notify
+                  integration: telegram_bot
+              multiple: true
         telegram_topic:
           name: 🧑‍💻 Topic ID
           description: 👉 ID của chủ đề trong nhóm Telegram.
@@ -638,11 +636,10 @@ variables:
     {{ (zalo_group_id if zalo_group_id is iterable and zalo_group_id is not string else [zalo_group_id|string]) | map('string') | list | tojson }}
   #Telegram Message
   include_telegram_notify: !input include_telegram_notify
-  provider: !input provider
-  telegram_group_id: !input telegram_group_id
+  notify_tele_target: !input notify_tele_target
   telegram_topic: !input telegram_topic
   tele_video: !input tele_video
-  tele_title: |
+  tele_title: >
     {{ notify_title | regex_replace('<span[^>]*>', '') | replace('</span>', '') if '<span' in notify_title else notify_title }}
   #Discord
   include_discord_notify: !input include_discord_notify
@@ -684,6 +681,8 @@ condition:
 
 action:
   - variables:
+      filtered_telegram_target: >
+        {{ notify_tele_target }}
       file_path: >
         {% if overwrite_image %}
           {{camera_path}}
@@ -699,7 +698,7 @@ action:
   - variables:
       snapshot_access_file_path: "/media/local/snapshots/{{file_path}}_snapshot1.jpg"
       snapshot_access_file_path_social: "/media/snapshots/{{file_path}}_snapshot1.jpg"
-      is_zone_name: |
+      is_zone_name: >
         {{ camera_name if zone_name == '' else zone_name }}
       is_wait_completed_error: "Chờ phát thông báo không thành công. Hãy kiểm tra loa hoặc thử lại Automation này."
         
@@ -922,15 +921,19 @@ action:
                                   - condition: template
                                     value_template: "{{ include_telegram_notify }}"
                                 then:
-                                  - action: telegram_bot.send_photo
-                                    data:
-                                      config_entry_id: "{{ provider }}"
-                                      authentication: digest
-                                      target: "{{ telegram_group_id }}"
-                                      message_thread_id: "{{ telegram_topic | int(0) }}"
-                                      file: "{{ snapshot_access_file_path_social }}"
-                                      caption: >
-                                        {{ ai_messages }}
+                                  - alias: Send a notification to each bot
+                                    repeat:
+                                      for_each: "{{ filtered_telegram_target }}"
+                                      sequence:
+                                        - action: telegram_bot.send_photo
+                                          data:
+                                            verify_ssl: false
+                                            entity_id: "{{repeat.item}}"
+                                            message_thread_id: "{{ telegram_topic | int(0) }}"
+                                            file: "{{ snapshot_access_file_path_social }}"
+                                            caption: >
+                                              {{ ai_messages }}
+
 
                               - if:
                                   - condition: template
@@ -1185,14 +1188,19 @@ action:
                           - condition: template
                             value_template: "{{ include_telegram_notify }}"
                         then:
-                          - action: telegram_bot.send_photo
-                            data:
-                              config_entry_id: "{{ provider }}"
-                              authentication: digest
-                              target: "{{ telegram_group_id }}"
-                              message_thread_id: "{{ telegram_topic | int(0) }}"
-                              file: "{{ snapshot_access_file_path_social }}"
-                              caption: "{{ ai_disable_messages }}"
+                          - alias: Send a notification to each bot
+                            repeat:
+                              for_each: "{{ filtered_telegram_target }}"
+                              sequence:
+                                - action: telegram_bot.send_photo
+                                  data:
+                                    verify_ssl: false
+                                    entity_id: "{{repeat.item}}"
+                                    message_thread_id: "{{ telegram_topic | int(0) }}"
+                                    file: "{{ snapshot_access_file_path_social }}"
+                                    caption: "{{ ai_disable_messages }}"
+
+
 
                       - if:
                           - condition: template
@@ -1304,7 +1312,7 @@ action:
                           minutes: 0
                           seconds: 30
                           milliseconds: 0
-                          
+
                       - action: ai_task.generate_data
                         data:
                           task_name: Phan tich video
@@ -1364,20 +1372,25 @@ action:
                                                 thread_id: "{{ repeat.item }}"
                                                 width: 1280
                                                 height: 720
+
                                   - if:
                                       - condition: template
                                         value_template: "{{ include_telegram_notify and tele_video }}"
                                     then:
-                                      - action: telegram_bot.send_video
-                                        metadata: {}
-                                        data:
-                                          config_entry_id: "{{ provider }}"
-                                          authentication: digest
-                                          file:  "{{ url_video }}"
-                                          target: "{{ telegram_group_id }}"
-                                          caption: >
-                                            {{ ai_messages_record }}
-                                          message_thread_id: "{{ telegram_topic | int(0) }}"
+                                      - alias: Send a notification to each bot
+                                        repeat:
+                                          for_each: "{{ filtered_telegram_target }}"
+                                          sequence:
+                                            - action: telegram_bot.send_video
+                                              metadata: {}
+                                              data:
+                                                verify_ssl: false
+                                                entity_id: "{{repeat.item}}"
+                                                file:  "{{ url_video }}"
+                                                caption: >
+                                                  {{ ai_messages_record }}
+                                                message_thread_id: "{{ telegram_topic | int(0) }}"
+
                                   - if:
                                       - condition: template
                                         value_template: "{{ include_discord_notify and discord_video }}"
@@ -1432,19 +1445,27 @@ action:
                                         thread_id: "{{ repeat.item }}"
                                         width: 1280
                                         height: 720
+
+
+
                           - if:
                               - condition: template
                                 value_template: "{{ include_telegram_notify and tele_video }}"
                             then:
-                              - action: telegram_bot.send_video
-                                metadata: {}
-                                data:
-                                  config_entry_id: "{{ provider }}"
-                                  authentication: digest
-                                  file: "{{ url_video }}"
-                                  target: "{{ telegram_group_id }}"
-                                  caption: "{{ ai_disable_messages_record }}"
-                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                              - alias: Send a notification to each bot
+                                repeat:
+                                  for_each: "{{ filtered_telegram_target }}"
+                                  sequence:
+                                    - action: telegram_bot.send_video
+                                      metadata: {}
+                                      data:
+                                        verify_ssl: false
+                                        entity_id: "{{repeat.item}}"
+                                        file:  "{{ url_video }}"
+                                        caption: "{{ ai_disable_messages_record }}"
+                                        message_thread_id: "{{ telegram_topic | int(0) }}"
+
+
                           - if:
                               - condition: template
                                 value_template: "{{ include_discord_notify and discord_video }}"
