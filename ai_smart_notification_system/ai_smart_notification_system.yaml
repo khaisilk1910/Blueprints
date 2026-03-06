@@ -27,6 +27,8 @@ blueprint:
     </details>      
 
   domain: automation
+
+
   input:
 
     global_triggers:
@@ -478,23 +480,17 @@ blueprint:
           selector:
             boolean: {}
 
-        provider:
-          name: 🛠️ Config entry ID
-          description: 👉 Choose Telegram Bot to use for send Notifications.
-          selector:
-            config_entry:
-              integration: telegram_bot
-          default: []
-
-        telegram_group_id:
-          name: 👨‍👩‍👧‍👦 User or Group ID
+        notify_tele_target:
+          name: 📱 Notification targets
           description: |
-            👉 ID của cá nhân hoặc nhóm Telegram.
-            ⚠️ Nếu sử dụng nhiều `User or Group ID` thì `Topic ID` bên dưới không được điền
+            👉 Chọn bot muốn thông bảo đẩy lên.
+          default: []
           selector:
-            text:
+            entity:
+              filter:
+                - domain: notify
+                  integration: telegram_bot
               multiple: true
-          default: ""
 
         telegram_topic:
           name: 🆔 Topic ID
@@ -731,13 +727,10 @@ variables:
   notify_device_zalo: !input notify_device_zalo
   #Telegram Message
   include_telegram_notify: !input "include_telegram_notify"
-  provider: !input provider
-  telegram_group_id: !input telegram_group_id
+  notify_tele_target: !input notify_tele_target
   telegram_topic: !input telegram_topic
-  tele_title: |
+  tele_title: >
     {{ notify_title | regex_replace('<span[^>]*>', '') | replace('</span>', '') if '<span' in notify_title else notify_title }}
-  filtered_tele_id: >
-    {{ (telegram_group_id if telegram_group_id is iterable and telegram_group_id is not string else [telegram_group_id|string]) | map('string') | list | tojson }}
   #Discord
   include_discord_notify: !input "include_discord_notify"
   discord_provider: !input discord_provider
@@ -770,8 +763,10 @@ condition:
 action:
   - sequence:
       - variables:
-          template_customs: |
+          template_customs: >
             {{ '' if template_customs == '' else template_customs }}
+          filtered_telegram_target: >
+            {{ notify_tele_target }}
       - variables:
           message_customs: !input message_customs
             
@@ -979,38 +974,20 @@ action:
 
                                         - if:
                                             - condition: template
-                                              value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                              value_template: "{{ include_telegram_notify }}"
                                           then:
-                                            - if:
-                                                - condition: template
-                                                  value_template: "{{ telegram_topic | length > 0 }}"
-                                              then:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_task_messages}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
-                                                          message_thread_id: "{{ telegram_topic | int(0) }}"
-                                              else:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_task_messages}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
+                                            - alias: Send a notification to each Telegram bot
+                                              repeat:
+                                                for_each: "{{ filtered_telegram_target }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      entity_id: "{{repeat.item}}"
+                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                                      message: "{{ai_task_messages}}"
+                                                      title: "{{ tele_title }}"
+                                                      parse_mode: html
 
                                         - if:
                                             - condition: template
@@ -1042,6 +1019,12 @@ action:
                                                     - condition: template
                                                       value_template: "{{ wait.completed }}"
                                                   then:
+                                                    - action: scene.create
+                                                      metadata: {}
+                                                      data:
+                                                        scene_id: media_player_previous_state_blueprint
+                                                        snapshot_entities: "{{ is_custom_media_player }}"
+
                                                     - alias: Send a TTS to each speaker
                                                       repeat:
                                                         for_each: "{{ is_custom_media_player }}"
@@ -1058,7 +1041,17 @@ action:
                                                             data:
                                                               media_player_entity_id: "{{ repeat.item }}"
                                                               message: "{{response_thong_bao.data.thong_bao}}"
+                                                    - action: scene.turn_on
+                                                      metadata: {}
+                                                      target:
+                                                        entity_id: scene.media_player_previous_state_blueprint
+                                                      data: {}
                                                   else:
+                                                    - action: scene.create
+                                                      metadata: {}
+                                                      data:
+                                                        scene_id: media_player_previous_state_blueprint
+                                                        snapshot_entities: "{{ is_custom_media_player }}"
                                                     - alias: Send a TTS to each speaker
                                                       repeat:
                                                         for_each: "{{ is_custom_media_player }}"
@@ -1075,6 +1068,11 @@ action:
                                                             data:
                                                               media_player_entity_id: "{{ repeat.item }}"
                                                               message: "{{ is_wait_completed_error }}"
+                                                    - action: scene.turn_on
+                                                      metadata: {}
+                                                      target:
+                                                        entity_id: scene.media_player_previous_state_blueprint
+                                                      data: {}
                                               else:
                                                 - alias: Send a TTS to each speaker
                                                   repeat:
@@ -1131,38 +1129,20 @@ action:
 
                                         - if:
                                             - condition: template
-                                              value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                              value_template: "{{ include_telegram_notify }}"
                                           then:
-                                            - if:
-                                                - condition: template
-                                                  value_template: "{{ telegram_topic | length > 0 }}"
-                                              then:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_error_message}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
-                                                          message_thread_id: "{{ telegram_topic | int(0) }}"
-                                              else:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_error_message}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
+                                            - alias: Send a notification to each Telegram bot
+                                              repeat:
+                                                for_each: "{{ filtered_telegram_target }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      entity_id: "{{repeat.item}}"
+                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                                      message: "{{ai_error_message}}"
+                                                      title: "{{ tele_title }}"
+                                                      parse_mode: html
 
                                         - if:
                                             - condition: template
@@ -1403,38 +1383,20 @@ action:
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                          value_template: "{{ include_telegram_notify }}"
                                       then:
-                                        - if:
-                                            - condition: template
-                                              value_template: "{{ telegram_topic | length > 0 }}"
-                                          then:
-                                            - alias: Send a notification to each device
-                                              repeat:
-                                                for_each: "{{ filtered_tele_id }}"
-                                                sequence:
-                                                  - action: telegram_bot.send_message
-                                                    metadata: {}
-                                                    data:
-                                                      config_entry_id: "{{ provider }}"
-                                                      message: "{{ai_task_disable_messages}}"
-                                                      title: "{{ tele_title }}"
-                                                      target: "{{ repeat.item }}"
-                                                      parse_mode: html
-                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
-                                          else:
-                                            - alias: Send a notification to each device
-                                              repeat:
-                                                for_each: "{{ filtered_tele_id }}"
-                                                sequence:
-                                                  - action: telegram_bot.send_message
-                                                    metadata: {}
-                                                    data:
-                                                      config_entry_id: "{{ provider }}"
-                                                      message: "{{ai_task_disable_messages}}"
-                                                      title: "{{ tele_title }}"
-                                                      target: "{{ repeat.item }}"
-                                                      parse_mode: html
+                                        - alias: Send a notification to each Telegram bot
+                                          repeat:
+                                            for_each: "{{ filtered_telegram_target }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  entity_id: "{{repeat.item}}"
+                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                                                  message: "{{ai_task_disable_messages}}"
+                                                  title: "{{ tele_title }}"
+                                                  parse_mode: html
 
                                     - if:
                                         - condition: template
@@ -1711,38 +1673,20 @@ action:
 
                                         - if:
                                             - condition: template
-                                              value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                              value_template: "{{ include_telegram_notify }}"
                                           then:
-                                            - if:
-                                                - condition: template
-                                                  value_template: "{{ telegram_topic | length > 0 }}"
-                                              then:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_task_messages}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
-                                                          message_thread_id: "{{ telegram_topic | int(0) }}"
-                                              else:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_task_messages}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
+                                            - alias: Send a notification to each Telegram bot
+                                              repeat:
+                                                for_each: "{{ filtered_telegram_target }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      entity_id: "{{repeat.item}}"
+                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                                      message: "{{ai_task_messages}}"
+                                                      title: "{{ tele_title }}"
+                                                      parse_mode: html
 
                                         - if:
                                             - condition: template
@@ -1863,38 +1807,20 @@ action:
 
                                         - if:
                                             - condition: template
-                                              value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                              value_template: "{{ include_telegram_notify }}"
                                           then:
-                                            - if:
-                                                - condition: template
-                                                  value_template: "{{ telegram_topic | length > 0 }}"
-                                              then:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_error_message}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
-                                                          message_thread_id: "{{ telegram_topic | int(0) }}"
-                                              else:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_error_message}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
+                                            - alias: Send a notification to each Telegram bot
+                                              repeat:
+                                                for_each: "{{ filtered_telegram_target }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      entity_id: "{{repeat.item}}"
+                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                                      message: "{{ai_error_message}}"
+                                                      title: "{{ tele_title }}"
+                                                      parse_mode: html
 
                                         - if:
                                             - condition: template
@@ -2135,38 +2061,20 @@ action:
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                          value_template: "{{ include_telegram_notify }}"
                                       then:
-                                        - if:
-                                            - condition: template
-                                              value_template: "{{ telegram_topic | length > 0 }}"
-                                          then:
-                                            - alias: Send a notification to each device
-                                              repeat:
-                                                for_each: "{{ filtered_tele_id }}"
-                                                sequence:
-                                                  - action: telegram_bot.send_message
-                                                    metadata: {}
-                                                    data:
-                                                      config_entry_id: "{{ provider }}"
-                                                      message: "{{ai_task_disable_messages}}"
-                                                      title: "{{ tele_title }}"
-                                                      target: "{{ repeat.item }}"
-                                                      parse_mode: html
-                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
-                                          else:
-                                            - alias: Send a notification to each device
-                                              repeat:
-                                                for_each: "{{ filtered_tele_id }}"
-                                                sequence:
-                                                  - action: telegram_bot.send_message
-                                                    metadata: {}
-                                                    data:
-                                                      config_entry_id: "{{ provider }}"
-                                                      message: "{{ai_task_disable_messages}}"
-                                                      title: "{{ tele_title }}"
-                                                      target: "{{ repeat.item }}"
-                                                      parse_mode: html
+                                        - alias: Send a notification to each Telegram bot
+                                          repeat:
+                                            for_each: "{{ filtered_telegram_target }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  entity_id: "{{repeat.item}}"
+                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                                                  message: "{{ai_task_disable_messages}}"
+                                                  title: "{{ tele_title }}"
+                                                  parse_mode: html
 
                                     - if:
                                         - condition: template
@@ -2443,38 +2351,20 @@ action:
 
                                         - if:
                                             - condition: template
-                                              value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                              value_template: "{{ include_telegram_notify }}"
                                           then:
-                                            - if:
-                                                - condition: template
-                                                  value_template: "{{ telegram_topic | length > 0 }}"
-                                              then:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_task_messages}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
-                                                          message_thread_id: "{{ telegram_topic | int(0) }}"
-                                              else:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_task_messages}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
+                                            - alias: Send a notification to each Telegram bot
+                                              repeat:
+                                                for_each: "{{ filtered_telegram_target }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      entity_id: "{{repeat.item}}"
+                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                                      message: "{{ai_task_messages}}"
+                                                      title: "{{ tele_title }}"
+                                                      parse_mode: html
 
                                         - if:
                                             - condition: template
@@ -2596,38 +2486,20 @@ action:
 
                                         - if:
                                             - condition: template
-                                              value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                              value_template: "{{ include_telegram_notify }}"
                                           then:
-                                            - if:
-                                                - condition: template
-                                                  value_template: "{{ telegram_topic | length > 0 }}"
-                                              then:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_error_message}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
-                                                          message_thread_id: "{{ telegram_topic | int(0) }}"
-                                              else:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_error_message}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
+                                            - alias: Send a notification to each Telegram bot
+                                              repeat:
+                                                for_each: "{{ filtered_telegram_target }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      entity_id: "{{repeat.item}}"
+                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                                      message: "{{ai_error_message}}"
+                                                      title: "{{ tele_title }}"
+                                                      parse_mode: html
 
                                         - if:
                                             - condition: template
@@ -2869,38 +2741,20 @@ action:
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                          value_template: "{{ include_telegram_notify }}"
                                       then:
-                                        - if:
-                                            - condition: template
-                                              value_template: "{{ telegram_topic | length > 0 }}"
-                                          then:
-                                            - alias: Send a notification to each device
-                                              repeat:
-                                                for_each: "{{ filtered_tele_id }}"
-                                                sequence:
-                                                  - action: telegram_bot.send_message
-                                                    metadata: {}
-                                                    data:
-                                                      config_entry_id: "{{ provider }}"
-                                                      message: "{{ai_task_disable_messages}}"
-                                                      title: "{{ tele_title }}"
-                                                      target: "{{ repeat.item }}"
-                                                      parse_mode: html
-                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
-                                          else:
-                                            - alias: Send a notification to each device
-                                              repeat:
-                                                for_each: "{{ filtered_tele_id }}"
-                                                sequence:
-                                                  - action: telegram_bot.send_message
-                                                    metadata: {}
-                                                    data:
-                                                      config_entry_id: "{{ provider }}"
-                                                      message: "{{ai_task_disable_messages}}"
-                                                      title: "{{ tele_title }}"
-                                                      target: "{{ repeat.item }}"
-                                                      parse_mode: html
+                                        - alias: Send a notification to each Telegram bot
+                                          repeat:
+                                            for_each: "{{ filtered_telegram_target }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  entity_id: "{{repeat.item}}"
+                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                                                  message: "{{ai_task_disable_messages}}"
+                                                  title: "{{ tele_title }}"
+                                                  parse_mode: html
 
                                     - if:
                                         - condition: template
@@ -3176,38 +3030,20 @@ action:
 
                                         - if:
                                             - condition: template
-                                              value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                              value_template: "{{ include_telegram_notify }}"
                                           then:
-                                            - if:
-                                                - condition: template
-                                                  value_template: "{{ telegram_topic | length > 0 }}"
-                                              then:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_task_messages}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
-                                                          message_thread_id: "{{ telegram_topic | int(0) }}"
-                                              else:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_task_messages}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
+                                            - alias: Send a notification to each Telegram bot
+                                              repeat:
+                                                for_each: "{{ filtered_telegram_target }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      entity_id: "{{repeat.item}}"
+                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                                      message: "{{ai_task_messages}}"
+                                                      title: "{{ tele_title }}"
+                                                      parse_mode: html
 
                                         - if:
                                             - condition: template
@@ -3328,38 +3164,20 @@ action:
 
                                         - if:
                                             - condition: template
-                                              value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                              value_template: "{{ include_telegram_notify }}"
                                           then:
-                                            - if:
-                                                - condition: template
-                                                  value_template: "{{ telegram_topic | length > 0 }}"
-                                              then:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_error_message}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
-                                                          message_thread_id: "{{ telegram_topic | int(0) }}"
-                                              else:
-                                                - alias: Send a notification to each device
-                                                  repeat:
-                                                    for_each: "{{ filtered_tele_id }}"
-                                                    sequence:
-                                                      - action: telegram_bot.send_message
-                                                        metadata: {}
-                                                        data:
-                                                          config_entry_id: "{{ provider }}"
-                                                          message: "{{ai_error_message}}"
-                                                          title: "{{ tele_title }}"
-                                                          target: "{{ repeat.item }}"
-                                                          parse_mode: html
+                                            - alias: Send a notification to each Telegram bot
+                                              repeat:
+                                                for_each: "{{ filtered_telegram_target }}"
+                                                sequence:
+                                                  - action: telegram_bot.send_message
+                                                    metadata: {}
+                                                    data:
+                                                      entity_id: "{{repeat.item}}"
+                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
+                                                      message: "{{ai_error_message}}"
+                                                      title: "{{ tele_title }}"
+                                                      parse_mode: html
 
                                         - if:
                                             - condition: template
@@ -3600,38 +3418,20 @@ action:
 
                                     - if:
                                         - condition: template
-                                          value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                          value_template: "{{ include_telegram_notify }}"
                                       then:
-                                        - if:
-                                            - condition: template
-                                              value_template: "{{ telegram_topic | length > 0 }}"
-                                          then:
-                                            - alias: Send a notification to each device
-                                              repeat:
-                                                for_each: "{{ filtered_tele_id }}"
-                                                sequence:
-                                                  - action: telegram_bot.send_message
-                                                    metadata: {}
-                                                    data:
-                                                      config_entry_id: "{{ provider }}"
-                                                      message: "{{ai_task_disable_messages}}"
-                                                      title: "{{ tele_title }}"
-                                                      target: "{{ repeat.item }}"
-                                                      parse_mode: html
-                                                      message_thread_id: "{{ telegram_topic | int(0) }}"
-                                          else:
-                                            - alias: Send a notification to each device
-                                              repeat:
-                                                for_each: "{{ filtered_tele_id }}"
-                                                sequence:
-                                                  - action: telegram_bot.send_message
-                                                    metadata: {}
-                                                    data:
-                                                      config_entry_id: "{{ provider }}"
-                                                      message: "{{ai_task_disable_messages}}"
-                                                      title: "{{ tele_title }}"
-                                                      target: "{{ repeat.item }}"
-                                                      parse_mode: html
+                                        - alias: Send a notification to each Telegram bot
+                                          repeat:
+                                            for_each: "{{ filtered_telegram_target }}"
+                                            sequence:
+                                              - action: telegram_bot.send_message
+                                                metadata: {}
+                                                data:
+                                                  entity_id: "{{repeat.item}}"
+                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
+                                                  message: "{{ai_task_disable_messages}}"
+                                                  title: "{{ tele_title }}"
+                                                  parse_mode: html
 
                                     - if:
                                         - condition: template
@@ -3905,38 +3705,20 @@ action:
 
                               - if:
                                   - condition: template
-                                    value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                    value_template: "{{ include_telegram_notify }}"
                                 then:
-                                  - if:
-                                      - condition: template
-                                        value_template: "{{ telegram_topic | length > 0 }}"
-                                    then:
-                                      - alias: Send a notification to each device
-                                        repeat:
-                                          for_each: "{{ filtered_tele_id }}"
-                                          sequence:
-                                            - action: telegram_bot.send_message
-                                              metadata: {}
-                                              data:
-                                                config_entry_id: "{{ provider }}"
-                                                message: "{{ai_task_messages}}"
-                                                title: "{{ tele_title }}"
-                                                target: "{{ repeat.item }}"
-                                                parse_mode: html
-                                                message_thread_id: "{{ telegram_topic | int(0) }}"
-                                    else:
-                                      - alias: Send a notification to each device
-                                        repeat:
-                                          for_each: "{{ filtered_tele_id }}"
-                                          sequence:
-                                            - action: telegram_bot.send_message
-                                              metadata: {}
-                                              data:
-                                                config_entry_id: "{{ provider }}"
-                                                message: "{{ai_task_messages}}"
-                                                title: "{{ tele_title }}"
-                                                target: "{{ repeat.item }}"
-                                                parse_mode: html
+                                  - alias: Send a notification to each Telegram bot
+                                    repeat:
+                                      for_each: "{{ filtered_telegram_target }}"
+                                      sequence:
+                                        - action: telegram_bot.send_message
+                                          metadata: {}
+                                          data:
+                                            entity_id: "{{repeat.item}}"
+                                            message_thread_id: "{{ telegram_topic | int(0) }}"
+                                            message: "{{ai_task_messages}}"
+                                            title: "{{ tele_title }}"
+                                            parse_mode: html
 
                               - if:
                                   - condition: template
@@ -4057,38 +3839,20 @@ action:
 
                               - if:
                                   - condition: template
-                                    value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                    value_template: "{{ include_telegram_notify }}"
                                 then:
-                                  - if:
-                                      - condition: template
-                                        value_template: "{{ telegram_topic | length > 0 }}"
-                                    then:
-                                      - alias: Send a notification to each device
-                                        repeat:
-                                          for_each: "{{ filtered_tele_id }}"
-                                          sequence:
-                                            - action: telegram_bot.send_message
-                                              metadata: {}
-                                              data:
-                                                config_entry_id: "{{ provider }}"
-                                                message: "{{ai_error_message}}"
-                                                title: "{{ tele_title }}"
-                                                target: "{{ repeat.item }}"
-                                                parse_mode: html
-                                                message_thread_id: "{{ telegram_topic | int(0) }}"
-                                    else:
-                                      - alias: Send a notification to each device
-                                        repeat:
-                                          for_each: "{{ filtered_tele_id }}"
-                                          sequence:
-                                            - action: telegram_bot.send_message
-                                              metadata: {}
-                                              data:
-                                                config_entry_id: "{{ provider }}"
-                                                message: "{{ai_error_message}}"
-                                                title: "{{ tele_title }}"
-                                                target: "{{ repeat.item }}"
-                                                parse_mode: html
+                                  - alias: Send a notification to each Telegram bot
+                                    repeat:
+                                      for_each: "{{ filtered_telegram_target }}"
+                                      sequence:
+                                        - action: telegram_bot.send_message
+                                          metadata: {}
+                                          data:
+                                            entity_id: "{{repeat.item}}"
+                                            message_thread_id: "{{ telegram_topic | int(0) }}"
+                                            message: "{{ai_error_message}}"
+                                            title: "{{ tele_title }}"
+                                            parse_mode: html
 
                               - if:
                                   - condition: template
@@ -4329,38 +4093,20 @@ action:
 
                           - if:
                               - condition: template
-                                value_template: "{{ include_telegram_notify and (filtered_tele_id | length > 0) }}"
+                                value_template: "{{ include_telegram_notify }}"
                             then:
-                              - if:
-                                  - condition: template
-                                    value_template: "{{ telegram_topic | length > 0 }}"
-                                then:
-                                  - alias: Send a notification to each device
-                                    repeat:
-                                      for_each: "{{ filtered_tele_id }}"
-                                      sequence:
-                                        - action: telegram_bot.send_message
-                                          metadata: {}
-                                          data:
-                                            config_entry_id: "{{ provider }}"
-                                            message: "{{ai_task_disable_messages}}"
-                                            title: "{{ tele_title }}"
-                                            target: "{{ repeat.item }}"
-                                            parse_mode: html
-                                            message_thread_id: "{{ telegram_topic | int(0) }}"
-                                else:
-                                  - alias: Send a notification to each device
-                                    repeat:
-                                      for_each: "{{ filtered_tele_id }}"
-                                      sequence:
-                                        - action: telegram_bot.send_message
-                                          metadata: {}
-                                          data:
-                                            config_entry_id: "{{ provider }}"
-                                            message: "{{ai_task_disable_messages}}"
-                                            title: "{{ tele_title }}"
-                                            target: "{{ repeat.item }}"
-                                            parse_mode: html
+                              - alias: Send a notification to each Telegram bot
+                                repeat:
+                                  for_each: "{{ filtered_telegram_target }}"
+                                  sequence:
+                                    - action: telegram_bot.send_message
+                                      metadata: {}
+                                      data:
+                                        entity_id: "{{repeat.item}}"
+                                        message_thread_id: "{{ telegram_topic | int(0) }}"
+                                        message: "{{ai_task_disable_messages}}"
+                                        title: "{{ tele_title }}"
+                                        parse_mode: html
 
                           - if:
                               - condition: template
