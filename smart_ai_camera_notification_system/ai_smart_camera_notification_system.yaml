@@ -58,7 +58,13 @@ blueprint:
 
     camera_device:
       name: 📸 Camera
-      description: 👉 Camera mà bạn muốn chụp ảnh
+      description: |
+        👉 Camera mà bạn muốn chụp ảnh
+        📸 Thêm camera vào Hass tham khảo:
+        🌐 Go2RTC: https://www.home-assistant.io/integrations/go2rtc/
+        🌐 Onvif: https://www.home-assistant.io/integrations/onvif/
+        🌐 Generic: https://www.home-assistant.io/integrations/generic/
+
       selector:
         entity:
           domain: camera
@@ -115,11 +121,12 @@ blueprint:
             Đây là chuỗi hình ảnh từ máy ảnh của tôi.
             Hãy phân tích chuỗi ảnh này.
             Qui tắc trả về kết quả phân tích chuỗi ảnh:
-            - Phải sử dụng Tiếng Việt có đầy đủ dấu
-            - Bỏ qua các ký tự đặc biệt như *, emoji, /,...
-            - Bỏ qua các dòng trống
-            - Chỉ thể hiện văn bản thuần
-            - Tin nhắn của bạn cần đủ ngắn để có thể đưa vào thông báo trên điện thoại.
+            - Phải sử dụng Tiếng Việt.
+            - Bỏ qua các dòng trống và chỉ thể hiện nội dung trên cùng 1 dòng bao gồm đầy đủ ngắt câu phù hợp theo ngữ pháp Tiếng Việt.
+            - Sử dụng các thuật ngữ chuyên dụng cho việc phân tích, đánh giá hình ảnh, video.
+            - Chỉ thể hiện văn bản thuần, không chèn emoji, icon vào nội dung.
+            - Nội dung của bạn trả về phải mô tả ngắn gọn nhưng đủ nội dung cần thiết.
+            - Văn phong trẻ trung, hóm hỉnh.
           selector:
             template:
 
@@ -129,14 +136,12 @@ blueprint:
             👉 Từ điển xác định cấu trúc của dữ liệu đầu ra của nội dung phân tích ảnh.
             ⚠️ Bạn có thể thay đổi nội dung mẫu nếu muốn.
             🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/#action-ai_taskgenerate_data
-
-            ⚠️ Lưu ý giữ nguyên dòng: `- Nếu trong chuỗi ảnh không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong chuỗi ảnh khi so sánh".`
           default: |
-            Hãy so sánh và mô tả rất ngắn gọn những gì bạn thấy trong chuỗi hình ảnh sau từ máy ảnh của tôi.
-            - Nếu có người, động vật, xe máy hoặc ô tô, hãy mô tả chi tiết về chúng.
-            - Chỉ rõ giới tính, người lớn hay trẻ em.
+            Hãy so sánh và mô tả rất ngắn gọn những gì bạn thấy trong chuỗi hình ảnh mà tôi cung cấp:
+            - Nếu là người hãy chỉ rõ giới tính, người lớn hay trẻ em, hành động đang làm, màu sắc, chủng loại quần áo đang mặc.
+            - Nếu là động vật mô tả rõ loài, hình dáng, màu sắc.
+            - Nếu là phương tiện giao thông chỉ rõ ô tô, xe máy hay xe đạp kèm màu sắc, kiểu dáng nếu có thể.
             - Không mô tả các vật thể hoặc tòa nhà cố định.
-            - Nếu trong chuỗi ảnh không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong chuỗi ảnh khi so sánh".
           selector:
             template:
 
@@ -150,12 +155,27 @@ blueprint:
           description: |
             👉 Tùy chọn ghi video để gửi khi có phát hiện chuyển động.
             ⚠️ Mặc định ghi video 10s. Vì vậy thông báo video sẽ trễ hơn.
-            ⚠️ Thời điểm ghi video vẫn là thời điểm kích hoạt bới cảm biến chuyển động.
+            ⚠️ Thời điểm ghi video vẫn là thời điểm kích hoạt bởi cảm biến chuyển động.
             ⚠️ Gửi video lên các nền tảng nhắn tin Zalo, Telegram, Discord.
             🌐 Tham khảo: https://www.home-assistant.io/integrations/camera/#action-record
           default: true
           selector:
             boolean: {}
+
+        num_delay_ai_action:
+          name: ⌛ Delay after Snapshots
+          description: |
+            👉 Thời gian trễ trước khi action phân tích video bằng AI
+            ✅ Nếu dùng 1 AI Task cho phân tích ảnh và video nên set Delay phù hợp để tránh lỗi khi AI xử lý cùng lúc.
+            ✅ Dùng Docker bạn nên nhân bản AI để dùng 2 AI Task riêng cho tác vụ ảnh và video 
+            ⚠️ Set càng cao thông báo sẽ càng trễ nhưng vẫn là video được ghi lại tại thời điểm trigger như ảnh.
+          selector:
+            number:
+              min: 0
+              max: 120
+              step: 1
+              unit_of_measurement: seconds
+          default: 10
 
         ai_powered_record_video:
           name: ✅ AI-powered (Optional)
@@ -186,11 +206,12 @@ blueprint:
           default: |
             Hãy phân tích video của tôi.
             Qui tắc trả lại kết quả phân tích video:
-            - Phải sử dụng Tiếng Việt có đầy đủ dấu.
-            - Bỏ qua các ký tự đặc biệt như *, /, emoji,...
-            - Bỏ qua các dòng trống và thay thế dòng trống bằng một khoảng trắng.
-            - Chỉ thể hiện văn bản thuần và chỉ thể hiện văn bản trên một dòng.
-            - Sử dụng ngôn từ trẻ chung, hài hước và chân thực.
+            - Phải sử dụng Tiếng Việt.
+            - Bỏ qua các dòng trống và chỉ thể hiện nội dung trên cùng 1 dòng bao gồm đầy đủ ngắt câu phù hợp theo ngữ pháp Tiếng Việt.
+            - Sử dụng các thuật ngữ chuyên dụng cho việc phân tích, đánh giá hình ảnh, video.
+            - Chỉ thể hiện văn bản thuần, không chèn emoji, icon vào nội dung.
+            - Nội dung của bạn trả về phải mô tả ngắn gọn nhưng đủ nội dung cần thiết.
+            - Văn phong trẻ trung, hóm hỉnh
           selector:
             template:
 
@@ -200,13 +221,11 @@ blueprint:
             👉 Từ điển xác định cấu trúc của dữ liệu đầu ra của nội dung phân tích video.
             ⚠️ Bạn có thể thay đổi nội dung mẫu nếu muốn.
             🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/#action-ai_taskgenerate_data
-            ⚠️ Lưu ý giữ nguyên dòng: `- Nếu trong video không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong các khung hình".`
           default: |
-            Hãy mô tả ngắn gọn những gì bạn thấy trong video của tôi.
+            Hãy mô tả ngắn gọn những gì bạn thấy trong video của tôi:
             - Nếu có người hãy mô tả các hành động của người đó trong toàn bộ video.
             - Chỉ rõ giới tính, người lớn hay trẻ em.
             - Không mô tả các vật thể hoặc tòa nhà cố định.
-            - Nếu trong video không có người hãy trả lời "Đã phát hiện chuyển động tuy nhiên không có người trong các khung hình".
           selector:
             template:
 
@@ -605,6 +624,7 @@ variables:
   overwrite_image: !input overwrite_image
   #Record Video Settings
   record_video: !input record_video
+  num_delay_ai_action: !input num_delay_ai_action
   ai_powered_record_video: !input ai_powered_record_video
   ai_provider_record_video: !input ai_provider_record_video
   ai_task_instructions_record_video: !input ai_task_instructions_record_video
@@ -696,6 +716,7 @@ action:
       notification_color_hex: "#{{ '%02x%02x%02x' | format(notification_color[0], notification_color[1], notification_color[2]) }}"
       is_custom_media_player: >
         {{ custom_media_player if include_custom_media_player else media_player }}
+
   - variables:
       snapshot_access_file_path: "/media/local/snapshots/{{file_path}}_snapshot1.jpg"
       snapshot_access_file_path_social: "/media/snapshots/{{file_path}}_snapshot1.jpg"
@@ -760,7 +781,7 @@ action:
 
                       - variables:
                           ai_messages_not_complete: >
-                            📢 AI đang lỗi không phân tích được ảnh{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                            📢 AI đang lỗi không phân tích được ảnh{{'\n'}}Hãy kiểm tra trạng thái hoạt động của AI{{'\n'}}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                           ai_tts_not_complete: >
                             AI đang lỗi không phân tích được ảnh. Hãy kiểm tra trạng thái hoạt động của AI
 
@@ -1036,7 +1057,7 @@ action:
                           - if:
                               - condition: template
                                 value_template: >
-                                  {{ not ( (humans_detected_report.data.humans_detected_description | default(''))| lower | regex_search('tuy nhiên không có người trong chuỗi ảnh|không có người|không có chuỗi hình ảnh nào được cung cấp') and (humans_detected_report.data.humans_detected|int(0) == 0) ) }}
+                                  {{ not (humans_detected_report.data.humans_detected|int(0) == 0) }}
                             then:
                               - alias: "Chạy cùng lúc tất cả các Action"
                                 parallel:
@@ -1586,10 +1607,7 @@ action:
                     sequence:
 
                       - delay:
-                          hours: 0
-                          minutes: 0
-                          seconds: 30
-                          milliseconds: 0
+                          seconds: "{{ num_delay_ai_action }}"
 
                       - action: ai_task.generate_data
                         data:
@@ -1620,7 +1638,7 @@ action:
                         then:
                           - variables:
                               ai_record_not_complete: >
-                                📢 AI đang lỗi không phân tích được Video{{'\n'}}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                🚨 AI đang lỗi không phân tích được Video{{'\n'}}⚠️ Hãy kiểm tra trạng thái hoạt động của AI{{'\n'}}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
 
                           - action: system_log.write
                             metadata: {}
@@ -1685,8 +1703,8 @@ action:
                                         {{ ai_record_not_complete }}
 
                         else:
-                          - wait_template: "{{ humans_detected_report_video is defined and humans_detected_report_video.data is defined }}"
-                            timeout: "00:01:10"
+                          - wait_template: "{{ humans_detected_report_video is defined and humans_detected_report_video.data.humans_detected_description_video is defined and humans_detected_report_video.data.humans_detected_video is defined  }}"
+                            timeout: "00:02:00"
                             continue_on_timeout: true
                           - if:
                               - condition: template
@@ -1699,7 +1717,7 @@ action:
                               - if:
                                   - condition: template
                                     value_template: >
-                                      {{ not ( (humans_detected_report_video.data.humans_detected_description_video | default(''))| lower | regex_search('tuy nhiên không có người trong các khung hình|không có người') and (humans_detected_report_video.data.humans_detected_video|int(0) == 0) ) }}
+                                      {{ not (humans_detected_report_video.data.humans_detected_video|int(0) == 0) }}
                                 then:
                                   - alias: "Chạy cùng lúc tất cả các action"
                                     parallel:
@@ -1770,7 +1788,7 @@ action:
                     sequence:
                       - variables:
                           ai_disable_messages_record: >
-                            📸 {{camera_name}} | 🚶 Phát hiện chuyển động{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                            📸 {{camera_name}} | 🚶 Phát hiện chuyển động{{'\n'}}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                       - alias: "Chạy cùng lúc tất cả các action"
                         parallel:
                           - if:
