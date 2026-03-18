@@ -118,15 +118,12 @@ blueprint:
             ⚠️ Bạn có thể thay đổi nội dung này nếu kết quả phân tích ảnh không được như bạn mong muốn.
             🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
           default: |
-            Đây là chuỗi hình ảnh từ máy ảnh của tôi.
-            Hãy phân tích chuỗi ảnh này.
-            Qui tắc trả về kết quả phân tích chuỗi ảnh:
-            - Phải sử dụng Tiếng Việt.
-            - Bỏ qua các dòng trống và chỉ thể hiện nội dung trên cùng 1 dòng bao gồm đầy đủ ngắt câu phù hợp theo ngữ pháp Tiếng Việt.
-            - Sử dụng các thuật ngữ chuyên dụng cho việc phân tích, đánh giá hình ảnh, video.
-            - Chỉ thể hiện văn bản thuần, không chèn emoji, icon vào nội dung.
-            - Nội dung của bạn trả về phải mô tả ngắn gọn nhưng đủ nội dung cần thiết.
-            - Văn phong trẻ trung, hóm hỉnh.
+            Hệ thống phân tích thị giác máy tính (computer vision) thông minh, có nhiệm vụ giám sát chuỗi ảnh từ camera. 
+            Quy tắc trả kết quả bắt buộc: 
+            1. Sử dụng 100% Tiếng Việt chuẩn.
+            2. Format kết quả thành một dòng văn bản duy nhất, tuyệt đối không có ký tự xuống dòng hay khoảng trắng thừa, ngắt câu bằng dấu phẩy và dấu chấm hợp lý. 3. Kết hợp các thuật ngữ phân tích không gian/hình ảnh nhưng diễn đạt bằng giọng văn trẻ trung, hóm hỉnh và mặn mòi. 
+            4. Chỉ dùng văn bản thuần (plain text), tuyệt đối cấm sử dụng emoji hoặc biểu tượng. 
+            5. Nội dung phải đi thẳng vào trọng tâm, ngắn gọn nhất có thể.
           selector:
             template:
 
@@ -137,11 +134,13 @@ blueprint:
             ⚠️ Bạn có thể thay đổi nội dung mẫu nếu muốn.
             🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/#action-ai_taskgenerate_data
           default: |
-            Hãy so sánh và mô tả rất ngắn gọn những gì bạn thấy trong chuỗi hình ảnh mà tôi cung cấp:
-            - Nếu là người hãy chỉ rõ giới tính, người lớn hay trẻ em, hành động đang làm, màu sắc, chủng loại quần áo đang mặc.
-            - Nếu là động vật mô tả rõ loài, hình dáng, màu sắc.
-            - Nếu là phương tiện giao thông chỉ rõ ô tô, xe máy hay xe đạp kèm màu sắc, kiểu dáng nếu có thể.
-            - Không mô tả các vật thể hoặc tòa nhà cố định.
+            Quét chuỗi ảnh và tập trung trích xuất dữ liệu của các chủ thể động (người, động vật, phương tiện).
+            - Bỏ qua hoàn toàn cảnh quan, tòa nhà hoặc vật thể tĩnh. 
+            - Đối với con người: chỉ rõ giới tính, độ tuổi (người lớn/trẻ em), hành động đang thực hiện, màu sắc và thể loại trang phục. **Đặc biệt, dựa vào sự thay đổi kích thước và vị trí của chủ thể giữa đầu và cuối chuỗi ảnh để kết luận hướng di chuyển: "đang đi vào" (nếu tiến gần camera, kích thước lớn dần) hoặc "đang đi ra" (nếu đi xa camera, kích thước nhỏ dần) hoặc "di chuyển ngang"**. 
+            - Đối với động vật: xác định loài, vóc dáng và màu sắc đặc trưng.
+            - Đối với phương tiện: phân loại (ô tô, xe máy, xe đạp...), màu sắc và kiểu dáng. 
+            - Chú ý so sánh sự thay đổi giữa các khung hình. 
+            - Nếu không có chủ thể nào thuộc 3 nhóm trên xuất hiện, hãy trả lời ngắn gọn: "Không ghi nhận biến động đối tượng".
           selector:
             template:
 
@@ -204,14 +203,12 @@ blueprint:
             ⚠️ Bạn có thể thay đổi nội dung này nếu kết quả phân tích video không được như bạn mong muốn.
             🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
           default: |
-            Hãy phân tích video của tôi.
-            Qui tắc trả lại kết quả phân tích video:
-            - Phải sử dụng Tiếng Việt.
-            - Bỏ qua các dòng trống và chỉ thể hiện nội dung trên cùng 1 dòng bao gồm đầy đủ ngắt câu phù hợp theo ngữ pháp Tiếng Việt.
-            - Sử dụng các thuật ngữ chuyên dụng cho việc phân tích, đánh giá hình ảnh, video.
-            - Chỉ thể hiện văn bản thuần, không chèn emoji, icon vào nội dung.
-            - Nội dung của bạn trả về phải mô tả ngắn gọn nhưng đủ nội dung cần thiết.
-            - Văn phong trẻ trung, hóm hỉnh
+            Hệ thống phân tích thị giác máy tính (computer vision) thông minh, có nhiệm vụ giám sát chuỗi ảnh từ camera. 
+            Quy tắc trả kết quả bắt buộc: 
+            1. Sử dụng 100% Tiếng Việt chuẩn.
+            2. Format kết quả thành một dòng văn bản duy nhất, tuyệt đối không có ký tự xuống dòng hay khoảng trắng thừa, ngắt câu bằng dấu phẩy và dấu chấm hợp lý. 3. Kết hợp các thuật ngữ phân tích không gian/hình ảnh nhưng diễn đạt bằng giọng văn trẻ trung, hóm hỉnh và mặn mòi. 
+            4. Chỉ dùng văn bản thuần (plain text), tuyệt đối cấm sử dụng emoji hoặc biểu tượng. 
+            5. Nội dung phải đi thẳng vào trọng tâm, ngắn gọn nhất có thể.
           selector:
             template:
 
@@ -222,10 +219,13 @@ blueprint:
             ⚠️ Bạn có thể thay đổi nội dung mẫu nếu muốn.
             🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/#action-ai_taskgenerate_data
           default: |
-            Hãy mô tả ngắn gọn những gì bạn thấy trong video của tôi:
-            - Nếu có người hãy mô tả các hành động của người đó trong toàn bộ video.
-            - Chỉ rõ giới tính, người lớn hay trẻ em.
-            - Không mô tả các vật thể hoặc tòa nhà cố định.
+            Quét chuỗi ảnh và tập trung trích xuất dữ liệu của các chủ thể động (người, động vật, phương tiện).
+            - Bỏ qua hoàn toàn cảnh quan, tòa nhà hoặc vật thể tĩnh. 
+            - Đối với con người: chỉ rõ giới tính, độ tuổi (người lớn/trẻ em), hành động đang thực hiện, màu sắc và thể loại trang phục. **Đặc biệt, dựa vào sự thay đổi kích thước và vị trí của chủ thể giữa đầu và cuối chuỗi ảnh để kết luận hướng di chuyển: "đang đi vào" (nếu tiến gần camera, kích thước lớn dần) hoặc "đang đi ra" (nếu đi xa camera, kích thước nhỏ dần) hoặc "di chuyển ngang"**. 
+            - Đối với động vật: xác định loài, vóc dáng và màu sắc đặc trưng.
+            - Đối với phương tiện: phân loại (ô tô, xe máy, xe đạp...), màu sắc và kiểu dáng. 
+            - Chú ý so sánh sự thay đổi giữa các khung hình. 
+            - Nếu không có chủ thể nào thuộc 3 nhóm trên xuất hiện, hãy trả lời ngắn gọn: "Không ghi nhận biến động đối tượng".
           selector:
             template:
 
