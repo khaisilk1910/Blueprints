@@ -157,7 +157,7 @@ blueprint:
             ⚠️ Thời điểm ghi video vẫn là thời điểm kích hoạt bởi cảm biến chuyển động.
             ⚠️ Gửi video lên các nền tảng nhắn tin Zalo, Telegram, Discord.
             🌐 Tham khảo: https://www.home-assistant.io/integrations/camera/#action-record
-          default: true
+          default: false
           selector:
             boolean: {}
 
@@ -461,7 +461,7 @@ blueprint:
         tele_video:
           name: 🎞️ Send Video (Optional)
           description: 👉 Tùy chọn có gửi video lên Telegram không?
-          default: true
+          default: false
           selector:
             boolean: {}
     discord_settings:
@@ -496,7 +496,7 @@ blueprint:
         discord_video:
           name: 🎞️ Send Video (Optional)
           description: 👉 Tùy chọn có gửi video lên Discord không?
-          default: true
+          default: false
           selector:
             boolean: {}
     tts_notify_settings:
