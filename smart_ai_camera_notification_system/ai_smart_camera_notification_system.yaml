@@ -52,7 +52,7 @@ blueprint:
       description: |
         👉 Thêm Condition để chạy Automation.
         ⚠️ Automation chỉ chạy khi Conditions này là True.
-      default: []
+      default: ''
       selector:
         condition:
 
@@ -109,7 +109,7 @@ blueprint:
           selector:
             entity:
               domain: ai_task
-          default: []
+          default: ''
 
         ai_task_instructions:
           name: ✍️ AI Task Instructions
@@ -194,7 +194,7 @@ blueprint:
           selector:
             entity:
               domain: ai_task
-          default: []
+          default: ''
 
         ai_task_instructions_record_video:
           name: ✍️ AI Task Instructions
@@ -258,7 +258,7 @@ blueprint:
           name: 📱 Devices Notified
           description: |
             👉 Chọn Điện thoại muốn thông bảo đẩy lên.
-          default: []
+          default: ''
           selector:
             device:
               filter:
@@ -320,7 +320,7 @@ blueprint:
           name: 👇 Confirmation Action
           description: |
             👉 Action to run when notification is confirmed
-          default: []
+          default: ''
           selector:
             action:
         dismiss_text:
@@ -341,7 +341,7 @@ blueprint:
           name: 👇 Custom Dismiss Action
           description: |
             👉 Action to run when notification is dismissed
-          default: []
+          default: ''
           selector:
             action:
         tag:
@@ -445,7 +445,7 @@ blueprint:
           name: 📱 Notification targets
           description: |
             👉 Chọn bot muốn thông bảo đẩy lên.
-          default: []
+          default: ''
           selector:
             entity:
               filter:
@@ -526,7 +526,7 @@ blueprint:
           name: 🗣️ Text-to-Speech Service Provider
           description: |
             👉 Chọn dịch vụ TTS hỗ trợ.
-          default: []
+          default: ''
           selector:
             entity:
               filter:
@@ -535,7 +535,7 @@ blueprint:
           name: 🎶 Media Player
           description: |
             👉 Chọn loa để phát thông báo
-          default: []
+          default: ''
           selector:
             entity:
               filter:
@@ -610,7 +610,7 @@ blueprint:
           description: |
             👉 Thêm bất kỳ hành động nào bạn muốn chạy trong Automation này.
             ⚠️ Biến lấy nội dung phân tích AI cho các nội dung khác: `humans_detected_report.data.humans_detected_description`
-          default: []
+          default: ''
           selector:
             action:
 
