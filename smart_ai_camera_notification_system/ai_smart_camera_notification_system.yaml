@@ -1,7 +1,5 @@
 blueprint:
   name: AI Smart Camera Notification System
-  author: khaisilk1910
-  source_url: https://github.com/khaisilk1910/Blueprints/blob/main/smart_ai_camera_notification_system/ai_smart_camera_notification_system.yaml
   description: >
     #### 📢 Chụp ảnh, quay video ngắn Phân tích ảnh video bằng AI và gửi Thông báo lên điện thoại, zalo, telegram, Discord và ra loa nếu Cảm biến kích hoạt và thực tế có người xuất hiện trong ảnh, video.
 
@@ -115,19 +113,32 @@ blueprint:
               domain: ai_task
           default: []
 
-        ai_task_instructions:
-          name: ✍️ AI Task Instructions
+        is_structured_or_json:
+          name: 📝 Android or iOS device?
+          description: |
+            👉 Chọn kiểu mà AI hỗ trợ Structured Output hay Json
+          default: is_structured
+          selector:
+            select:
+              options:
+                - label: Structured output
+                  value: "is_structured"
+                - label: JSON
+                  value: "is_json"
+
+        ai_task_structured_instructions:
+          name: ✍️ AI Task Structured Instructions
           description: |
             👉 Chuỗi chứa các hướng dẫn cụ thể để AI tuân theo khi tạo văn bản.
             ⚠️ Bạn có thể thay đổi nội dung này nếu kết quả phân tích ảnh không được như bạn mong muốn.
             🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
           default: |
-            Hệ thống phân tích thị giác máy tính (computer vision) thông minh, có nhiệm vụ giám sát chuỗi ảnh từ camera. 
-            Quy tắc trả kết quả bắt buộc: 
-            1. Sử dụng 100% Tiếng Việt chuẩn.
-            2. Format kết quả thành một dòng văn bản duy nhất, tuyệt đối không có ký tự xuống dòng hay khoảng trắng thừa, ngắt câu bằng dấu phẩy và dấu chấm hợp lý. 3. Kết hợp các thuật ngữ phân tích không gian/hình ảnh nhưng diễn đạt bằng giọng văn trẻ trung, hóm hỉnh và mặn mòi. 
-            4. Chỉ dùng văn bản thuần (plain text), tuyệt đối cấm sử dụng emoji hoặc biểu tượng. 
-            5. Nội dung phải đi thẳng vào trọng tâm, ngắn gọn nhất có thể.
+            Bạn là hệ thống thị giác máy tính giám sát camera. Hãy phân tích bối cảnh, đối tượng và hoạt động trong ảnh.
+            RÀNG BUỘC BẮT BUỘC:
+            1. Ngôn ngữ: 100% Tiếng Việt chuẩn.
+            2. Định dạng: Chỉ trả về MỘT câu duy nhất, tuyệt đối không ngắt dòng.
+            3. Giọng điệu: Trẻ trung, hóm hỉnh.
+            4. Nội dung: Ngắn gọn tối đa, đi thẳng vào trọng tâm những gì đang diễn ra, không rườm rà thưa gửi.
           selector:
             template:
 
@@ -145,6 +156,32 @@ blueprint:
             - Đối với phương tiện: phân loại (ô tô, xe máy, xe đạp...), màu sắc và kiểu dáng. 
             - Chú ý so sánh sự thay đổi giữa các khung hình. 
             - Nếu không có chủ thể nào thuộc 3 nhóm trên xuất hiện, hãy trả lời ngắn gọn: "Không ghi nhận biến động đối tượng".
+          selector:
+            template:
+
+        ai_task_json_instructions:
+          name: ✍️ AI Task JSON Instructions
+          description: |
+            👉 Chuỗi chứa các hướng dẫn cụ thể để AI tuân theo khi tạo văn bản.
+            ⚠️ Bạn có thể thay đổi nội dung này nếu kết quả phân tích ảnh không được như bạn mong muốn.
+            🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
+          default: |
+            Đây là chuỗi hình ảnh từ máy ảnh của tôi.
+            Hãy phân tích chuỗi ảnh này.
+            Chỉ trả về JSON thuần, không giải thích thêm, theo đúng mẫu sau: {"humans_detected":0,"humans_detected_summary":"","humans_detected_description":""}
+            Quy tắc từng trường:
+            - humans_detected: số nguyên đếm tổng số người trong chuỗi ảnh.
+            - humans_detected_summary: tóm tắt số lượng người theo loại, ví dụ "1 nữ, 2 trẻ em" hoặc "2 nam, 1 nữ". Nếu không có người trả về chuỗi rỗng.
+            - humans_detected_description: mô tả chi tiết từng người bao gồm giới tính, trang phục màu sắc cụ thể, hành động đang làm. Ví dụ "Một phụ nữ mặc đồ bộ màu hồng cam đang ngồi chuẩn bị đồ ăn. Bên cạnh là một bé trai mặc đồ màu vàng cam đang đứng chơi.". Nếu không có người trả về "Đã phát hiện chuyển động tuy nhiên không có người trong chuỗi ảnh khi so sánh".
+            QUAN TRỌNG:
+            - BẮT BUỘC viết tiếng Việt có đầy đủ dấu.
+            - TUYỆT ĐỐI KHÔNG viết tiếng Việt không dấu.
+            - TUYỆT ĐỐI KHÔNG bọc kết quả trong markdown code block.
+            - Chỉ trả về raw JSON thuần, bắt đầu bằng "{" và kết thúc bằng "}".
+            - LOẠI BỎ **```json** và **```**.
+            - TẤT CẢ NỘI DUNG TRÊN MỘT DÒNG DUY NHẤT, tuyệt đối không ngắt dòng.
+            - Giọng điệu: Trẻ trung, hóm hỉnh.
+            - Nội dung: Ngắn gọn tối đa, đi thẳng vào trọng tâm những gì đang diễn ra, không rườm rà thưa gửi.
           selector:
             template:
 
@@ -636,8 +673,10 @@ variables:
   #AI
   ai_powered: !input ai_powered
   ai_provider: !input ai_provider
-  ai_task_instructions: !input ai_task_instructions
+  ai_task_structured_instructions: !input ai_task_structured_instructions
   ai_structure_description: !input ai_structure_description
+  is_structured_or_json: !input is_structured_or_json
+  ai_task_json_instructions: !input ai_task_json_instructions
   #Device Notify
   include_notify: !input include_notify
   notify_device: !input notify_device
@@ -757,30 +796,58 @@ action:
                 conditions:
                   - "{{ ai_powered }}"
                 sequence:
-                  - action: ai_task.generate_data
-                    data:
-                      task_name: Phan tich anh khi co chuyen dong
-                      instructions: "{{ ai_task_instructions }}"
-                      entity_id: "{{ ai_provider }}"
-                      attachments: "{{ snapshots_url }}"
-                      structure:
-                        humans_detected:
-                          description: Đếm số người trong chuỗi ảnh
-                          required: true
-                          selector:
-                            number: null
-                        humans_detected_description:
-                          description: "{{ ai_structure_description }}"
-                          required: true
-                          selector:
-                            text: null
-                    response_variable: humans_detected_report
-                    continue_on_error: true
-
+                  - alias: "Chọn Structured output hoặc JSON"
+                    if:
+                      - condition: template
+                        value_template: "{{ is_structured_or_json == 'is_structured' }}"
+                    then:
+                      - action: ai_task.generate_data
+                        data:
+                          task_name: Phan tich anh khi co chuyen dong
+                          instructions: "{{ ai_task_structured_instructions }}"
+                          entity_id: "{{ ai_provider }}"
+                          attachments: "{{ snapshots_url }}"
+                          structure:
+                            humans_detected:
+                              description: Đếm số người trong chuỗi ảnh
+                              required: true
+                              selector:
+                                number: null
+                            humans_detected_description:
+                              description: "{{ ai_structure_description }}"
+                              required: true
+                              selector:
+                                text: null
+                        response_variable: humans_detected_report
+                        continue_on_error: true
+                    else:
+                      - action: ai_task.generate_data
+                        data:
+                          task_name: Phan tich anh khi co chuyen dong
+                          instructions: "{{ ai_task_json_instructions }}"
+                          entity_id: "{{ ai_provider }}"
+                          attachments: "{{ snapshots_url }}"
+                        response_variable: humans_detected_report
+                        continue_on_error: true
+                      - alias: "Nếu AI lỗi sẽ gửi trực tiếp ảnh và thông báo không phân tích"
+                        if:
+                          - condition: template
+                            value_template: "{{ humans_detected_report is defined }}"
+                        then:
+                          - variables:
+                              json_data: >
+                                {{ (humans_detected_report.data | replace('```json', '') | replace('```','') | trim) | from_json }}
+                              humans_detected: "{{ json_data.humans_detected }}"
+                              humans_detected_description: "{{ json_data.humans_detected_description }}"
                   - alias: "Nếu AI lỗi sẽ gửi trực tiếp ảnh và thông báo không phân tích"
                     if:
                       - condition: template
-                        value_template: "{{ humans_detected_report is not defined or humans_detected_report.data.humans_detected is not defined or humans_detected_report.data.humans_detected == '' or humans_detected_report.data.humans_detected_description is not defined or humans_detected_report.data.humans_detected_description == '' }}"
+                        value_template: >
+                          {% if is_structured_or_json == 'is_structured' %}
+                            {{ humans_detected_report is not defined or humans_detected_report.data.humans_detected is not defined or humans_detected_report.data.humans_detected == '' or humans_detected_report.data.humans_detected_description is not defined or humans_detected_report.data.humans_detected_description == '' }}
+                          {% else %}
+                            {{ humans_detected_report is not defined }}
+                          {% endif %}
                     then:
 
                       - variables:
@@ -1057,11 +1124,19 @@ action:
                         then:
                           - variables:
                               ai_messages: >
-                                📍 {{is_zone_name}} | 🚶: {{ humans_detected_report.data.humans_detected }}{{'\n'}}🏞️👉 {{ humans_detected_report.data.humans_detected_description }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                {% if is_structured_or_json == 'is_structured' %}
+                                  📍 {{is_zone_name}} | 🚶: {{ humans_detected_report.data.humans_detected }}{{'\n'}}🏞️👉 {{ humans_detected_report.data.humans_detected_description }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                {% else %}
+                                  📍 {{is_zone_name}} | 🚶: {{ humans_detected }}{{'\n'}}🏞️👉 {{ humans_detected_description }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                                {% endif %}
                           - if:
                               - condition: template
                                 value_template: >
-                                  {{ not (humans_detected_report.data.humans_detected|int(0) == 0) }}
+                                  {% if is_structured_or_json == 'is_structured' %}
+                                    {{ not (humans_detected_report.data.humans_detected|int(0) == 0) }}
+                                  {% else %}
+                                    {{ not (humans_detected|int(0) == 0) }}
+                                  {% endif %}
                             then:
                               - alias: "Chạy cùng lúc tất cả các Action"
                                 parallel:
