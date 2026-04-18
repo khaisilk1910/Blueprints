@@ -9,6 +9,7 @@ blueprint:
       **Phiên bản: v.2026.04.18**
 
         - Thêm lựa chọn dùng AI-Task không sử dụng được Structured Output
+        
         - Tối ưu Action code ngắn gọn logic hơn
 
       **Phiên bản: v.2025.10.22**
