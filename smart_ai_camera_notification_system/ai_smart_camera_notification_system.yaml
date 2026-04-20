@@ -9,7 +9,6 @@ blueprint:
       **Phiên bản: v.2026.04.18**
 
         - Thêm lựa chọn dùng AI-Task không sử dụng được Structured Output
-        
         - Tối ưu Action code ngắn gọn logic hơn
 
       **Phiên bản: v.2025.10.22**
@@ -120,9 +119,11 @@ blueprint:
           default: []
 
         is_structured_or_json:
-          name: 📝 Android or iOS device?
+          name: 📝 Structured Output hay Json?
           description: |
             👉 Chọn kiểu mà AI hỗ trợ Structured Output hay Json
+            🌐 Structured Output sẽ là AI Gemini hoặc https://github.com/luuquangvu/Gemini-FastAPI
+            🌐 JSON thường là các Custom Integration như NVIDIA hay https://github.com/smarthomeblack/gemini-web-api
           default: is_structured
           selector:
             select:
@@ -869,7 +870,7 @@ action:
                 {% if ai_status == 'disabled' %}
                   📍 {{is_zone_name}} | 🚶 Phát hiện chuyển động{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                 {% elif ai_status == 'error' %}
-                  📢 AI đang lỗi không phân tích được ảnh{{'\n'}}Hãy kiểm tra trạng thái hoạt động của AI{{'\n'}}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                  📍 {{is_zone_name}}{{'\n'}}📢 AI đang lỗi không phân tích được ảnh{{'\n'}}Hãy kiểm tra trạng thái hoạt động của AI{{'\n'}}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                 {% elif is_structured_or_json == 'is_structured' %}
                   📍 {{is_zone_name}} | 🚶: {{ humans_detected_report.data.humans_detected }}{{'\n'}}👉 {{ humans_detected_report.data.humans_detected_description }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                 {% else %}
