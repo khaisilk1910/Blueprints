@@ -1245,7 +1245,7 @@ action:
 
                   humans_vid_count: >
                     {% if ai_vid_status == 'disabled' or ai_vid_status == 'error' %} 1
-                    {% elif is_structured_or_json_video == 'is_structured' %} {{ humans_detected_report_video.data.humans_detected | int(0) }}
+                    {% elif is_structured_or_json_video == 'is_structured' %} {{ humans_detected_report_video.data.humans_detected_video | int(0) }}
                     {% else %} {{ humans_detected_video | int(0) }} {% endif %}
 
                   should_notify_video: "{{ humans_vid_count | int > 0 }}"
