@@ -124,7 +124,7 @@ blueprint:
             👉 Chọn kiểu mà AI hỗ trợ Structured Output hay Json
             🌐 Structured Output sẽ là AI Gemini hoặc https://github.com/luuquangvu/Gemini-FastAPI
             🌐 JSON thường là các Custom Integration như NVIDIA hay https://github.com/smarthomeblack/gemini-web-api
-          default: is_structured
+          default: is_json
           selector:
             select:
               options:
