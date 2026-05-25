@@ -244,6 +244,21 @@ blueprint:
               domain: ai_task
           default: []
 
+        is_structured_or_json_video:
+          name: 📝 Structured Output hay Json?
+          description: |
+            👉 Chọn kiểu mà AI hỗ trợ Structured Output hay Json
+            🌐 Structured Output sẽ là AI Gemini hoặc https://github.com/luuquangvu/Gemini-FastAPI
+            🌐 JSON thường là các Custom Integration như NVIDIA hay https://github.com/smarthomeblack/gemini-web-api
+          default: is_json
+          selector:
+            select:
+              options:
+                - label: Structured output
+                  value: "is_structured"
+                - label: JSON
+                  value: "is_json"
+
         ai_task_instructions_record_video:
           name: ✍️ AI Task Instructions
           description: |
@@ -274,6 +289,30 @@ blueprint:
             - Đối với phương tiện: phân loại (ô tô, xe máy, xe đạp...), màu sắc và kiểu dáng. 
             - Chú ý so sánh sự thay đổi giữa các khung hình. 
             - Nếu không có chủ thể nào thuộc 3 nhóm trên xuất hiện, hãy trả lời ngắn gọn: "Không ghi nhận biến động đối tượng".
+          selector:
+            template:
+
+        ai_task_json_instructions_video:
+          name: ✍️ AI Task JSON Instructions
+          description: |
+            👉 Chuỗi chứa các hướng dẫn cụ thể để AI tuân theo khi tạo văn bản.
+            ⚠️ Bạn có thể thay đổi nội dung này nếu kết quả phân tích ảnh không được như bạn mong muốn.
+            🌐 Tham khảo thêm: https://www.home-assistant.io/integrations/ai_task/
+          default: |
+            Phân tích video này.
+            Trả về JSON thuần theo đúng mẫu sau: {"humans_detected":0,"humans_detected_description":""}
+            Quy tắc từng trường:
+            - humans_detected: số nguyên đếm tổng số người trong video.
+            - humans_detected_description: mô tả chi tiết từng người bao gồm người lớn hay trẻ em, giới tính, trang phục, màu sắc trang phục cụ thể, hành động đang làm, tay đang cầm gì (NẾU CẦM NHỮNG VẬT DỤNG NGUY HIỂM HÃY CẢNH BÁO). Hãy mô tả người này đi vào hay đi ra dựa vào video thấy mặt hay quay lưng. Nếu không có người trả về "Không có người trong chuỗi ảnh".
+            QUAN TRỌNG:
+            - BẮT BUỘC viết tiếng Việt có đầy đủ dấu.
+            - TUYỆT ĐỐI KHÔNG viết tiếng Việt không dấu.
+            - TUYỆT ĐỐI KHÔNG bọc kết quả trong markdown code block.
+            - Chỉ trả về raw JSON thuần, bắt đầu bằng "{" và kết thúc bằng "}".
+            - LOẠI BỎ **```json** và **```**.
+            - TẤT CẢ NỘI DUNG TRÊN MỘT DÒNG DUY NHẤT, TUYỆT ĐỐI KHÔNG NGẮT DÒNG.
+            - Giọng văn: Trẻ trung, hóm hỉnh.
+            - Nội dung: Ngắn gọn, đủ thông tin, đi thẳng vào trọng tâm, không rườm rà thưa gửi.
           selector:
             template:
 
@@ -677,6 +716,8 @@ variables:
   ai_provider_record_video: !input ai_provider_record_video
   ai_task_instructions_record_video: !input ai_task_instructions_record_video
   ai_structure_description_record_video: !input ai_structure_description_record_video
+  is_structured_or_json_video: !input is_structured_or_json_video
+  ai_task_json_instructions_video: !input ai_task_json_instructions_video
   #AI
   ai_powered: !input ai_powered
   ai_provider: !input ai_provider
@@ -1141,40 +1182,71 @@ action:
                   - condition: template
                     value_template: "{{ ai_powered_record_video }}"
                 then:
-                  - delay:
-                      seconds: "{{ num_delay_ai_action }}"
-                  - action: ai_task.generate_data
-                    data:
-                      task_name: Phan tich video
-                      instructions: "{{ ai_task_instructions_record_video }}"
-                      entity_id: "{{ ai_provider_record_video }}"
-                      attachments:
-                        media_content_id: media-source://media_source/local/snapshots/{{ file_path }}_recording.mp4
-                        media_content_type: video/mp4
-                      structure:
-                        humans_detected_video:
-                          description: Đếm số người trong video
-                          required: true
-                          selector:
-                            number: null
-                        humans_detected_description_video:
-                          description: "{{ ai_structure_description_record_video }}"
-                          required: true
-                          selector:
-                            text: null
-                    response_variable: humans_detected_report_video
-                    continue_on_error: true
+                  - if:
+                      - condition: template
+                        value_template: "{{ is_structured_or_json_video == 'is_structured' }}"
+                    then:
+                      - delay:
+                          seconds: "{{ num_delay_ai_action }}"
+                      - action: ai_task.generate_data
+                        data:
+                          task_name: Phan tich video
+                          instructions: "{{ ai_task_instructions_record_video }}"
+                          entity_id: "{{ ai_provider_record_video }}"
+                          attachments:
+                            media_content_id: media-source://media_source/local/snapshots/{{ file_path }}_recording.mp4
+                            media_content_type: video/mp4
+                          structure:
+                            humans_detected_video:
+                              description: Đếm số người trong video
+                              required: true
+                              selector:
+                                number: null
+                            humans_detected_description_video:
+                              description: "{{ ai_structure_description_record_video }}"
+                              required: true
+                              selector:
+                                text: null
+                        response_variable: humans_detected_report_video
+                        continue_on_error: true
+                    else:
+                      - delay:
+                          seconds: "{{ num_delay_ai_action }}"
+                      - action: ai_task.generate_data
+                        data:
+                          task_name: Phan tich video
+                          instructions: "{{ ai_task_json_instructions_video }}"
+                          entity_id: "{{ ai_provider_record_video }}"
+                          attachments:
+                            media_content_id: media-source://media_source/local/snapshots/{{ file_path }}_recording.mp4
+                            media_content_type: video/mp4
+                        response_variable: humans_detected_report_video_json
+                        continue_on_error: true
+                      - if:
+                          - condition: template
+                            value_template: "{{ humans_detected_report_video_json is defined }}"
+                        then:
+                          - variables:
+                              json_data_video: >
+                                {{ (humans_detected_report_video_json.data | replace('```json', '') | replace('```','') | trim) | from_json }}
+                              humans_detected_video: "{{ json_data_video.humans_detected }}"
+                              humans_detected_description_video: "{{ json_data_video.humans_detected_description }}"
               
               # 3. Đánh giá kết quả Video
               - variables:
                   ai_vid_status: >
                     {% if not ai_powered_record_video %} disabled
-                    {% elif humans_detected_report_video is defined and humans_detected_report_video.data is defined and humans_detected_report_video.data.humans_detected_video is defined and humans_detected_report_video.data.humans_detected_video != '' %} success
-                    {% else %} error {% endif %}
-                  
+                    {% elif is_structured_or_json_video == 'is_structured' %}
+                      {% if humans_detected_report_video is defined and humans_detected_report_video.data is defined and humans_detected_report_video.data.humans_detected_video is defined and humans_detected_report_video.data.humans_detected_video != '' %} success
+                      {% else %} error {% endif %}
+                    {% else %}
+                      {% if humans_detected_report_video_json is defined %} success {% else %} error {% endif %}
+                    {% endif %}
+
                   humans_vid_count: >
                     {% if ai_vid_status == 'disabled' or ai_vid_status == 'error' %} 1
-                    {% else %} {{ humans_detected_report_video.data.humans_detected_video | int(0) }} {% endif %}
+                    {% elif is_structured_or_json_video == 'is_structured' %} {{ humans_detected_report_video.data.humans_detected | int(0) }}
+                    {% else %} {{ humans_detected_video | int(0) }} {% endif %}
 
                   should_notify_video: "{{ humans_vid_count | int > 0 }}"
 
@@ -1183,8 +1255,10 @@ action:
                       📸 {{camera_name}} | 🚶 Phát hiện chuyển động{{'\n'}}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                     {% elif ai_vid_status == 'error' %}
                       🚨 AI đang lỗi không phân tích được Video{{'\n'}}⚠️ Hãy kiểm tra trạng thái hoạt động của AI{{'\n'}}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
-                    {% else %}
+                    {% elif is_structured_or_json_video == 'is_structured' %}
                       📍 {{is_zone_name}} | 🚶: {{ humans_detected_report_video.data.humans_detected_video }}{{'\n'}}🎞️👉 {{ humans_detected_report_video.data.humans_detected_description_video }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
+                    {% else %}
+                      📍 {{is_zone_name}} | 🚶: {{ humans_detected_video }}{{'\n'}}👉 {{ humans_detected_description_video }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
                     {% endif %}
 
               # 4. THỰC THI GỬI THÔNG BÁO VIDEO
