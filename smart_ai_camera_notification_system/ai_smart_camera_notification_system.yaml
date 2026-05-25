@@ -886,7 +886,7 @@ action:
                     then:
                       - variables:
                           json_data: >
-                            {{ (humans_detected_report_json.data | replace('```json', '') | replace('```','') | trim) | from_json }}
+                            {{ (humans_detected_report_json.data | replace('```json', '') | replace('```','') | trim) | from_json(default={...}) }}
                           humans_detected: "{{ json_data.humans_detected }}"
                           humans_detected_description: "{{ json_data.humans_detected_description }}"
 
@@ -1228,7 +1228,7 @@ action:
                         then:
                           - variables:
                               json_data_video: >
-                                {{ (humans_detected_report_video_json.data | replace('```json', '') | replace('```','') | trim) | from_json }}
+                                {{ (humans_detected_report_video_json.data | replace('```json', '') | replace('```','') | trim) | from_json(default={...}) }}
                               humans_detected_video: "{{ json_data_video.humans_detected }}"
                               humans_detected_description_video: "{{ json_data_video.humans_detected_description }}"
               
