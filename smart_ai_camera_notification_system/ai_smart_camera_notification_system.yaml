@@ -887,8 +887,8 @@ action:
                       - variables:
                           json_data: >
                             {{ (humans_detected_report_json.data | replace('```json', '') | replace('```','') | trim) | from_json(default={}) }}
-                          humans_detected: "{{ json_data.humans_detected }}"
-                          humans_detected_description: "{{ json_data.humans_detected_description }}"
+                          humans_detected: "{{ json_data.get('humans_detected', 0)  }}"
+                          humans_detected_description: "{{ json_data.get('humans_detected_description', 'AI trả JSON lỗi hoặc không đúng định dạng.') }}"
 
           # 3. Đánh giá kết quả & Tạo nội dung Message chung
           - variables:
@@ -1152,7 +1152,7 @@ action:
                                 entity_id: !input text_to_speech_engine
                               data:
                                 media_player_entity_id: "{{ repeat.item }}"
-                                message: "{{ final_tts }}"
+                                message: "{{ final_tts | trim  }}"
 
 
       # ==========================================
@@ -1229,8 +1229,8 @@ action:
                           - variables:
                               json_data_video: >
                                 {{ (humans_detected_report_video_json.data | replace('```json', '') | replace('```','') | trim) | from_json(default={}) }}
-                              humans_detected_video: "{{ json_data_video.humans_detected }}"
-                              humans_detected_description_video: "{{ json_data_video.humans_detected_description }}"
+                              humans_detected_video: "{{ json_data_video.get('humans_detected', 0) }}"
+                              humans_detected_description_video: "{{ json_data_video.get('humans_detected_description', 'AI trả JSON lỗi hoặc không đúng định dạng.') }}"
               
               # 3. Đánh giá kết quả Video
               - variables:
