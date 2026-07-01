@@ -6,9 +6,6 @@ blueprint:
     <details>
     <summary><b>Chi tiết:</b> - Nhấn để mở rộng</summary>
 
-      **Phiên bản: v.2026.04.18**
-        - Tối ưu code ngắn gọn logic hơn
-
       **Phiên bản: v.2025.10.25**
         
 
@@ -1077,7 +1074,7 @@ action:
                                                           entity_id: !input text_to_speech_engine
                                                         data:
                                                           media_player_entity_id: "{{ repeat.item }}"
-                                                          message: "{{ final_tts }}"
+                                                          message: "{{ final_tts | trim }}"
                                                 - action: scene.turn_on
                                                   metadata: {}
                                                   target:
@@ -1124,7 +1121,7 @@ action:
                                                       entity_id: !input text_to_speech_engine
                                                     data:
                                                       media_player_entity_id: "{{ repeat.item }}"
-                                                      message: "{{ final_tts }}"
+                                                      message: "{{ final_tts | trim }}"
                                     # 6. TTS MOBILE NOTIFY
                                     - if:
                                         - condition: template
@@ -1137,7 +1134,7 @@ action:
                                                 data:
                                                   message: TTS
                                                   data:
-                                                    tts_text: "{{ final_tts }}"
+                                                    tts_text: "{{ final_tts | trim  }}"
                                                     media_stream: "{{ is_tts_to_mobile_media_stream_types }}"
                             - conditions: "{{ not ai_powered }}"
                               sequence:
