@@ -1,5 +1,7 @@
 blueprint:
   name: AI Smart Camera Notification System
+  author: khaisilk1910
+  source_url: https://github.com/khaisilk1910/Blueprints/blob/main/smart_ai_camera_notification_system/ai_smart_camera_notification_system.yaml
   description: >
     #### 📢 Chụp ảnh, quay video ngắn Phân tích ảnh video bằng AI và gửi Thông báo lên điện thoại, zalo, telegram, Discord và ra loa nếu Cảm biến kích hoạt và thực tế có người xuất hiện trong ảnh, video.
 
