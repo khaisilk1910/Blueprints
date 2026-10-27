@@ -6,7 +6,10 @@ blueprint:
     <details>
     <summary><b>Chi tiết:</b> - Nhấn để mở rộng</summary>
 
-      **Phiên bản: v.2025.10.25**
+      **Phiên bản: v.2026.10.27.1**
+
+        - Thêm bật/tắt TTL Zalo và đủ 9 lựa chọn thời gian.
+        - Tắt TTL không truyền trường ttl; giữ các input và luồng TTS hiện có.
         
 
       **Tác giả: Khaisilk1910 - Nguyễn Tiến Khải**
@@ -27,6 +30,8 @@ blueprint:
     </details>      
 
   domain: automation
+  homeassistant:
+    min_version: "2026.10.0"
 
 
   input:
@@ -83,13 +88,13 @@ blueprint:
         1. Chào buổi sáng thật bùng nổ, thông báo giờ giấc và ngày tháng.
         2. Cập nhật thời tiết hiện tại, tình hình mưa gió và chỉ số AQI. Dựa vào đó, đưa ra lời khuyên "lầy lội" về trang phục hoặc sức khỏe (ví dụ: trời mưa thì dặn mang áo mưa kẻo ướt, AQI cao thì nhắc đeo khẩu trang Ninja).
         3. Phân tích mục "Sự kiện". Nếu có sự kiện (khác None/Null/Trống), hãy nhắc nhở thật duyên dáng. Nếu không có sự kiện, tuyệt đối bỏ qua và không nhắc đến việc "không có sự kiện".
-        4. Cung cấp nhiệt độ cao nhất - thấp nhất và điều kiện thời tiết, độ ẩm, khả năng mưa trong ngày hôm nay tại Hà Nội. Tiếp theo, cung cấp nhiệt độ cao nhất - thấp nhất và điều kiện thời tiết, độ ẩm, khả năng mưa của ngày mai tại Hà Nội dựa trên dữ liệu dự báo (nếu dữ liệu bị thiếu, hãy dự đoán một cách hài hước).
+        4. Cung cấp nhiệt độ cao nhất - thấp nhất và điều kiện thời tiết, độ ẩm, khả năng mưa trong ngày hôm nay tại Hà Nội. Tiếp theo, cung cấp nhiệt độ cao nhất - thấp nhất và điều kiện thời tiết, độ ẩm, khả năng mưa của ngày mai tại Hà Nội dựa trên dữ liệu dự báo (nếu thiếu dữ liệu, nói rõ chưa có dữ liệu; không tự tạo số liệu).
         -----------------
         Nhiệm vụ của bạn là tổng hợp dữ liệu trên thành một thông báo chúc ngủ ngon với luồng nội dung sau:
         1. Gửi lời chúc ngủ ngon ấm áp, thư giãn nhưng vẫn giữ nét lầy lội, dễ thương (có thể nhắc tên Sóc và Chíp nếu muốn). Thông báo giờ giấc hiện tại để nhắc nhở mọi người đến lúc lên giường.
         2. Cập nhật nhanh thời tiết và chất lượng không khí (AQI) đêm nay. Dựa vào đó, đưa ra lời khuyên vui nhộn cho giấc ngủ (ví dụ: trời lạnh thì nhắc cuộn tròn như kimbap, trời mưa thì bảo thời tiết này đắp chăn ngủ là nhức nách, AQI cao thì nhắc đóng kín cửa sổ phòng).
         3. Phân tích mục "Sự kiện". Nếu có sự kiện lễ tết (khác None/Null/Trống), hãy nhắc nhở nhẹ nhàng để chuẩn bị tinh thần cho ngày mai. Nếu không có sự kiện, TUYỆT ĐỐI BỎ QUA và không nhắc đến việc "không có sự kiện".
-        4. Báo cáo nhanh dự báo thời tiết ngày mai tại Hà Nội (nhiệt độ cao nhất - thấp nhất, điều kiện thời tiết, độ ẩm, khả năng mưa) để mọi người biết đường soạn sẵn quần áo. Nếu dữ liệu bị thiếu, hãy dự đoán một cách hài hước.
+        4. Báo cáo nhanh dự báo thời tiết ngày mai tại Hà Nội (nhiệt độ cao nhất - thấp nhất, điều kiện thời tiết, độ ẩm, khả năng mưa) để mọi người biết đường soạn sẵn quần áo. Nếu thiếu dữ liệu, nói rõ chưa có dữ liệu; không tự tạo số liệu.
         -----------------
         Hãy đóng vai một người bạn vui nhộn, tràn đầy năng lượng để đánh thức hai bé Sóc và Chíp dậy chuẩn bị đi học. Dựa vào dữ liệu đầu vào, hãy tạo một thông báo chào buổi sáng tuân thủ các bước sau:
         1. Chào hỏi rộn ràng, gọi tên Sóc và Chíp, kèm thông báo giờ giấc, ngày tháng (Dương lịch và Âm lịch).
@@ -188,9 +193,19 @@ blueprint:
           description: |
             👉 Lặp lại hành động với mỗi phần tử
             🌐 Tham khảo thêm: https://www.home-assistant.io/docs/scripts/#for-each
-          default: {}
+          default: []
           selector:
             object: {}
+        repeat_limit:
+          name: 🛑 Giới hạn vòng lặp While / Until
+          description: Giới hạn số lượt gửi trong một lần chạy, tránh vòng lặp vô hạn khi điều kiện không thay đổi.
+          default: 100
+          selector:
+            number:
+              min: 1
+              max: 10000
+              step: 1
+              mode: box
         repeat_delay:
           name: ⌛ Delay
           description: |
@@ -225,7 +240,8 @@ blueprint:
             ⚠️ Nếu không Bật sử dụng AI bên trên không cần chọn
           selector:
             entity:
-              domain: ai_task
+              filter:
+                domain: ai_task
           default: ""
         ai_task_name:
           name: 📝 Task Name
@@ -257,6 +273,7 @@ blueprint:
             2. Dùng 100% Tiếng Việt. Dùng dấu phẩy hoặc chấm để ngắt câu hợp lý đúng ngữ pháp.
             3. TUYỆT ĐỐI gom tất cả nội dung thành MỘT DÒNG DUY NHẤT.
             4. Ngắn gọn, súc tích, nhịp điệu nhanh để đọc qua loa hoặc thông báo điện thoại.
+            5. Không bịa dữ liệu thời tiết, thời gian hoặc trạng thái thiết bị. Nếu dữ liệu là unknown, unavailable, None hoặc thiếu, nói rõ chưa có dữ liệu hoặc bỏ qua mục đó.
           selector:
             template:
 
@@ -363,7 +380,7 @@ blueprint:
             text:
         enable_custom_dismiss_action:
           name: ✅ Enable Custom Dismiss Action
-          description: "Display notification on Android Auto interface."
+          description: "Bật để chạy Custom Dismiss Action khi bấm Dismiss; tắt để xóa thông báo."
           default: false
           selector:
             boolean: {}
@@ -376,7 +393,8 @@ blueprint:
         tag:
           name: "\U0001F516 Tag"
           description: |
-            👉 Được sử dụng để định danh duy nhất thông báo.
+            👉 Tiền tố định danh thông báo. Blueprint thêm context ID để các lượt chạy không xóa nhầm thông báo của nhau.
+            ⚠️ Trong Custom Actions, dùng `{{ notification_tag }}` nếu cần xóa đúng thông báo của lượt này.
             🌐 Tham khảo thêm: https://companion.home-assistant.io/docs/notifications/actionable-notifications
           default: "dimiss_notifications_now"
           selector:
@@ -384,7 +402,7 @@ blueprint:
         timeout:
           name: ⌛️ Timeout Duration
           description: |
-            👉 Khoảng thời gian chờ phản hồi hành động trước khi kích hoạt hành động khi hết thời gian chờ (timeout).
+            👉 Thời gian chờ người dùng bấm nút. Hết hạn thì tiếp tục, không tự chạy Confirm hoặc Dismiss.
             ⚠️ Khuyến nghị: tối thiểu 1 phút để đảm bảo thông báo được gửi đi.
             ⚠️ Mặc định: 10 phút.
           default:
@@ -410,6 +428,47 @@ blueprint:
           selector:
             boolean: {}
 
+        include_zalo_ttl:
+          name: ⏱️ Bật hẹn thu hồi tin Zalo (TTL)
+          description: |
+            👉 Bật để truyền thời gian TTL cho tin Zalo gửi trong lượt này.
+            👉 Tắt: không truyền trường `ttl`, giữ cách gửi cũ.
+            ⚠️ Cần phiên bản Zalo Bot hỗ trợ TTL dạng `1m`, `1h` như giao diện tích hợp.
+            ⚠️ Đây là lịch thu hồi do máy chủ Zalo Bot xử lý; không phải tự xóa cả cuộc trò chuyện.
+            ⚠️ Thu hồi phụ thuộc máy chủ và ID tin nhắn trả về, không bảo đảm thành công mọi lần.
+          default: false
+          selector:
+            boolean: {}
+        zalo_ttl:
+          name: ⌛ Thời gian thu hồi Zalo
+          description: |
+            👉 Chỉ áp dụng khi bật TTL bên trên; dùng chung cho các tin Zalo của automation.
+            👉 Bản camera áp dụng cho cả tin ảnh và tin video.
+            ⚠️ `1h` được giữ nguyên để tích hợp xử lý mốc chạy trước 1 phút như trong giao diện.
+          default: "1h"
+          selector:
+            select:
+              mode: dropdown
+              options:
+                - label: Không hẹn thu hồi
+                  value: "0"
+                - label: 1 phút
+                  value: "1m"
+                - label: 5 phút
+                  value: "5m"
+                - label: 10 phút
+                  value: "10m"
+                - label: 15 phút
+                  value: "15m"
+                - label: 30 phút
+                  value: "30m"
+                - label: 45 phút
+                  value: "45m"
+                - label: 59 phút
+                  value: "59m"
+                - label: 1 giờ (chạy trước 1 phút)
+                  value: "1h"
+
         zalo_group_id:
           name: ‍🆔 User or Group ID
           description: |
@@ -421,7 +480,7 @@ blueprint:
           selector:
             text:
               multiple: true
-          default: ""
+          default: []
 
         zalo_phone:
           name: 📞 Zalo Acc
@@ -446,21 +505,11 @@ blueprint:
                   value: "0"
                 - label: Group
                   value: "1"
-        zalo_ttl:
-          name: ⏳ TTL
-          description: 👉 Thời gian chờ sau thời gian này tin nhắn sẽ tự xóa.
-          selector:
-            number:
-              min: 0
-              max: 86400000
-              step: 1000
-              unit_of_measurement: seconds
-          default: 0
         zalo_login_check:
           name: 📱 Zalo Login
           description: |
             👉 Chọn Zalo Login để check lỗi nếu có
-          default: []
+          default: ""
           selector:
             entity:
               filter:
@@ -517,11 +566,23 @@ blueprint:
                   integration: telegram_bot
               multiple: true
 
+        telegram_parse_mode:
+          name: 📝 Định dạng Telegram
+          description: HTML giữ cách hiển thị cũ. Chọn plain_text nếu nội dung AI hoặc ký tự đặc biệt gây lỗi định dạng
+            Telegram.
+          default: html
+          selector:
+            select:
+              options:
+              - html
+              - plain_text
+              - markdown
+              - markdownv2
         telegram_topic:
           name: 🆔 Topic ID
           description: |
             👉 ID của chủ đề trong nhóm Telegram.
-            ⚠️ Nếu sử dụng nhiều `User or Group ID` bên trên thì `Topic ID` này không được điền
+            ⚠️ Để trống nếu không gửi vào topic. Khi chọn nhiều đích, Topic ID này áp dụng cho từng đích.
           selector:
             text:
           default: ""
@@ -540,10 +601,10 @@ blueprint:
           selector:
             boolean: {}
         discord_provider:
-          name: 🛠️ Config entry ID
+          name: 🛠️ Discord Notify Service
           description: |
-            👉 Chọn Bot để gửi thông báo.
-            ⚠️ Vào `/config/integrations/integration/discord` copy tên của Bot rồi dán vào đây thay thế tên bot mặc định
+            👉 Nhập tên dịch vụ notify của Discord, ví dụ `hass_discord` hoặc `notify.hass_discord`.
+            ⚠️ Đây là tên action, không phải config entry ID.
           selector:
             text:
               multiline: false
@@ -554,7 +615,7 @@ blueprint:
           selector:
             text:
               multiple: true
-          default: ""
+          default: []
 
     tts_notify_settings:
       name: TTS To Speakers Settings
@@ -582,11 +643,77 @@ blueprint:
           name: 🗣️ Text-to-Speech Service Provider
           description: |
             👉 Chọn dịch vụ TTS hỗ trợ.
-          default: []
+          default: ""
           selector:
             entity:
               filter:
                 domain: tts
+        tts_cache_mode:
+          name: 💾 TTS Cache
+          description: |
+            👉 Bật để truyền `cache: true`, tắt để truyền `cache: false`.
+            ⚠️ Mặc định bật, giống mặc định của `tts.speak`.
+          default: true
+          selector:
+            boolean: {}
+        tts_language:
+          name: 🌐 TTS Language (Optional)
+          description: |
+            👉 Nhập mã ngôn ngữ mà dịch vụ TTS hỗ trợ, ví dụ `vi`.
+            ⚠️ Để trống: không truyền `language`, sử dụng mặc định của dịch vụ TTS.
+          default: ""
+          selector:
+            text:
+              multiline: false
+        tts_voice:
+          name: 🗣️ TTS Voice (Optional)
+          description: |
+            👉 Nhập tên giọng đọc mà dịch vụ TTS hỗ trợ, ví dụ `maichi`.
+            ⚠️ Có giá trị: truyền vào `options.voice`.
+            ⚠️ Để trống: không truyền `options`, sử dụng giọng đọc mặc định của dịch vụ TTS.
+          default: ""
+          selector:
+            text:
+              multiline: false
+        tts_restore_volume:
+          name: 🔊 Khôi phục âm lượng sau TTS
+          description: Chờ phát xong rồi trả lại âm lượng cũ. Không thay đổi nếu người dùng đã chỉnh sang mức khác. Thiết
+            bị phải báo trạng thái phát chính xác.
+          default: true
+          selector:
+            boolean: {}
+        tts_busy_timeout:
+          name: ⌛ Chờ loa đang bận (giây)
+          description: Chờ loa hết playing/buffering. Hết thời gian chỉ phát trên loa đang rảnh; không cắt ngang loa vẫn
+            bận.
+          default: 60
+          selector:
+            number:
+              min: 0
+              max: 600
+              step: 1
+              mode: box
+        tts_start_timeout:
+          name: ⌛ Chờ loa báo bắt đầu phát (giây)
+          description: Thời gian đợi mỗi loa báo thay đổi trạng thái sau khi gửi TTS.
+          default: 15
+          selector:
+            number:
+              min: 1
+              max: 120
+              step: 1
+              mode: box
+        tts_playback_timeout:
+          name: ⌛ Giới hạn theo dõi lượt phát (giây)
+          description: Ngân sách chờ chung cho các loa sau khi gửi TTS. Tăng nếu nội dung đọc dài. Hết hạn vẫn thử khôi
+            phục âm lượng; không dừng nhạc cưỡng bức.
+          default: 180
+          selector:
+            number:
+              min: 10
+              max: 1800
+              step: 1
+              mode: box
         media_player:
           name: 🎶 Media Player
           description: |
@@ -650,7 +777,8 @@ blueprint:
         include_tts_to_mobile:
           name: ✅ Use The Mobile App TTS Option (Optional)
           description: |
-            👉 Enable nếu muốn gửi thông báo ra loa ngoài điện thoại đã chọn bên dưới.
+            👉 Bật để đọc thông báo trên điện thoại Android có ứng dụng Home Assistant Companion.
+            ⚠️ Phần này dùng bộ đọc của Android, độc lập với dịch vụ, cache và giọng TTS của loa bên trên.
             🌐 Xem thêm tại https://companion.home-assistant.io/docs/notifications/notifications-basic/#text-to-speech-notifications
           default: false
           selector:
@@ -707,476 +835,481 @@ blueprint:
           selector:
             action:
 
-trigger: !input global_triggers
+    execution_settings:
+      name: Execution Settings
+      icon: mdi:playlist-play
+      collapsed: true
+      input:
+        execution_mode:
+          name: ⚙️ Khi automation được kích hoạt nhiều lần
+          description: Queued chạy lần lượt trong cùng automation, tránh giành loa. Parallel gửi ngay nhưng các lượt
+            có thể tranh loa. Single bỏ qua kích hoạt mới khi đang chạy. Queued có thể phải đợi hết thời gian chờ nút
+            thông báo.
+          default: queued
+          selector:
+            select:
+              options:
+              - label: Queued — xếp hàng
+                value: queued
+              - label: Parallel — chạy đồng thời
+                value: parallel
+              - label: Single — chỉ một lượt
+                value: single
 
+# Runtime: dùng chung một chu trình cho cả 5 chế độ lặp.
+triggers: !input 'global_triggers'
 variables:
-  template_customs: !input template_customs
-  include_custom_1_actions: !input "include_custom_1_actions"
-  repeat_types: !input repeat_types
-  repeat_count: !input repeat_count
-  repeat_for_each: !input repeat_for_each
-  repeat_delay: !input repeat_delay
-  ai_powered: !input "ai_powered"
-  ai_task_entity_id: !input ai_task_entity_id
-  ai_task_name: !input ai_task_name
-  ai_instructions: !input ai_instructions
-  ai_structure_description: !input ai_structure_description
-  message_if_ai_error: !input message_if_ai_error
-  include_notify: !input "include_notify"
-  notify_device: !input notify_device
-  notify_title: !input notify_title
-  tap_navigate: !input tap_navigate
-  filtered_devices: >
-    {{ notify_device }}
-  is_ios_android: !input "is_ios_android"
-  include_actions: !input "include_actions"
-  confirm_text: !input confirm_text
-  dismiss_text: !input dismiss_text
-  timeout: !input timeout
-  enable_custom_dismiss_action: !input enable_custom_dismiss_action
-  tag: !input tag
-  include_zalo_notify: !input "include_zalo_notify"
-  zalo_group_id: !input zalo_group_id
-  filtered_zalo_id: >
-    {{ (zalo_group_id if zalo_group_id is iterable and zalo_group_id is not string else [zalo_group_id|string]) | map('string') | list | tojson }}
-  zalo_login_check: !input zalo_login_check
-  is_ios_android_zalo: !input is_ios_android_zalo
-  notify_device_zalo: !input notify_device_zalo
-  include_telegram_notify: !input "include_telegram_notify"
-  notify_tele_target: !input notify_tele_target
-  telegram_topic: !input telegram_topic
-  tele_title: >
-    {{ notify_title | regex_replace('<span[^>]*>', '') | replace('</span>', '') if '<span' in notify_title else notify_title }}
-  include_discord_notify: !input "include_discord_notify"
-  discord_provider: !input discord_provider
-  discord_channel: !input discord_channel
-  filtered_discord_id: >
-    {{ (discord_channel if discord_channel is iterable and discord_channel is not string else [discord_channel|string]) | map('string') | list | tojson }}
-  include_tts_announcement: !input "include_tts_announcement"
-  num_volume_speaker: !input num_volume_speaker
-  text_to_speech_engine: !input text_to_speech_engine
-  media_player: !input media_player
-  include_custom_media_player: !input include_custom_media_player
-  custom_media_player: !input custom_media_player
-  include_tts_to_mobile: !input include_tts_to_mobile
-  tts_to_mobile: !input tts_to_mobile
-  tts_to_mobile_media_stream_types: !input tts_to_mobile_media_stream_types
-  filtered_tts_to_mobile: >
-    {{ tts_to_mobile }}
-  include_custom_actions: !input "include_custom_actions"
-  global_conditions: !input global_conditions
-
-condition:
-  - condition: and
-    conditions: !input global_conditions
-
-action:
-  - sequence:
-      - variables:
-          template_customs: >
-            {{ '' if template_customs == '' else template_customs }}
-          filtered_telegram_target: >
-            {{ notify_tele_target }}
-          filtered_notify_device_zalo: >
-            {{ notify_device_zalo }}
-          zalo_check_status: >
-            {{ expand(zalo_login_check) | selectattr('state', 'eq', 'off') | list | length == zalo_login_check | length }}
-          message_customs: !input message_customs
-          action_confirm: "{{ 'CONFIRM_' ~ context.id }}"
-          action_dismiss: "{{ 'DISMISS_' ~ context.id }}"
-          notification_color: !input "notification_color"
-          notification_color_hex: "#{{ '%02x%02x%02x' | format(notification_color[0], notification_color[1], notification_color[2]) }}"
-          is_custom_media_player: >
-            {{ custom_media_player if include_custom_media_player else media_player | list }}
-          is_message_customs: |
-            {{ ai_structure_description if message_customs == '' else message_customs }}
-          is_tts_to_mobile_media_stream_types: |
-            {% if tts_to_mobile_media_stream_types == 'alarm_stream_max' %}
-              alarm_stream_max
-            {% elif tts_to_mobile_media_stream_types == 'alarm_stream' %}
-              alarm_stream
-            {% else %}
-              {{''}}
-            {% endif %}
-          is_wait_completed_error: "Chờ phát thông báo không thành công. Hãy kiểm tra loa hoặc thử lại Automation này."
-          ai_notification_error: >
-            🚨 {{ message_if_ai_error }}{{'\n'}}🚨 AI đang lỗi.{{'\n\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
-          ai_notification_tts_error: >
-            {{ message_if_ai_error }}. AI đang lỗi.
-
-      - if:
+  include_zalo_ttl: !input include_zalo_ttl
+  zalo_ttl: !input zalo_ttl
+  zalo_optional_data: >-
+    {{ dict(ttl=(0 if zalo_ttl | string == '0' else zalo_ttl | string)) if include_zalo_ttl else dict() }}
+  template_customs: !input 'template_customs'
+  include_custom_1_actions: !input 'include_custom_1_actions'
+  repeat_types: !input 'repeat_types'
+  repeat_count: !input 'repeat_count'
+  repeat_for_each: !input 'repeat_for_each'
+  repeat_delay: !input 'repeat_delay'
+  ai_powered: !input 'ai_powered'
+  ai_task_entity_id: !input 'ai_task_entity_id'
+  ai_task_name: !input 'ai_task_name'
+  include_notify: !input 'include_notify'
+  notify_device: !input 'notify_device'
+  notify_title: !input 'notify_title'
+  tap_navigate: !input 'tap_navigate'
+  filtered_devices: |-
+    {% set raw = notify_device | default([], true) %}
+    {% set items = [raw] if raw is string or raw is number else (raw if raw is sequence and raw is not mapping else []) %}
+    {{ items | select('string') | map('trim') | reject('equalto', '') | unique | list }}
+  is_ios_android: !input 'is_ios_android'
+  include_actions: !input 'include_actions'
+  confirm_text: !input 'confirm_text'
+  dismiss_text: !input 'dismiss_text'
+  timeout: !input 'timeout'
+  enable_custom_dismiss_action: !input 'enable_custom_dismiss_action'
+  tag: !input 'tag'
+  include_zalo_notify: !input 'include_zalo_notify'
+  zalo_group_id: !input 'zalo_group_id'
+  zalo_login_check: !input 'zalo_login_check'
+  is_ios_android_zalo: !input 'is_ios_android_zalo'
+  notify_device_zalo: !input 'notify_device_zalo'
+  include_telegram_notify: !input 'include_telegram_notify'
+  notify_tele_target: !input 'notify_tele_target'
+  telegram_topic: !input 'telegram_topic'
+  include_discord_notify: !input 'include_discord_notify'
+  discord_provider: !input 'discord_provider'
+  discord_channel: !input 'discord_channel'
+  include_tts_announcement: !input 'include_tts_announcement'
+  num_volume_speaker: !input 'num_volume_speaker'
+  text_to_speech_engine: !input 'text_to_speech_engine'
+  tts_cache_mode: !input 'tts_cache_mode'
+  tts_language: !input 'tts_language'
+  tts_voice: !input 'tts_voice'
+  media_player: !input 'media_player'
+  include_custom_media_player: !input 'include_custom_media_player'
+  include_tts_to_mobile: !input 'include_tts_to_mobile'
+  tts_to_mobile: !input 'tts_to_mobile'
+  tts_to_mobile_media_stream_types: !input 'tts_to_mobile_media_stream_types'
+  filtered_tts_to_mobile: |-
+    {% set raw = tts_to_mobile | default([], true) %}
+    {% set items = [raw] if raw is string or raw is number else (raw if raw is sequence and raw is not mapping else []) %}
+    {{ items | select('string') | map('trim') | reject('equalto', '') | unique | list }}
+  include_custom_actions: !input 'include_custom_actions'
+  response_thong_bao: {}
+  ai_success: false
+  final_text: ''
+  final_tts: ''
+  tts_restore_volume: !input 'tts_restore_volume'
+  tts_busy_timeout: !input 'tts_busy_timeout'
+  tts_start_timeout: !input 'tts_start_timeout'
+  tts_playback_timeout: !input 'tts_playback_timeout'
+  repeat_limit: !input 'repeat_limit'
+  telegram_parse_mode: !input 'telegram_parse_mode'
+  notification_color: !input 'notification_color'
+  status_bar_icon: !input 'status_bar_icon'
+  zalo_phone: !input 'zalo_phone'
+  zalo_types: !input 'zalo_types'
+  filtered_notify_device_zalo: |-
+    {% set raw = notify_device_zalo | default([], true) %}
+    {% set items = [raw] if raw is string or raw is number else (raw if raw is sequence and raw is not mapping else []) %}
+    {{ items | select('string') | map('trim') | reject('equalto', '') | unique | list }}
+  filtered_telegram_target: |-
+    {% set raw = notify_tele_target | default([], true) %}
+    {% set items = [raw] if raw is string or raw is number else (raw if raw is sequence and raw is not mapping else []) %}
+    {{ items | select('string') | map('trim') | reject('equalto', '') | unique | list }}
+  filtered_zalo_id: |-
+    {% set raw = zalo_group_id | default([], true) %}
+    {% set items = [raw] if raw is string or raw is number else (raw if raw is sequence and raw is not mapping else []) %}
+    {{ items | reject('equalto', none) | map('string') | map('trim') | reject('equalto', '') | unique | list }}
+  filtered_discord_id: |-
+    {% set raw = discord_channel | default([], true) %}
+    {% set items = [raw] if raw is string or raw is number else (raw if raw is sequence and raw is not mapping else []) %}
+    {{ items | reject('equalto', none) | map('string') | map('trim') | reject('equalto', '') | unique | list }}
+  notification_color_hex: '#{{ ''%02x%02x%02x'' | format(notification_color[0] | int, notification_color[1] | int,
+    notification_color[2] | int) }}'
+  tts_optional_data: |-
+    {% set params = dict(cache=(tts_cache_mode in [true, 'default', 'enabled', 'true', 'on'])) %}
+    {% set language = tts_language | default('', true) | string | trim %}
+    {% if language %}{% set params = dict(params, language=language) %}{% endif %}
+    {% set voice = tts_voice | default('', true) | string | trim %}
+    {% if voice %}{% set params = dict(params, options=dict(voice=voice)) %}{% endif %}
+    {{ params }}
+conditions: !input 'global_conditions'
+actions:
+- if:
+  - condition: template
+    value_template: '{{ include_custom_1_actions }}'
+  then: !input 'custom_actions_1'
+- choose:
+  - conditions: '{{ repeat_types == ''count_repeat'' }}'
+    sequence:
+    - repeat:
+        count: '{{ repeat_count | int(1) }}'
+        sequence:
+        - &notification_cycle
+          sequence:
+          - variables:
+              template_customs: !input 'template_customs'
+              ai_structure_description: !input 'ai_structure_description'
+              message_customs: !input 'message_customs'
+              message_if_ai_error: !input 'message_if_ai_error'
+              response_thong_bao: {}
+              ai_success: false
+              notification_cycle_id: '{{ context.id ~ ''_'' ~ now().strftime(''%Y%m%d%H%M%S%f'') }}'
+              action_confirm: '{{ ''CONFIRM_'' ~ notification_cycle_id }}'
+              action_dismiss: '{{ ''DISMISS_'' ~ notification_cycle_id }}'
+              notification_tag: '{{ (tag | default(''notification'', true)) ~ ''_'' ~ context.id }}'
+              tele_title: '{{ notify_title | regex_replace(''<span[^>]*>'', '''') | replace(''</span>'', '''') }}'
+              is_message_customs: '{{ ai_structure_description if message_customs | default('''', true) | string
+                | trim == '''' else message_customs }}'
+              ai_notification_error: 🚨 {{ message_if_ai_error }}{{'\n'}}🚨 AI đang lỗi.{{'\n\n'}}🕒 {{ now().strftime('%H:%M:%S
+                %a, %d-%b-%Y') }}
+              ai_notification_tts_error: '{{ message_if_ai_error }}. AI đang lỗi.'
+              final_text: 👉 {{ is_message_customs }}{{'\n'}}🕒 {{ now().strftime('%H:%M:%S %a, %d-%b-%Y') }}
+              final_tts: '{{ ai_structure_description }}'
+            alias: Làm mới dữ liệu và xóa phản hồi của lượt trước
+          - if:
+            - condition: template
+              value_template: '{{ ai_powered }}'
+            then:
+            - variables:
+                ai_instructions: !input 'ai_instructions'
+            - action: ai_task.generate_data
+              continue_on_error: true
+              data: |-
+                {% set params = dict(task_name=ai_task_name, instructions=ai_instructions,
+                    structure=dict(thong_bao=dict(description=ai_structure_description, required=true, selector=dict(text=dict())))) %}
+                {% if ai_task_entity_id is string and ai_task_entity_id | trim %}
+                  {% set params = dict(params, entity_id=ai_task_entity_id | trim) %}
+                {% endif %}
+                {{ params }}
+              response_variable: response_thong_bao
+            - variables:
+                ai_success: |-
+                  {{ response_thong_bao is mapping
+                     and response_thong_bao.get('data') is mapping
+                     and response_thong_bao['data'].get('thong_bao') is string
+                     and response_thong_bao['data']['thong_bao'] | trim | length > 0 }}
+                final_text: '{{ (''👉 '' ~ (response_thong_bao[''data''][''thong_bao''] | trim) ~ ''\n🕒 '' ~ now().strftime(''%H:%M:%S
+                  %a, %d-%b-%Y'')) if ai_success else ai_notification_error }}'
+                final_tts: '{{ response_thong_bao[''data''][''thong_bao''] | trim if ai_success else ai_notification_tts_error
+                  }}'
+          - alias: Gửi đồng thời qua các kênh độc lập
+            parallel:
+            - if:
+              - condition: template
+                value_template: '{{ include_notify and filtered_devices | length > 0 }}'
+              then:
+              - repeat:
+                  for_each: '{{ filtered_devices }}'
+                  sequence:
+                  - action: notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}
+                    continue_on_error: true
+                    data: |-
+                      {% set extra = dict(url=tap_navigate) %}
+                      {% if is_ios_android == 'android_device' %}
+                        {% set extra = dict(extra, priority='high', ttl=0, notification_icon=status_bar_icon,
+                          color=notification_color_hex, clickAction=tap_navigate) %}
+                      {% endif %}
+                      {% if include_actions %}
+                        {% set extra = dict(extra, tag=notification_tag, actions=[
+                          dict(action=action_confirm, title=confirm_text),
+                          dict(action=action_dismiss, title=dismiss_text)]) %}
+                      {% endif %}
+                      {{ dict(title=notify_title, message=final_text, data=extra) }}
+              - if:
+                - condition: template
+                  value_template: '{{ include_actions }}'
+                then:
+                - wait_for_trigger:
+                  - trigger: event
+                    event_type: mobile_app_notification_action
+                    event_data:
+                      action: '{{ action_confirm }}'
+                  - trigger: event
+                    event_type: mobile_app_notification_action
+                    event_data:
+                      action: '{{ action_dismiss }}'
+                  timeout: '{{ timeout }}'
+                  continue_on_timeout: true
+                - choose:
+                  - conditions: '{{ wait.completed and wait.trigger is not none and wait.trigger.event.data.action
+                      == action_confirm }}'
+                    sequence: !input 'confirm_action'
+                  - conditions: '{{ wait.completed and wait.trigger is not none and wait.trigger.event.data.action
+                      == action_dismiss }}'
+                    sequence:
+                    - if:
+                      - condition: template
+                        value_template: '{{ enable_custom_dismiss_action }}'
+                      then: !input 'custom_dismiss_action'
+                      else:
+                      - repeat:
+                          for_each: '{{ filtered_devices }}'
+                          sequence:
+                          - action: notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}
+                            continue_on_error: true
+                            data:
+                              message: clear_notification
+                              data:
+                                tag: '{{ notification_tag }}'
+              alias: Mobile App — gửi và chờ nút riêng cho từng lượt
+            - if:
+              - condition: template
+                value_template: '{{ include_zalo_notify and filtered_zalo_id | length > 0 }}'
+              then:
+              - variables:
+                  zalo_failed: false
+              - repeat:
+                  for_each: '{{ filtered_zalo_id }}'
+                  sequence:
+                  - variables:
+                      response_zalo_send_messages: {}
+                  - action: zalo_bot.send_message
+                    continue_on_error: true
+                    data: '{{ dict(zalo_optional_data, type=zalo_types, message=''📢 Thông báo\n'' ~ final_text, thread_id=repeat.item
+                      | string, account_selection=zalo_phone | string) }}'
+                    response_variable: response_zalo_send_messages
+                  - variables:
+                      zalo_failed: |-
+                        {{ zalo_failed or response_zalo_send_messages is not mapping
+                           or not (response_zalo_send_messages.get('success', false) | bool(false)) }}
+              - if:
+                - condition: template
+                  value_template: '{{ zalo_failed or (zalo_login_check is string and zalo_login_check | length >
+                    0 and not is_state(zalo_login_check, ''on'')) }}'
+                then:
+                - repeat:
+                    for_each: '{{ filtered_notify_device_zalo }}'
+                    sequence:
+                    - action: notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}
+                      continue_on_error: true
+                      data: |-
+                        {% set extra = dict(url=tap_navigate) %}
+                        {% if is_ios_android_zalo == 'android_device_zalo_error' %}
+                          {% set extra = dict(extra, priority='high', ttl=0, notification_icon=status_bar_icon,
+                            color=notification_color_hex, clickAction=tap_navigate) %}
+                        {% endif %}
+                        {{ dict(title=notify_title, message=final_text, data=extra) }}
+              alias: Zalo — kiểm tra phản hồi, gửi dự phòng một lần mỗi lượt
+            - if:
+              - condition: template
+                value_template: '{{ include_telegram_notify and filtered_telegram_target | length > 0 }}'
+              then:
+              - repeat:
+                  for_each: '{{ filtered_telegram_target }}'
+                  sequence:
+                  - action: telegram_bot.send_message
+                    continue_on_error: true
+                    data: |-
+                      {% set params = dict(entity_id=repeat.item, message=final_text,
+                          title=(notify_title | striptags if telegram_parse_mode == 'plain_text' else tele_title),
+                          parse_mode=telegram_parse_mode) %}
+                      {% if telegram_topic | int(0) > 0 %}
+                        {% set params = dict(params, message_thread_id=telegram_topic | int) %}
+                      {% endif %}
+                      {{ params }}
+              alias: Telegram — chỉ gửi Topic ID khi đã cấu hình
+            - if:
+              - condition: template
+                value_template: '{{ include_discord_notify and filtered_discord_id | length > 0 }}'
+              then:
+              - repeat:
+                  for_each: '{{ filtered_discord_id }}'
+                  sequence:
+                  - action: '{{ discord_provider | trim if (discord_provider | trim).startswith(''notify.'') else
+                      ''notify.'' ~ (discord_provider | slugify) }}'
+                    continue_on_error: true
+                    data: '{{ dict(target=[repeat.item | string], title=notify_title, message=final_text) }}'
+              alias: Discord
+            - alias: TTS — phát cho các loa rảnh, theo dõi rồi khôi phục âm lượng riêng
+              if:
+              - condition: template
+                value_template: '{{ include_tts_announcement and text_to_speech_engine is string and text_to_speech_engine
+                  | length > 0 and final_tts | trim | length > 0 }}'
+              then:
+              - if:
+                - condition: template
+                  value_template: '{{ include_custom_media_player }}'
+                then:
+                - variables:
+                    tts_raw_players: !input 'custom_media_player'
+                else:
+                - variables:
+                    tts_raw_players: '{{ media_player }}'
+              - variables:
+                  tts_players: |-
+                    {% set raw = tts_raw_players | default([], true) %} {% if raw is string and raw.startswith('sensor.') %}
+                      {% set raw = states(raw) %}
+                    {% endif %} {% if raw is string %}{% set raw = raw | from_json(raw) %}{% endif %} {% set items = raw.split(',') | map('trim') | list if raw is string else (raw if raw is sequence and raw is not mapping else []) %} {% set ids = items | select('string') | select('match', '^media_player[.]') | unique | list %} {{ expand(ids) | rejectattr('state', 'in', ['unknown', 'unavailable']) | map(attribute='entity_id') | list }}
+              - if:
+                - condition: template
+                  value_template: '{{ tts_players | length > 0 }}'
+                then:
+                - wait_template: '{{ expand(tts_players) | selectattr(''state'', ''in'', [''playing'', ''buffering''])
+                    | list | length == 0 }}'
+                  timeout:
+                    seconds: '{{ tts_busy_timeout }}'
+                  continue_on_timeout: true
+                - variables:
+                    tts_ready: '{{ expand(tts_players) | rejectattr(''state'', ''in'', [''playing'', ''buffering'',
+                      ''unknown'', ''unavailable'']) | map(attribute=''entity_id'') | list }}'
+                    tts_snapshot: |-
+                      {% set ns = namespace(players=[]) %} {% for entity in tts_ready %}
+                        {% set ns.players = ns.players + [dict(entity_id=entity, volume=state_attr(entity, 'volume_level'))] %}
+                      {% endfor %} {{ ns.players }}
+                    tts_dispatch_time: '{{ as_timestamp(now()) }}'
+                - if:
+                  - condition: template
+                    value_template: '{{ tts_ready | length < tts_players | length }}'
+                  then:
+                  - action: system_log.write
+                    continue_on_error: true
+                    data:
+                      level: warning
+                      logger: blueprint.ai_smart_notification
+                      message: 'TTS: bỏ qua loa vẫn bận hoặc mất kết nối: {{ tts_players | reject(''in'', tts_ready)
+                        | list }}'
+                - repeat:
+                    for_each: '{{ tts_snapshot }}'
+                    sequence:
+                    - if:
+                      - condition: template
+                        value_template: '{{ repeat.item.volume is number }}'
+                      then:
+                      - action: media_player.volume_set
+                        continue_on_error: true
+                        target:
+                          entity_id: '{{ repeat.item.entity_id }}'
+                        data:
+                          volume_level: '{{ num_volume_speaker }}'
+                    - action: tts.speak
+                      continue_on_error: true
+                      target:
+                        entity_id: "{{ text_to_speech_engine | default('none', true) }}"
+                      data: '{{ dict(tts_optional_data, media_player_entity_id=repeat.item.entity_id, message=final_tts
+                        | trim) }}'
+                - variables:
+                    tts_deadline: '{{ as_timestamp(now()) + (tts_playback_timeout | float) }}'
+                - repeat:
+                    for_each: '{{ tts_snapshot }}'
+                    sequence:
+                    - wait_template: |-
+                        {{ not has_value(repeat.item.entity_id)
+                           or (as_timestamp(states[repeat.item.entity_id].last_changed) >= tts_dispatch_time | float
+                               and states(repeat.item.entity_id) in ['playing', 'buffering', 'idle', 'paused', 'off']) }}
+                      timeout:
+                        seconds: '{{ [tts_start_timeout | float, [0, tts_deadline | float - as_timestamp(now())]
+                          | max] | min }}'
+                      continue_on_timeout: true
+                    - wait_template: '{{ states(repeat.item.entity_id) not in [''playing'', ''buffering''] }}'
+                      timeout:
+                        seconds: '{{ [0, tts_deadline | float - as_timestamp(now())] | max }}'
+                      continue_on_timeout: true
+                    - if:
+                      - condition: template
+                        value_template: |-
+                          {% set current = state_attr(repeat.item.entity_id, 'volume_level') %} {{ tts_restore_volume and repeat.item.volume is number and current is number
+                             and (current - num_volume_speaker | float) | abs < 0.015 }}
+                      then:
+                      - action: media_player.volume_set
+                        continue_on_error: true
+                        target:
+                          entity_id: '{{ repeat.item.entity_id }}'
+                        data:
+                          volume_level: '{{ repeat.item.volume }}'
+            - if:
+              - condition: template
+                value_template: '{{ include_tts_to_mobile and filtered_tts_to_mobile | length > 0 }}'
+              then:
+              - repeat:
+                  for_each: '{{ filtered_tts_to_mobile }}'
+                  sequence:
+                  - action: notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}
+                    continue_on_error: true
+                    data: |-
+                      {% set extra = dict(tts_text=final_tts | trim) %}
+                      {% if tts_to_mobile_media_stream_types in ['alarm_stream', 'alarm_stream_max'] %}
+                        {% set extra = dict(extra, media_stream=tts_to_mobile_media_stream_types) %}
+                      {% endif %}
+                      {{ dict(message='TTS', data=extra) }}
+              alias: TTS điện thoại — bỏ media_stream khi chọn chế độ thường
+        - if:
           - condition: template
-            value_template: "{{ include_custom_1_actions }}"
-        then: !input custom_actions_1
-
-      # -------------------------------------------------------------
-      # KHỐI LOGIC CHÍNH: Xử lý rẽ nhánh điều kiện AI và các dịch vụ Notify
-      # -------------------------------------------------------------
-      - if:
+            value_template: '{{ not repeat.last }}'
+          then:
+          - &repeat_pause
+            delay:
+              seconds: '{{ repeat_delay }}'
+  - conditions: '{{ repeat_types == ''until_repeat'' }}'
+    sequence:
+    - repeat:
+        until:
+        - condition: or
+          conditions:
+          - condition: and
+            conditions: !input 'repeat_until'
           - condition: template
-            value_template: >
-              {{ not (repeat_types == "disable_repeat") }}
-        then:
-          - choose:
-              - conditions: "{{ repeat_types == 'count_repeat' }}"
-                sequence:
-                  - repeat:
-                      count: "{{repeat_count}}"
-                      sequence:
-                        - choose: &core_logic
-                            - conditions: "{{ ai_powered }}"
-                              sequence:
-                                - action: ai_task.generate_data
-                                  metadata: {}
-                                  data:
-                                    task_name: "{{ai_task_name}}"
-                                    entity_id: "{{ai_task_entity_id}}"
-                                    instructions: "{{ai_instructions}}"
-                                    structure:
-                                      thong_bao:
-                                        description: "{{ai_structure_description}}"
-                                        required: true
-                                        selector:
-                                          text: null
-                                  response_variable: response_thong_bao
-                                  continue_on_error: true
-                                - wait_template: "{{ response_thong_bao is defined }}"
-                                  timeout: "00:01:00"
-                                  continue_on_timeout: true
-                                - variables:
-                                    # Sử dụng kiểm tra khóa dictionary chuẩn an toàn 100% trong Jinja
-                                    ai_success: >
-                                      {{ response_thong_bao is defined and 'data' in response_thong_bao and 'thong_bao' in response_thong_bao.data and response_thong_bao.data.thong_bao != '' }}
-                                    final_text: >
-                                      {% if ai_success %}
-                                        👉 {{ response_thong_bao.data.thong_bao }}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
-                                      {% else %}
-                                        {{ ai_notification_error }}
-                                      {% endif %}
-                                    final_tts: >
-                                      {% if ai_success %}
-                                        {{ response_thong_bao.data.thong_bao }}
-                                      {% else %}
-                                        {{ ai_notification_tts_error }}
-                                      {% endif %}
-                                - parallel: &dispatch_notifications
-                                    # 1. MOBILE NOTIFY
-                                    - if:
-                                        - condition: template
-                                          value_template: "{{ include_notify and (filtered_devices | length > 0) }}"
-                                      then:
-                                        - if:
-                                            - condition: template
-                                              value_template: "{{ include_actions }}"
-                                          then:
-                                            - choose:
-                                                - conditions: "{{ is_ios_android == 'android_device' }}"
-                                                  sequence:
-                                                    - repeat:
-                                                        for_each: "{{ filtered_devices }}"
-                                                        sequence:
-                                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                            data:
-                                                              title: !input notify_title
-                                                              message: "{{ final_text }}"
-                                                              data:
-                                                                priority: high
-                                                                notification_icon: !input status_bar_icon
-                                                                color: "{{ notification_color_hex }}"
-                                                                url: "{{tap_navigate}}"
-                                                                clickAction: "{{tap_navigate}}"
-                                                                tag: "{{ tag }}"
-                                                                actions:
-                                                                  - action: "{{ action_confirm }}"
-                                                                    title: "{{ confirm_text }}"
-                                                                  - action: "{{ action_dismiss }}"
-                                                                    title: "{{ dismiss_text }}"
-                                                - conditions: "{{ is_ios_android == 'ios_device' }}"
-                                                  sequence:
-                                                    - repeat:
-                                                        for_each: "{{ filtered_devices }}"
-                                                        sequence:
-                                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                            data:
-                                                              title: !input notify_title
-                                                              message: "{{ final_text }}"
-                                                              data:
-                                                                tag: "{{ tag }}"
-                                                                actions:
-                                                                  - action: "{{ action_confirm }}"
-                                                                    title: "{{ confirm_text }}"
-                                                                  - action: "{{ action_dismiss }}"
-                                                                    title: "{{ dismiss_text }}"
-                                            - wait_for_trigger:
-                                                - platform: event
-                                                  event_type: mobile_app_notification_action
-                                                  event_data:
-                                                    action: "{{ action_confirm }}"
-                                                - platform: event
-                                                  event_type: mobile_app_notification_action
-                                                  event_data:
-                                                    action: "{{ action_dismiss }}"
-                                              timeout: '{{ timeout }}'
-                                              continue_on_timeout: true
-                                            - choose:
-                                                - conditions: "{{ wait.trigger.event.data.action == action_confirm }}"
-                                                  sequence: !input confirm_action
-                                                - conditions: "{{ wait.trigger.event.data.action == action_dismiss }}"
-                                                  sequence:
-                                                    - if:
-                                                        - condition: template
-                                                          value_template: "{{ not enable_custom_dismiss_action }}"
-                                                      then:
-                                                        - repeat:
-                                                            for_each: "{{ filtered_devices }}"
-                                                            sequence:
-                                                              - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                                data:
-                                                                  message: "clear_notification"
-                                                                  data:
-                                                                    tag: "{{ tag }}"
-                                                      else: !input custom_dismiss_action
-                                          else:
-                                            - choose:
-                                                - conditions: "{{ is_ios_android == 'android_device' }}"
-                                                  sequence:
-                                                    - repeat:
-                                                        for_each: "{{ filtered_devices }}"
-                                                        sequence:
-                                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                            data:
-                                                              title: !input notify_title
-                                                              message: "{{ final_text }}"
-                                                              data:
-                                                                priority: high
-                                                                notification_icon: !input status_bar_icon
-                                                                color: "{{ notification_color_hex }}"
-                                                                url: "{{tap_navigate}}"
-                                                                clickAction: "{{tap_navigate}}"
-                                                - conditions: "{{ is_ios_android == 'ios_device' }}"
-                                                  sequence:
-                                                    - repeat:
-                                                        for_each: "{{ filtered_devices }}"
-                                                        sequence:
-                                                          - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                            data:
-                                                              title: !input notify_title
-                                                              message: "{{ final_text }}"
-                                    # 2. ZALO NOTIFY
-                                    - if:
-                                        - condition: template
-                                          value_template: "{{ include_zalo_notify and (filtered_zalo_id | length > 0) }}"
-                                      then:
-                                        - repeat:
-                                            for_each: "{{ filtered_zalo_id }}"
-                                            sequence:
-                                              - action: zalo_bot.send_message
-                                                metadata: {}
-                                                data:
-                                                  type: !input zalo_types
-                                                  ttl: !input zalo_ttl
-                                                  message: "📢 Thông báo{{'\n'}}{{final_text}}"
-                                                  thread_id: "{{ repeat.item }}"
-                                                  account_selection: !input zalo_phone
-                                                response_variable: response_zalo_send_messages
-                                                continue_on_error: true
-                                              - if:
-                                                  - condition: template
-                                                    value_template: "{{ (response_zalo_send_messages.success == 'false') and (not zalo_check_status) }}"
-                                                then:
-                                                  - choose:
-                                                      - conditions: "{{ is_ios_android_zalo == 'android_device_zalo_error' }}"
-                                                        sequence:
-                                                          - repeat:
-                                                              for_each: "{{ filtered_notify_device_zalo }}"
-                                                              sequence:
-                                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                                  data:
-                                                                    title: !input notify_title
-                                                                    message: "{{ final_text }}"
-                                                                    data:
-                                                                      priority: high
-                                                                      notification_icon: !input status_bar_icon
-                                                                      color: "{{ notification_color_hex }}"
-                                                                      url: "{{tap_navigate}}"
-                                                                      clickAction: "{{tap_navigate}}"
-                                                      - conditions: "{{ is_ios_android_zalo == 'ios_device_zalo_error' }}"
-                                                        sequence:
-                                                          - repeat:
-                                                              for_each: "{{ filtered_notify_device_zalo }}"
-                                                              sequence:
-                                                                - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                                  data:
-                                                                    title: !input notify_title
-                                                                    message: "{{ final_text }}"
-                                    # 3. TELEGRAM NOTIFY
-                                    - if:
-                                        - condition: template
-                                          value_template: "{{ include_telegram_notify }}"
-                                      then:
-                                        - repeat:
-                                            for_each: "{{ filtered_telegram_target }}"
-                                            sequence:
-                                              - action: telegram_bot.send_message
-                                                metadata: {}
-                                                data:
-                                                  entity_id: "{{repeat.item}}"
-                                                  message_thread_id: "{{ telegram_topic | int(0) }}"
-                                                  message: "{{ final_text }}"
-                                                  title: "{{ tele_title }}"
-                                                  parse_mode: html
-                                    # 4. DISCORD NOTIFY
-                                    - if:
-                                        - condition: template
-                                          value_template: "{{ include_discord_notify and (filtered_discord_id | length > 0) }}"
-                                      then:
-                                        - repeat:
-                                            for_each: "{{ filtered_discord_id }}"
-                                            sequence:
-                                              - action: "notify.{{ discord_provider | slugify }}"
-                                                metadata: {}
-                                                data:
-                                                  target: "{{ repeat.item }}"
-                                                  title: !input notify_title
-                                                  message: "{{ final_text }}"
-                                    # 5. TTS SPEAKER NOTIFY
-                                    - if:
-                                        - condition: template
-                                          value_template: "{{ include_tts_announcement }}"
-                                      then:
-                                        - if:
-                                            - condition: template
-                                              value_template: "{{ expand(is_custom_media_player) | selectattr('state', 'in', ['playing', 'buffering']) | list | count > 0 }}"
-                                          then:
-                                            - wait_template: "{{ expand(is_custom_media_player) |selectattr('state', 'in', ['playing', 'buffering', 'unknown', 'unavailable']) |list |count == 0 }}"
-                                              timeout: "00:10:00"
-                                              continue_on_timeout: true
-                                            - if:
-                                                - condition: template
-                                                  value_template: "{{ wait.completed }}"
-                                              then:
-                                                - action: scene.create
-                                                  metadata: {}
-                                                  data:
-                                                    scene_id: media_player_previous_state_blueprint
-                                                    snapshot_entities: "{{ is_custom_media_player }}"
-                                                - repeat:
-                                                    for_each: "{{ is_custom_media_player }}"
-                                                    sequence:
-                                                      - action: media_player.volume_set
-                                                        metadata: {}
-                                                        data:
-                                                          volume_level: "{{num_volume_speaker}}"
-                                                        target:
-                                                          entity_id: "{{ repeat.item }}"
-                                                      - action: tts.speak
-                                                        target:
-                                                          entity_id: !input text_to_speech_engine
-                                                        data:
-                                                          media_player_entity_id: "{{ repeat.item }}"
-                                                          message: "{{ final_tts | trim }}"
-                                                - action: scene.turn_on
-                                                  metadata: {}
-                                                  target:
-                                                    entity_id: scene.media_player_previous_state_blueprint
-                                                  data: {}
-                                              else:
-                                                - action: scene.create
-                                                  metadata: {}
-                                                  data:
-                                                    scene_id: media_player_previous_state_blueprint
-                                                    snapshot_entities: "{{ is_custom_media_player }}"
-                                                - repeat:
-                                                    for_each: "{{ is_custom_media_player }}"
-                                                    sequence:
-                                                      - action: media_player.volume_set
-                                                        metadata: {}
-                                                        data:
-                                                          volume_level: "{{num_volume_speaker}}"
-                                                        target:
-                                                          entity_id: "{{ repeat.item }}"
-                                                      - action: tts.speak
-                                                        target:
-                                                          entity_id: !input text_to_speech_engine
-                                                        data:
-                                                          media_player_entity_id: "{{ repeat.item }}"
-                                                          message: "{{ is_wait_completed_error }}"
-                                                - action: scene.turn_on
-                                                  metadata: {}
-                                                  target:
-                                                    entity_id: scene.media_player_previous_state_blueprint
-                                                  data: {}
-                                          else:
-                                            - repeat:
-                                                for_each: "{{ is_custom_media_player }}"
-                                                sequence:
-                                                  - action: media_player.volume_set
-                                                    metadata: {}
-                                                    data:
-                                                      volume_level: "{{num_volume_speaker}}"
-                                                    target:
-                                                      entity_id: "{{ repeat.item }}"
-                                                  - action: tts.speak
-                                                    target:
-                                                      entity_id: !input text_to_speech_engine
-                                                    data:
-                                                      media_player_entity_id: "{{ repeat.item }}"
-                                                      message: "{{ final_tts | trim }}"
-                                    # 6. TTS MOBILE NOTIFY
-                                    - if:
-                                        - condition: template
-                                          value_template: "{{ include_tts_to_mobile and (filtered_tts_to_mobile | length > 0) }}"
-                                      then:
-                                        - repeat:
-                                            for_each: "{{ filtered_tts_to_mobile }}"
-                                            sequence:
-                                              - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
-                                                data:
-                                                  message: TTS
-                                                  data:
-                                                    tts_text: "{{ final_tts | trim  }}"
-                                                    media_stream: "{{ is_tts_to_mobile_media_stream_types }}"
-                            - conditions: "{{ not ai_powered }}"
-                              sequence:
-                                - variables:
-                                    final_text: >
-                                      👉 {{is_message_customs}}{{'\n'}}🕒 {{now().strftime('%H:%M:%S %a, %d-%b-%Y')}}
-                                    final_tts: "{{ ai_structure_description }}"
-                                - parallel: *dispatch_notifications
-                        - delay:
-                            seconds: "{{ repeat_delay }}"
-              - conditions: "{{ repeat_types == 'until_repeat' }}"
-                sequence:
-                  - repeat:
-                      until: !input repeat_until
-                      sequence:
-                        - choose: *core_logic
-                        - delay:
-                            seconds: "{{ repeat_delay }}"
-              - conditions: "{{ repeat_types == 'while_repeat' }}"
-                sequence:
-                  - repeat:
-                      while: !input repeat_while
-                      sequence:
-                        - choose: *core_logic
-                        - delay:
-                            seconds: "{{ repeat_delay }}"
-              - conditions: "{{ repeat_types == 'for_each_repeat' }}"
-                sequence:
-                  - repeat:
-                      for_each: "{{ repeat_for_each }}"
-                      sequence:
-                        - choose: *core_logic
-                        - delay:
-                            seconds: "{{ repeat_delay }}"
-        else:
-          - choose: *core_logic
-
-      - if:
+            value_template: '{{ repeat.index >= repeat_limit | int }}'
+        sequence:
+        - *notification_cycle
+        - if:
           - condition: template
-            value_template: "{{ include_custom_actions }}"
-        then: !input custom_actions
-
-mode: parallel
+            value_template: '{{ repeat.index < repeat_limit | int }}'
+          then:
+          - *repeat_pause
+  - conditions: '{{ repeat_types == ''while_repeat'' }}'
+    sequence:
+    - repeat:
+        while:
+        - condition: template
+          value_template: '{{ repeat.index <= repeat_limit | int }}'
+        - condition: and
+          conditions: !input 'repeat_while'
+        sequence:
+        - *notification_cycle
+        - if:
+          - condition: template
+            value_template: '{{ repeat.index < repeat_limit | int }}'
+          then:
+          - *repeat_pause
+  - conditions: '{{ repeat_types == ''for_each_repeat'' }}'
+    sequence:
+    - repeat:
+        for_each: '{{ repeat_for_each if repeat_for_each is sequence and repeat_for_each is not string and repeat_for_each
+          is not mapping else [] }}'
+        sequence:
+        - *notification_cycle
+        - if:
+          - condition: template
+            value_template: '{{ repeat.index < repeat_for_each | length }}'
+          then:
+          - *repeat_pause
+  default:
+  - *notification_cycle
+- if:
+  - condition: template
+    value_template: '{{ include_custom_actions }}'
+  then: !input 'custom_actions'
+mode: !input 'execution_mode'
 max: 10
-max_exceeded: silent
+max_exceeded: warning
