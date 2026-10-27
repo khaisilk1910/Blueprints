@@ -1,5 +1,7 @@
 blueprint:
   name: AI Smart Notification System
+  author: khaisilk1910
+  source_url: https://github.com/khaisilk1910/Blueprints/blob/main/ai_smart_notification_system/ai_smart_notification_system.yaml
   description: >
     ### 📢 Tạo nội dung ngẫu nhiên bằng AI và gửi Thông báo lên điện thoại, zalo, telegram, Discord và ra loa khi kích hoạt
 
